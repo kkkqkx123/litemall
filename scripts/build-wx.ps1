@@ -26,7 +26,8 @@ if (-not (Test-Path $WxProjectPath)) {
 # Check WeChat Developer Tools CLI
 $CliPaths = @(
     "$env:PROGRAMFILES(x86)\Tencent\微信开发者工具\cli.bat",
-    "$env:PROGRAMFILES\Tencent\微信开发者工具\cli.bat"
+    "$env:PROGRAMFILES\Tencent\微信开发者工具\cli.bat",
+    "$env:LOCALAPPDATA\微信开发者工具\cli.bat"
 )
 
 $CliPath = $null
@@ -59,9 +60,13 @@ if (-not (Test-Path $ProjectConfig)) {
 }
 
 # Read project configuration
-$ConfigContent = Get-Content $ProjectConfig -Raw | ConvertFrom-Json
-Write-Host "Project name: $($ConfigContent.projectname)" -ForegroundColor Cyan
-Write-Host "App ID: $($ConfigContent.appid)" -ForegroundColor Cyan
+try {
+    $ConfigContent = Get-Content $ProjectConfig -Raw -Encoding UTF8 | ConvertFrom-Json
+    Write-Host "Project name: $($ConfigContent.projectname)" -ForegroundColor Cyan
+    Write-Host "App ID: $($ConfigContent.appid)" -ForegroundColor Cyan
+} catch {
+    Write-Host "Warning: Could not read project configuration" -ForegroundColor Yellow
+}
 
 # Execute different mode operations
 switch ($Mode.ToLower()) {
@@ -72,8 +77,13 @@ switch ($Mode.ToLower()) {
         $AppJson = Join-Path $WxProjectPath "app.json"
         if (Test-Path $AppJson) {
             Write-Host "✅ app.json exists" -ForegroundColor Green
-            $AppConfig = Get-Content $AppJson -Raw | ConvertFrom-Json
-            Write-Host "  Page count: $($AppConfig.pages.Count)" -ForegroundColor Gray
+            try {
+                $AppConfig = Get-Content $AppJson -Raw -Encoding UTF8 | ConvertFrom-Json
+                $PageCount = if ($AppConfig.pages) { $AppConfig.pages.Count } else { 0 }
+                Write-Host "  Page count: $PageCount" -ForegroundColor Gray
+            } catch {
+                Write-Host "  Could not parse app.json" -ForegroundColor Yellow
+            }
         } else {
             Write-Host "❌ app.json not found" -ForegroundColor Red
         }
@@ -94,7 +104,7 @@ switch ($Mode.ToLower()) {
         
         # Check directory structure
         if (Test-Path "pages") {
-            $PageCount = (Get-ChildItem "pages" -Directory).Count
+            $PageCount = (Get-ChildItem "pages" -Directory -ErrorAction SilentlyContinue).Count
             Write-Host "✅ pages directory exists, sub-pages: $PageCount" -ForegroundColor Green
         } else {
             Write-Host "❌ pages directory not found" -ForegroundColor Red
@@ -104,6 +114,13 @@ switch ($Mode.ToLower()) {
             Write-Host "✅ utils directory exists" -ForegroundColor Green
         } else {
             Write-Host "❌ utils directory not found" -ForegroundColor Red
+        }
+        
+        # Check sitemap.json
+        if (Test-Path "sitemap.json") {
+            Write-Host "✅ sitemap.json exists" -ForegroundColor Green
+        } else {
+            Write-Host "❌ sitemap.json not found" -ForegroundColor Red
         }
         
         Write-Host "Code check completed!" -ForegroundColor Green
@@ -120,46 +137,46 @@ switch ($Mode.ToLower()) {
                 exit 1
             }
             
+            if (-not $CliPath) {
+                Write-Host "Error: CLI not found, cannot upload" -ForegroundColor Red
+                exit 1
+            }
+            
             Write-Host "Uploading to WeChat Mini Program..." -ForegroundColor Yellow
             Write-Host "Version: $Version" -ForegroundColor Cyan
             Write-Host "Description: $Desc" -ForegroundColor Cyan
             
             # Execute upload command
-            if ($CliPath) {
-                & $CliPath upload --project $WxProjectPath --version $Version --desc $Desc
-                if ($LASTEXITCODE -eq 0) {
-                    Write-Host "✅ Upload successful!" -ForegroundColor Green
-                } else {
-                    Write-Host "❌ Upload failed" -ForegroundColor Red
-                    exit 1
-                }
+            & $CliPath upload --project $WxProjectPath --version $Version --desc $Desc
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "✅ Upload successful!" -ForegroundColor Green
             } else {
-                Write-Host "❌ CLI not found, cannot upload" -ForegroundColor Red
+                Write-Host "❌ Upload failed" -ForegroundColor Red
                 exit 1
             }
         } else {
-            Write-Host "Build mode: only checking code, not uploading" -ForegroundColor Green
+            Write-Host "Build mode: checking code only, no upload" -ForegroundColor Green
             Write-Host "Use -Upload parameter to perform upload" -ForegroundColor Yellow
             
             # Perform basic check
-            & "$ProjectRoot\scripts\build-wx.ps1" -Mode check
+            & "$PSScriptRoot\build-wx.ps1" -Mode check
         }
     }
     
     "preview" {
         Write-Host "Generating WeChat Mini Program preview..." -ForegroundColor Yellow
         
+        if (-not $CliPath) {
+            Write-Host "Error: CLI not found, cannot generate preview" -ForegroundColor Red
+            exit 1
+        }
+        
         # Generate preview QR code
-        if ($CliPath) {
-            & $CliPath preview --project $WxProjectPath
-            if ($LASTEXITCODE -eq 0) {
-                Write-Host "✅ Preview QR code generated!" -ForegroundColor Green
-            } else {
-                Write-Host "❌ Preview generation failed" -ForegroundColor Red
-                exit 1
-            }
+        & $CliPath preview --project $WxProjectPath
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "✅ Preview QR code generated!" -ForegroundColor Green
         } else {
-            Write-Host "❌ CLI not found, cannot generate preview" -ForegroundColor Red
+            Write-Host "❌ Preview generation failed" -ForegroundColor Red
             exit 1
         }
     }
@@ -168,13 +185,13 @@ switch ($Mode.ToLower()) {
         Write-Host "Starting WeChat Mini Program auto-build..." -ForegroundColor Yellow
         Write-Host "Press Ctrl+C to stop watching" -ForegroundColor Cyan
         
-        # Watch file changes and auto-upload
-        if ($CliPath) {
-            & $CliPath auto --project $WxProjectPath
-        } else {
-            Write-Host "❌ CLI not found, cannot start auto-build" -ForegroundColor Red
+        if (-not $CliPath) {
+            Write-Host "Error: CLI not found, cannot start auto-build" -ForegroundColor Red
             exit 1
         }
+        
+        # Watch file changes and auto-upload
+        & $CliPath auto --project $WxProjectPath
     }
     
     default {
