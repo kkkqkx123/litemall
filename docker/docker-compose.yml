@@ -1,7 +1,7 @@
 version: '3'
 services:
   mysql57:
-    image: mysql:5.7
+    image: mysql:8
     container_name: mysql
     ports:
       - "3306:3306"
@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
     container_name: litemall
     ports:
-      - "8080:8080"
+      - "8083:8080"
     volumes:
       - ./litemall/storage:/storage
       - ./litemall/logs:/logs

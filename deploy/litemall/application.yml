@@ -5,10 +5,10 @@ spring:
     encoding: UTF-8
   datasource:
     druid:
-      url:  jdbc:mysql://localhost:3306/litemall?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&allowPublicKeyRetrieval=true&verifyServerCertificate=false&useSSL=false
+      url:  jdbc:mysql://127.0.0.1:3306/litemall?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&allowPublicKeyRetrieval=true&verifyServerCertificate=false&useSSL=false
       driver-class-name:  com.mysql.cj.jdbc.Driver
-      username:  litemall
-      password:  litemall123456
+      username:  admin
+      password:  admin123
       initial-size:  10
       max-active:  50
       min-idle:  10
@@ -23,7 +23,7 @@ spring:
       filters:  stat,wall
 
 server:
-  port: 8080
+  port: 8083
 
 logging:
   config: classpath:logback-spring.xml
