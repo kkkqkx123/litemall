@@ -36,14 +36,14 @@ spring:
 ```sql
 -- 创建数据库和用户
 drop database if exists litemall;
-drop user if exists 'admin'@'%';
+drop user if exists 'root'@'%';
 
 -- 支持emoji：使用utf8mb4字符集
 create database litemall default character set utf8mb4 collate utf8mb4_unicode_ci;
 use litemall;
 
-create user 'admin'@'%' identified by 'admin123';
-grant all privileges on litemall.* to 'admin'@'%';
+create user 'root'@'%' identified by 'root';
+grant all privileges on litemall.* to 'root'@'%';
 flush privileges;
 ```
 
@@ -57,8 +57,8 @@ flush privileges;
 ```xml
 <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"
                 connectionURL="jdbc:mysql://127.0.0.1:3306/litemall?useUnicode=true&amp;characterEncoding=UTF-8&amp;serverTimezone=UTC&amp;verifyServerCertificate=false&amp;useSSL=false&amp;nullCatalogMeansCurrent=true"
-                userId="admin"
-                password="admin123"/>
+                userId="root"
+                        password="root"/>
 ```
 
 ## 2. Docker部署MySQL
@@ -84,7 +84,7 @@ services:
       - ./db/data:/var/lib/mysql
       - ./db/init-sql:/docker-entrypoint-initdb.d
     environment:
-      MYSQL_ROOT_PASSWORD: litemall123456
+      MYSQL_ROOT_PASSWORD: root
     restart: always
 ```
 
@@ -127,7 +127,7 @@ collation-server=utf8mb4_unicode_ci
 
 3. **验证数据库**
    ```bash
-   docker exec -it mysql mysql -uroot -plitemall123456
+   docker exec -it mysql mysql -uroot -proot
    -- 在MySQL中执行
    SHOW DATABASES;
    USE litemall;
