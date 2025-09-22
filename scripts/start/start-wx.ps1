@@ -16,7 +16,7 @@ Write-Host "========================================"
 # Set variables
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 $MavenCmd = "mvn"
-$BackendJar = "litemall-all-0.1.0.jar"
+$BackendJar = "litemall-all-0.1.0-exec.jar"
 $BackendJarPath = Join-Path $ProjectRoot "litemall-all\target\$BackendJar"
 $DatabaseConfigPath = Join-Path $ProjectRoot "litemall-db\src\main\resources\application-db.yml"
 $WxProjectPath = Join-Path $ProjectRoot "litemall-wx"

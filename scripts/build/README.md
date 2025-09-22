@@ -3,7 +3,7 @@
 ## 📁 脚本目录结构
 
 ```
-scripts/
+scripts/build
 ├── README.md              # 本使用指南
 ├── build-backend.ps1      # 后端构建脚本 (PowerShell)
 ├── build-backend.sh       # 后端构建脚本 (Bash)
