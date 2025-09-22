@@ -2,10 +2,11 @@
 
 ## 概述
 
-本目录包含两个PowerShell脚本，用于快速启动litemall项目的前后端服务：
+本目录包含三个PowerShell脚本，用于快速启动litemall项目的前后端服务：
 
 1. `start-web.ps1` - 启动Web商城前后端服务
 2. `start-wx.ps1` - 启动微信小程序前后端服务
+3. `start-vue.ps1` - 启动手机端Vue前后端服务
 
 ## 脚本说明
 
@@ -36,6 +37,9 @@
 
 # 指定环境配置
 .\start-web.ps1 -Profile prod
+
+# 跳过数据库连接检查
+.\start-web.ps1 -SkipDatabaseCheck
 ```
 
 #### 参数说明
@@ -47,6 +51,7 @@
 | SkipBuild | false | 跳过构建步骤 |
 | SkipFrontend | false | 跳过前端启动 |
 | SkipBackend | false | 跳过后端启动 |
+| SkipDatabaseCheck | false | 跳过数据库连接检查 |
 
 #### 访问地址
 - 后端服务: http://localhost:8080
@@ -81,6 +86,9 @@
 
 # 指定环境配置
 .\start-wx.ps1 -Profile prod
+
+# 跳过数据库连接检查
+.\start-wx.ps1 -SkipDatabaseCheck
 ```
 
 #### 参数说明
@@ -91,11 +99,55 @@
 | SkipBuild | false | 跳过构建步骤 |
 | SkipWxBackend | false | 跳过微信小程序后端启动 |
 | SkipWxFrontend | false | 跳过微信小程序前端启动 |
+| SkipDatabaseCheck | false | 跳过数据库连接检查 |
+
+### 3. start-vue.ps1 - 手机端Vue启动脚本
+
+#### 功能
+- 启动Spring Boot后端服务 (litemall-all)
+- 启动Vue手机端前端开发服务器 (litemall-vue)
+- 自动构建缺失的组件
+- 支持自定义端口配置
+- 专为移动端优化的Vue项目
+
+#### 使用方法
+```powershell
+# 基本使用
+.\start-vue.ps1
+
+# 自定义端口
+.\start-vue.ps1 -Port 8081
+
+# 跳过构建步骤
+.\start-vue.ps1 -SkipBuild
+
+# 只启动后端
+.\start-vue.ps1 -SkipFrontend
+
+# 只启动前端
+.\start-vue.ps1 -SkipBackend
+
+# 指定环境配置
+.\start-vue.ps1 -Profile prod
+
+# 跳过数据库连接检查
+.\start-vue.ps1 -SkipDatabaseCheck
+```
+
+#### 参数说明
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| Profile | dev | 环境配置 (dev/test/prod) |
+| Port | 8080 | 后端服务端口 |
+| SkipBuild | false | 跳过构建步骤 |
+| SkipFrontend | false | 跳过前端启动 |
+| SkipBackend | false | 跳过后端启动 |
+| SkipDatabaseCheck | false | 跳过数据库连接检查 |
 
 #### 访问地址
-- 微信小程序后端: http://localhost:8082
-- 微信小程序API: http://localhost:8082/wx
-- 微信小程序项目: litemall-wx目录
+- 后端服务: http://localhost:8080
+- 手机端前端: http://localhost:8081
+- 手机端API: http://localhost:8080/wx
 
 ## 环境要求
 
@@ -155,6 +207,20 @@ docker-compose up -d
 - 检查application-dev.yml中的数据库连接配置
 - 确认数据库已初始化
 
+### 5. 跳过数据库连接检查
+在某些情况下，您可能需要跳过数据库连接检查（例如使用内存数据库或测试环境）：
+
+```powershell
+# 跳过数据库检查启动Web商城
+.\start-web.ps1 -SkipDatabaseCheck
+
+# 跳过数据库检查启动微信小程序
+.\start-wx.ps1 -SkipDatabaseCheck
+
+# 跳过数据库检查启动手机端Vue
+.\start-vue.ps1 -SkipDatabaseCheck
+```
+
 ## 项目结构
 
 ```
@@ -162,6 +228,7 @@ litemall/
 ├── scripts/
 │   ├── start-web.ps1        # Web商城启动脚本
 │   ├── start-wx.ps1         # 微信小程序启动脚本
+│   ├── start-vue.ps1        # 手机端Vue启动脚本
 │   └── 启动脚本使用说明.md   # 本说明文档
 ├── litemall-all/            # 主后端项目
 ├── litemall-vue/            # Vue前端项目
@@ -185,10 +252,12 @@ litemall/
 # 添加到PowerShell配置文件
 Set-Alias web-start ".\scripts\start-web.ps1"
 Set-Alias wx-start ".\scripts\start-wx.ps1"
+Set-Alias vue-start ".\scripts\start-vue.ps1"
 ```
 
 然后可以直接使用：
 ```powershell
 web-start
 wx-start
+vue-start
 ```

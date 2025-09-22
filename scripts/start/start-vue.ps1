@@ -1,10 +1,10 @@
-# Litemall Web Backend and Frontend Startup Script
+# Litemall Vue Mobile Frontend Startup Script
 param(
     [string]$Profile = 'dev',
     [int]$Port = 8080,
     [switch]$SkipBuild,
-    [switch]$SkipFrontend,
     [switch]$SkipBackend,
+    [switch]$SkipFrontend,
     [switch]$SkipDatabaseCheck
 )
 
@@ -42,7 +42,7 @@ try {
             }
             
             # 停止Node.js进程
-            Get-Process -Name "node" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -like "*npm*" -or $_.CommandLine -like "*admin*" } | ForEach-Object {
+            Get-Process -Name "node" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -like "*npm*" -or $_.CommandLine -like "*vue*" } | ForEach-Object {
                 Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue
                 Write-Host "已停止Node.js进程: $($_.Id)" -ForegroundColor Green
             }
@@ -67,7 +67,7 @@ try {
 }
 
 Write-Host "========================================"
-Write-Host "Litemall Web Backend and Frontend Startup Script"
+Write-Host "Litemall Vue Mobile Frontend Startup Script"
 Write-Host "========================================"
 
 # Set variables
@@ -75,7 +75,7 @@ $ProjectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $MavenCmd = "mvn"
 $BackendJar = "litemall-all-0.1.0-exec.jar"
 $BackendJarPath = Join-Path $ProjectRoot "litemall-all\target\$BackendJar"
-$FrontendPath = Join-Path $ProjectRoot "litemall-admin"
+$FrontendPath = Join-Path $ProjectRoot "litemall-vue"
 
 Write-Host "Project root: $ProjectRoot"
 Write-Host "Environment profile: $Profile"
@@ -132,7 +132,6 @@ if (-not $SkipBackend) {
     
     Write-Host "Starting backend service..."
     Write-Host "Access URL: http://localhost:$Port"
-    Write-Host "Admin panel: http://localhost:$Port/admin"
     
     $JavaArgs = "-jar $BackendJarPath --server.port=$Port"
     if ($Profile -ne "dev") {
@@ -140,7 +139,7 @@ if (-not $SkipBackend) {
     }
     
     try {
-        $backendProcess = Start-Process "java" -ArgumentList $JavaArgs -NoNewWindow -WorkingDirectory $ProjectRoot -PassThru
+        $backendProcess = Start-Process -FilePath "java" -ArgumentList $JavaArgs -NoNewWindow -WorkingDirectory $ProjectRoot -PassThru
         $global:StartedProcesses += $backendProcess.Id
         Write-Host "Backend service started successfully (PID: $($backendProcess.Id))" -ForegroundColor Green
     } catch {
@@ -149,37 +148,37 @@ if (-not $SkipBackend) {
     }
 }
 
-# Start frontend service
+# Start mobile frontend service
 if (-not $SkipFrontend) {
-    Write-Host "Preparing to start frontend service..."
+    Write-Host "Preparing to start mobile frontend service..."
     
     if (-not (Test-Path $FrontendPath)) {
-        Write-Host "Error: Frontend project directory not found: $FrontendPath" -ForegroundColor Red
+        Write-Host "Error: Mobile frontend project directory not found: $FrontendPath" -ForegroundColor Red
         exit 1
     }
     
-    Write-Host "Frontend project path: $FrontendPath"
+    Write-Host "Mobile frontend project path: $FrontendPath"
     
     Set-Location $FrontendPath
     
     # Check if node_modules exists to avoid reinstalling dependencies
     if (-not (Test-Path "$FrontendPath\node_modules")) {
-        Write-Host "Installing frontend dependencies..."
+        Write-Host "Installing mobile frontend dependencies..."
         Invoke-Expression "npm install"
     } else {
-        Write-Host "Frontend dependencies already installed, skipping installation..."
+        Write-Host "Mobile frontend dependencies already installed, skipping installation..."
     }
     
-    Write-Host "Starting frontend development server..."
-    Write-Host "Frontend access: http://localhost:9527"
+    Write-Host "Starting mobile frontend development server..."
+    Write-Host "Mobile frontend access: http://localhost:8081"
     
     # Use cmd.exe to run npm properly
     try {
         $frontendProcess = Start-Process "cmd.exe" -ArgumentList "/c npm run dev" -NoNewWindow -WorkingDirectory $FrontendPath -PassThru
         $global:StartedProcesses += $frontendProcess.Id
-        Write-Host "Frontend service started successfully (PID: $($frontendProcess.Id))" -ForegroundColor Green
+        Write-Host "Mobile frontend service started successfully (PID: $($frontendProcess.Id))" -ForegroundColor Green
     } catch {
-        Write-Host "Error starting frontend service: $_" -ForegroundColor Red
+        Write-Host "Error starting mobile frontend service: $_" -ForegroundColor Red
         exit 1
     }
 }

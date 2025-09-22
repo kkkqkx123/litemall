@@ -9,6 +9,25 @@ param(
     [switch]$SkipDatabaseCheck
 )
 
+# 存储启动的进程ID
+$global:StartedProcesses = @()
+
+# 清理函数
+function Cleanup-Processes {
+    Write-Host "`n正在清理进程..." -ForegroundColor Yellow
+    
+    # 停止所有记录的进程
+    foreach ($procId in $global:StartedProcesses) {
+        $process = Get-Process -Id $procId -ErrorAction SilentlyContinue
+        if ($process) {
+            Stop-Process -Id $procId -Force -ErrorAction SilentlyContinue
+            Write-Host "已停止进程: $($process.ProcessName) (PID: $procId)" -ForegroundColor Green
+        }
+    }
+    
+    Write-Host "清理完成" -ForegroundColor Green
+}
+
 Write-Host "========================================"
 Write-Host "Litemall WeChat Backend and Frontend Startup Script"
 Write-Host "========================================"
@@ -45,6 +64,23 @@ if (-not $SkipBackend) {
         exit 1
     }
     
+    # Check if MySQL is running (if not skipped)
+    if (-not $SkipDatabaseCheck) {
+        Write-Host "Checking MySQL database connection..."
+        $MySQLConnection = Test-NetConnection -ComputerName localhost -Port 3306 -WarningAction SilentlyContinue
+        if (-not $MySQLConnection.TcpTestSucceeded) {
+            Write-Host "❌ MySQL service is not running or port 3306 is not open" -ForegroundColor Red
+            Write-Host "Please ensure MySQL is installed and running, database 'litemall' is created" -ForegroundColor Yellow
+            Write-Host "Database connection URL: jdbc:mysql://127.0.0.1:3306/litemall" -ForegroundColor Yellow
+            Write-Host "Username: root, Password: 1234567kk" -ForegroundColor Yellow
+            pause
+            exit 1
+        }
+        Write-Host "✅ MySQL connection is normal" -ForegroundColor Green
+    } else {
+        Write-Host "⚠️ Skipping database connection check" -ForegroundColor Yellow
+    }
+    
     if (-not (Test-Path $BackendJarPath) -and -not $SkipBuild) {
         Write-Host "Backend JAR file not found, starting build..."
         Set-Location $ProjectRoot
@@ -75,8 +111,9 @@ if (-not $SkipBackend) {
         $JavaArgs += " --spring.profiles.active=$Profile"
     }
     
-    Start-Process "java" -ArgumentList $JavaArgs -NoNewWindow -WorkingDirectory $ProjectRoot
-    Write-Host "WeChat backend service started successfully" -ForegroundColor Green
+    $backendProcess = Start-Process "java" -ArgumentList $JavaArgs -NoNewWindow -WorkingDirectory $ProjectRoot -PassThru
+    $global:StartedProcesses += $backendProcess.Id
+    Write-Host "WeChat backend service started successfully (PID: $($backendProcess.Id))" -ForegroundColor Green
 }
 
 # Start WeChat mini program
@@ -106,14 +143,13 @@ if (-not $SkipFrontend) {
     Write-Host "WeChat mini program project is ready" -ForegroundColor Green
 }
 
-
-
 Write-Host ""
 Write-Host "========================================"
 Write-Host "Press any key to stop all services..."
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 
-# Cleanup processes
-Write-Host "Stopping services..."
-Get-Process | Where-Object { $_.ProcessName -eq "java" -and $_.CommandLine -like "*$BackendJar*" } | Stop-Process -Force
-Write-Host "Services stopped"
+# 调用清理函数
+Cleanup-Processes
+
+# 确保退出
+exit 0
