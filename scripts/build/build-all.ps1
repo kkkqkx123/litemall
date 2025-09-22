@@ -15,7 +15,7 @@ Write-Host "========================================" -ForegroundColor Green
 Write-Host "Litemall Full Build Script" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
 
-$ProjectRoot = Split-Path -Parent $PSScriptRoot
+$ProjectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $StartTime = Get-Date
 
 # Display build plan
@@ -30,7 +30,7 @@ Write-Host ""
 function Build-Backend {
     Write-Host "📦 Starting backend build..." -ForegroundColor Yellow
     try {
-        & "$ProjectRoot\scripts\build-backend.ps1" -Profile $Profile -SkipTests:$SkipTests -Clean:$Clean
+        & "$PSScriptRoot\build-backend.ps1" -Profile $Profile -SkipTests:$SkipTests -Clean:$Clean
         return $true
     }
     catch {
@@ -42,7 +42,7 @@ function Build-Backend {
 function Build-Vue {
     Write-Host "📱 Starting Vue frontend build..." -ForegroundColor Yellow
     try {
-        & "$ProjectRoot\scripts\build-vue.ps1" -Environment production -SkipInstall:$false
+        & "$PSScriptRoot\build-vue.ps1" -Environment production -SkipInstall:$false
         return $true
     }
     catch {
@@ -54,7 +54,7 @@ function Build-Vue {
 function Build-Wx {
     Write-Host "🎯 Starting WeChat Mini Program check..." -ForegroundColor Yellow
     try {
-        & "$ProjectRoot\scripts\build-wx.ps1" -Mode check
+        & "$PSScriptRoot\build-wx.ps1" -Mode check
         return $true
     }
     catch {
@@ -73,12 +73,12 @@ if ($Parallel -and -not $SkipBackend -and -not $SkipVue) {
     $BackendJob = Start-Job -ScriptBlock {
         param($ScriptPath, $Profile, $SkipTests, $Clean)
         & $ScriptPath -Profile $Profile -SkipTests:$SkipTests -Clean:$Clean
-    } -ArgumentList "$ProjectRoot\scripts\build-backend.ps1", $Profile, $SkipTests, $Clean
+    } -ArgumentList "$PSScriptRoot\build-backend.ps1", $Profile, $SkipTests, $Clean
     
     $VueJob = Start-Job -ScriptBlock {
         param($ScriptPath)
         & $ScriptPath -Environment production -SkipInstall:$false
-    } -ArgumentList "$ProjectRoot\scripts\build-vue.ps1"
+    } -ArgumentList "$PSScriptRoot\build-vue.ps1"
     
     # Wait for parallel tasks to complete
     $Jobs = @($BackendJob, $VueJob)

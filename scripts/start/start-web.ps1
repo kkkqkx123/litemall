@@ -12,7 +12,7 @@ Write-Host "Litemall Web Backend and Frontend Startup Script"
 Write-Host "========================================"
 
 # Set variables
-$ProjectRoot = Split-Path -Parent $PSScriptRoot
+$ProjectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $MavenCmd = "mvn"
 $BackendJar = "litemall-all-0.1.0-exec.jar"
 $BackendJarPath = Join-Path $ProjectRoot "litemall-all\target\$BackendJar"

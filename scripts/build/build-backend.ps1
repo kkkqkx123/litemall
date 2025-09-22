@@ -12,7 +12,7 @@ Write-Host "Litemall Backend Build Script" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
 
 # Set variables
-$ProjectRoot = Split-Path -Parent $PSScriptRoot
+$ProjectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $MavenCmd = "mvn"
 
 # Check if Maven is installed

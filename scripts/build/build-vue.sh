@@ -53,7 +53,7 @@ echo "========================================"
 
 # 设置变量
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 VUE_PROJECT_PATH="$PROJECT_ROOT/litemall-vue"
 
 # 检查Node.js和npm是否安装

@@ -3,16 +3,22 @@
 ## 📁 脚本目录结构
 
 ```
-scripts/build
+scripts/
 ├── README.md              # 本使用指南
-├── build-backend.ps1      # 后端构建脚本 (PowerShell)
-├── build-backend.sh       # 后端构建脚本 (Bash)
-├── build-vue.ps1          # Vue前端构建脚本 (PowerShell)
-├── build-vue.sh           # Vue前端构建脚本 (Bash)
-├── build-wx.ps1           # 微信小程序构建脚本 (PowerShell)
-├── build-wx.sh            # 微信小程序构建脚本 (Bash)
-├── build-all.ps1          # 全量构建脚本 (PowerShell)
-└── build-all.sh           # 全量构建脚本 (Bash)
+├── build/                   # 构建脚本目录
+│   ├── build-backend.ps1   # 后端构建脚本 (PowerShell)
+│   ├── build-backend.sh    # 后端构建脚本 (Bash)
+│   ├── build-vue.ps1       # Vue前端构建脚本 (PowerShell)
+│   ├── build-vue.sh        # Vue前端构建脚本 (Bash)
+│   ├── build-wx.ps1        # 微信小程序构建脚本 (PowerShell)
+│   ├── build-wx.sh         # 微信小程序构建脚本 (Bash)
+│   ├── build-all.ps1       # 全量构建脚本 (PowerShell)
+│   ├── build-all.sh        # 全量构建脚本 (Bash)
+│   └── build脚本使用说明.md
+└── start/                   # 启动脚本目录
+    ├── start-web.ps1       # Web服务启动脚本 (PowerShell)
+    ├── start-wx.ps1        # 微信小程序启动脚本 (PowerShell)
+    └── start脚本使用说明.md
 ```
 
 ## 🚀 快速开始
@@ -22,19 +28,19 @@ scripts/build
 **Windows (PowerShell):**
 ```powershell
 # 基础构建
-.\scripts\build-all.ps1
+.\scripts\build\build-all.ps1
 
 # 带参数构建
-.\scripts\build-all.ps1 -Profile prod -Clean -Parallel
+.\scripts\build\build-all.ps1 -Profile prod -Clean -Parallel
 ```
 
 **Linux/macOS (Bash):**
 ```bash
 # 基础构建
-./scripts/build-all.sh
+./scripts/build/build-all.sh
 
 # 带参数构建
-./scripts/build-all.sh -p prod --clean --parallel
+./scripts/build/build-all.sh -p prod --clean --parallel
 ```
 
 ### 单独构建模块
@@ -42,40 +48,40 @@ scripts/build
 #### 后端构建
 **Windows:**
 ```powershell
-.\scripts\build-backend.ps1
-.\scripts\build-backend.ps1 -Profile prod -Clean -SkipTests:$false
+.\scripts\build\build-backend.ps1
+.\scripts\build\build-backend.ps1 -Profile prod -Clean -SkipTests:$false
 ```
 
 **Linux/macOS:**
 ```bash
-./scripts/build-backend.sh
-./scripts/build-backend.sh -p prod --clean --run-tests
+./scripts/build/build-backend.sh
+./scripts/build/build-backend.sh -p prod --clean --run-tests
 ```
 
 #### Vue前端构建
 **Windows:**
 ```powershell
-.\scripts\build-vue.ps1
-.\scripts\build-vue.ps1 -Environment production -Analyze
+.\scripts\build\build-vue.ps1
+.\scripts\build\build-vue.ps1 -Environment production -Analyze
 ```
 
 **Linux/macOS:**
 ```bash
-./scripts/build-vue.sh
-./scripts/build-vue.sh --env production --analyze
+./scripts/build/build-vue.sh
+./scripts/build/build-vue.sh --env production --analyze
 ```
 
 #### 微信小程序构建
 **Windows:**
 ```powershell
-.\scripts\build-wx.ps1 -Mode check
-.\scripts\build-wx.ps1 -Mode build -Upload -Version "1.0.0" -Desc "更新内容"
+.\scripts\build\build-wx.ps1 -Mode check
+.\scripts\build\build-wx.ps1 -Mode build -Upload -Version "1.0.0" -Desc "更新内容"
 ```
 
 **Linux/macOS:**
 ```bash
-./scripts/build-wx.sh -m check
-./scripts/build-wx.sh -m build --upload --version "1.0.0" --desc "更新内容"
+./scripts/build/build-wx.sh -m check
+./scripts/build/build-wx.sh -m build --upload --version "1.0.0" --desc "更新内容"
 ```
 
 ## 📋 参数说明
@@ -195,7 +201,7 @@ scripts/build
 ### 日常开发
 ```bash
 # 快速构建，跳过测试
-./scripts/build-all.sh --skip-tests
+./scripts/build/build-all.sh --skip-tests
 
 # 仅构建后端
 ./scripts/build-backend.sh --skip-tests

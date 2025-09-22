@@ -59,7 +59,7 @@ echo "========================================"
 
 # Set variables
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 WX_PROJECT_PATH="$PROJECT_ROOT/litemall-wx"
 
 # Check WeChat Mini Program project directory
@@ -225,7 +225,7 @@ case "$MODE" in
             echo "Use --upload parameter to perform upload"
             
             # Perform basic check
-            "$SCRIPT_DIR/build-wx.sh" --mode check
+            "$SCRIPT_DIR/$(basename "$0")" --mode check
         fi
         ;;
     

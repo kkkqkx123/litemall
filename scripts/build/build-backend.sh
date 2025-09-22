@@ -52,7 +52,7 @@ echo "========================================"
 
 # 设置变量
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 # 检查Maven是否安装
 if ! command -v mvn &> /dev/null; then
