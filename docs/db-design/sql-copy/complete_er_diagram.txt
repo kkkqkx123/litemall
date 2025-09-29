@@ -1,0 +1,918 @@
+
+========================================
+数据库摘要报告
+========================================
+总表数: 34
+总列数: 355
+总外键数: 43
+总索引数: 25
+
+表列表:
+  - litemall_ad: 12列, 0外键, 广告标题
+  - litemall_address: 14列, 1外键, 收货人名称
+  - litemall_admin: 10列, 0外键, 管理员名称
+  - litemall_aftersale: 13列, 3外键, 售后编号
+  - litemall_brand: 8列, 0外键, 品牌商名称
+  - litemall_cart: 13列, 4外键, 用户表的用户ID
+  - litemall_category: 12列, 0外键, 类目名称
+  - litemall_collect: 7列, 2外键, 用户表的用户ID
+  - litemall_comment: 12列, 2外键, 如果type=0，则是商品评论；如果是type=1，则是专题评论。
+  - litemall_coupon: 18列, 0外键, 优惠券名称
+  - litemall_coupon_user: 10列, 3外键, 用户ID
+  - litemall_feedback: 12列, 1外键, 用户表的用户ID
+  - litemall_footprint: 6列, 2外键, 用户表的用户ID
+  - litemall_goods: 19列, 3外键, 商品编号
+  - litemall_goods_attribute: 7列, 1外键, 商品表的商品ID
+  - litemall_goods_product: 8列, 1外键, 商品表的商品ID
+  - litemall_goods_specification: 8列, 1外键, 商品表的商品ID
+  - litemall_groupon: 12列, 5外键, 关联的订单ID
+  - litemall_groupon_rules: 10列, 1外键, 商品表的商品ID
+  - litemall_issue: 6列, 0外键, 问题标题
+  - litemall_keyword: 9列, 0外键, 关键字
+  - litemall_log: 11列, 0外键, 管理员
+  - litemall_notice: 7列, 1外键, 通知标题
+  - litemall_notice_admin: 8列, 2外键, 通知ID
+  - litemall_order: 23列, 4外键, 用户表的用户ID
+  - litemall_order_goods: 13列, 4外键, 订单表的订单ID
+  - litemall_permission: 6列, 1外键, 角色ID
+  - litemall_region: 5列, 0外键, 行政区域父ID，例如区县的pid指向市，市的pid指向省，省的pid则是0
+  - litemall_role: 7列, 0外键, 角色名称
+  - litemall_search_history: 7列, 1外键, 用户表的用户ID
+  - litemall_storage: 9列, 0外键, 文件的唯一索引
+  - litemall_system: 6列, 0外键, 系统配置名
+  - litemall_topic: 11列, 0外键, 专题标题
+  - litemall_user: 16列, 0外键, 用户名称
+
+========================================
+表结构详情: litemall_ad
+表注释: 广告标题
+总列数: 12
+主键: id
+外键数: 0
+索引数: 1
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. name                 varchar(63)                    [NOT NULL, DEFAULT] - 广告标题
+ 3. link                 varchar(255)                   [NOT NULL, DEFAULT] - 所广告的商品页面或者活动页面链接地址
+ 4. url                  varchar(255)                   [NOT NULL] - 广告宣传图片
+ 5. position             tinyint(3)                     [DEFAULT] - 广告位置：1则是首页
+ 6. content              varchar(255)                   [DEFAULT] - 活动内容
+ 7. start_time           datetime                       [DEFAULT] - 广告开始时间
+ 8. end_time             datetime                       [DEFAULT] - 广告结束时间
+ 9. enabled              tinyint(1)                     [DEFAULT] - 是否启动
+10. add_time             datetime                       [DEFAULT] - 创建时间
+11. update_time          datetime                       [DEFAULT] - 更新时间
+12. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+索引信息:
+  enabled: (enabled)
+
+========================================
+表结构详情: litemall_address
+表注释: 收货人名称
+总列数: 14
+主键: id
+外键数: 1
+索引数: 1
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. name                 varchar(63)                    [NOT NULL, DEFAULT] - 收货人名称
+ 3. user_id              int(11)                        [FK, NOT NULL, DEFAULT] -> goods.id - 用户表的用户ID
+ 4. province             varchar(63)                    [NOT NULL] - 行政区域表的省ID
+ 5. city                 varchar(63)                    [NOT NULL] - 行政区域表的市ID
+ 6. county               varchar(63)                    [NOT NULL] - 行政区域表的区县ID
+ 7. address_detail       varchar(127)                   [NOT NULL, DEFAULT] - 详细收货地址
+ 8. area_code            char(6)                        [DEFAULT] - 地区编码
+ 9. postal_code          char(6)                        [DEFAULT] - 邮政编码
+10. tel                  varchar(20)                    [NOT NULL, DEFAULT] - 手机号码
+11. is_default           tinyint(1)                     [NOT NULL, DEFAULT] - 是否默认地址
+12. add_time             datetime                       [DEFAULT] - 创建时间
+13. update_time          datetime                       [DEFAULT] - 更新时间
+14. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  user_id -> goods.id
+
+索引信息:
+  user_id: (user_id)
+
+========================================
+表结构详情: litemall_admin
+表注释: 管理员名称
+总列数: 10
+主键: id
+外键数: 0
+索引数: 0
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. username             varchar(63)                    [NOT NULL, DEFAULT] - 管理员名称
+ 3. password             varchar(63)                    [NOT NULL, DEFAULT] - 管理员密码
+ 4. last_login_ip        varchar(63)                    [DEFAULT] - 最近一次登录IP地址
+ 5. last_login_time      datetime                       [DEFAULT] - 最近一次登录时间
+ 6. avatar               varchar(255)                   [DEFAULT] - 头像图片
+ 7. add_time             datetime                       [DEFAULT] - 创建时间
+ 8. update_time          datetime                       [DEFAULT] - 更新时间
+ 9. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+10. role_ids             varchar(127)                   [DEFAULT] - 角色列表
+
+========================================
+表结构详情: litemall_aftersale
+表注释: 售后编号
+总列数: 13
+主键: id
+外键数: 3
+索引数: 0
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. aftersale_sn         varchar(63)                    [FK, DEFAULT] -> goods.goods_sn - 售后编号
+ 3. order_id             int(11)                        [FK, NOT NULL] -> goods.id - 订单ID
+ 4. user_id              int(11)                        [FK, NOT NULL] -> goods.id - 用户ID
+ 5. type                 smallint(6)                    [DEFAULT] - 售后类型，0是未收货退款，1是已收货（无需退货）退款，2用户退货退款
+ 6. reason               varchar(31)                    [DEFAULT] - 退款原因
+ 7. pictures             varchar(1023)                  [DEFAULT] - 退款凭证图片链接数组
+ 8. comment              varchar(511)                   [DEFAULT] - 退款说明
+ 9. status               smallint(6)                    [DEFAULT] - 售后状态，0是可申请，1是用户已申请，2是管理员审核通过，3是管理员退款成功，4是管理员审核拒绝，5是用户已取消
+10. handle_time          datetime                       [DEFAULT] - 管理员操作时间
+11. add_time             datetime                       [DEFAULT] - 添加时间
+12. update_time          datetime                       [DEFAULT] - 更新时间
+13. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  aftersale_sn -> goods.goods_sn
+  order_id -> goods.id
+  user_id -> goods.id
+
+========================================
+表结构详情: litemall_brand
+表注释: 品牌商名称
+总列数: 8
+主键: id
+外键数: 0
+索引数: 0
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. name                 varchar(255)                   [NOT NULL, DEFAULT] - 品牌商名称
+ 3. desc                 varchar(255)                   [NOT NULL, DEFAULT] - 品牌商简介
+ 4. pic_url              varchar(255)                   [NOT NULL, DEFAULT] - 品牌商页的品牌商图片
+ 5. sort_order           tinyint(3)                     [DEFAULT]
+ 6. add_time             datetime                       [DEFAULT] - 创建时间
+ 7. update_time          datetime                       [DEFAULT] - 更新时间
+ 8. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+========================================
+表结构详情: litemall_cart
+表注释: 用户表的用户ID
+总列数: 13
+主键: id
+外键数: 4
+索引数: 0
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. user_id              int(11)                        [FK, DEFAULT] -> goods.id - 用户表的用户ID
+ 3. goods_id             int(11)                        [FK, DEFAULT] -> goods.id - 商品表的商品ID
+ 4. goods_sn             varchar(63)                    [FK, DEFAULT] -> goods.goods_sn - 商品编号
+ 5. goods_name           varchar(127)                   [DEFAULT] - 商品名称
+ 6. product_id           int(11)                        [FK, DEFAULT] -> goods.id - 商品货品表的货品ID
+ 7. number               smallint(5)                    [DEFAULT] - 商品货品的数量
+ 8. specifications       varchar(1023)                  [DEFAULT] - 商品规格值列表，采用JSON数组格式
+ 9. checked              tinyint(1)                     [DEFAULT] - 购物车中商品是否选择状态
+10. pic_url              varchar(255)                   [DEFAULT] - 商品图片或者商品货品图片
+11. add_time             datetime                       [DEFAULT] - 创建时间
+12. update_time          datetime                       [DEFAULT] - 更新时间
+13. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  user_id -> goods.id
+  goods_id -> goods.id
+  goods_sn -> goods.goods_sn
+  product_id -> goods.id
+
+========================================
+表结构详情: litemall_category
+表注释: 类目名称
+总列数: 12
+主键: id
+外键数: 0
+索引数: 1
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. name                 varchar(63)                    [NOT NULL, DEFAULT] - 类目名称
+ 3. keywords             varchar(1023)                  [NOT NULL, DEFAULT] - 类目关键字，以JSON数组格式
+ 4. desc                 varchar(255)                   [DEFAULT] - 类目广告语介绍
+ 5. pid                  int(11)                        [NOT NULL, DEFAULT] - 父类目ID
+ 6. icon_url             varchar(255)                   [DEFAULT] - 类目图标
+ 7. pic_url              varchar(255)                   [DEFAULT] - 类目图片
+ 8. level                varchar(255)                   [DEFAULT]
+ 9. sort_order           tinyint(3)                     [DEFAULT] - 排序
+10. add_time             datetime                       [DEFAULT] - 创建时间
+11. update_time          datetime                       [DEFAULT] - 更新时间
+12. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+索引信息:
+  parent_id: (pid)
+
+========================================
+表结构详情: litemall_collect
+表注释: 用户表的用户ID
+总列数: 7
+主键: id
+外键数: 2
+索引数: 2
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. user_id              int(11)                        [FK, NOT NULL, DEFAULT] -> goods.id - 用户表的用户ID
+ 3. value_id             int(11)                        [FK, NOT NULL, DEFAULT] -> goods.id - 如果type=0，则是商品ID；如果type=1，则是专题ID
+ 4. type                 tinyint(3)                     [NOT NULL, DEFAULT] - 收藏类型，如果type=0，则是商品ID；如果type=1，则是专题ID
+ 5. add_time             datetime                       [DEFAULT] - 创建时间
+ 6. update_time          datetime                       [DEFAULT] - 更新时间
+ 7. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  user_id -> goods.id
+  value_id -> goods.id
+
+索引信息:
+  user_id: (user_id)
+  goods_id: (value_id)
+
+========================================
+表结构详情: litemall_comment
+表注释: 如果type=0，则是商品评论；如果是type=1，则是专题评论。
+总列数: 12
+主键: id
+外键数: 2
+索引数: 1
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. value_id             int(11)                        [FK, NOT NULL, DEFAULT] -> goods.id - 如果type=0，则是商品评论；如果是type=1，则是专题评论。
+ 3. type                 tinyint(3)                     [NOT NULL, DEFAULT] - 评论类型，如果type=0，则是商品评论；如果是type=1，则是专题评论；
+ 4. content              varchar(1023)                  [DEFAULT] - 评论内容
+ 5. admin_content        varchar(511)                   [DEFAULT] - 管理员回复内容
+ 6. user_id              int(11)                        [FK, NOT NULL, DEFAULT] -> goods.id - 用户表的用户ID
+ 7. has_picture          tinyint(1)                     [DEFAULT] - 是否含有图片
+ 8. pic_urls             varchar(1023)                  [DEFAULT] - 图片地址列表，采用JSON数组格式
+ 9. star                 smallint(6)                    [DEFAULT] - 评分， 1-5
+10. add_time             datetime                       [DEFAULT] - 创建时间
+11. update_time          datetime                       [DEFAULT] - 更新时间
+12. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  value_id -> goods.id
+  user_id -> goods.id
+
+索引信息:
+  id_value: (value_id)
+
+========================================
+表结构详情: litemall_coupon
+表注释: 优惠券名称
+总列数: 18
+主键: id
+外键数: 0
+索引数: 1
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. name                 varchar(63)                    [NOT NULL] - 优惠券名称
+ 3. desc                 varchar(127)                   [DEFAULT] - 优惠券介绍，通常是显示优惠券使用限制文字
+ 4. tag                  varchar(63)                    [DEFAULT] - 优惠券标签，例如新人专用
+ 5. total                int(11)                        [NOT NULL, DEFAULT] - 优惠券数量，如果是0，则是无限量
+ 6. limit                smallint(6)                    [DEFAULT] - 用户领券限制数量，如果是0，则是不限制；默认是1，限领一张.
+ 7. type                 smallint(6)                    [DEFAULT] - 优惠券赠送类型，如果是0则通用券，用户领取；如果是1，则是注册赠券；如果是2，则是优惠券码兑换；
+ 8. status               smallint(6)                    [DEFAULT] - 优惠券状态，如果是0则是正常可用；如果是1则是过期; 如果是2则是下架。
+ 9. goods_type           smallint(6)                    [DEFAULT] - 商品限制类型，如果0则全商品，如果是1则是类目限制，如果是2则是商品限制。
+10. goods_value          varchar(1023)                  [DEFAULT] - 商品限制值，goods_type如果是0则空集合，如果是1则是类目集合，如果是2则是商品集合。
+11. code                 varchar(63)                    [DEFAULT] - 优惠券兑换码
+12. time_type            smallint(6)                    [DEFAULT] - 有效时间限制，如果是0，则基于领取时间的有效天数days；如果是1，则start_time和end_time是优惠券有效期；
+13. days                 smallint(6)                    [DEFAULT] - 基于领取时间的有效天数days。
+14. start_time           datetime                       [DEFAULT] - 使用券开始时间
+15. end_time             datetime                       [DEFAULT] - 使用券截至时间
+16. add_time             datetime                       [DEFAULT] - 创建时间
+17. update_time          datetime                       [DEFAULT] - 更新时间
+18. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+索引信息:
+  code: (code)
+
+========================================
+表结构详情: litemall_coupon_user
+表注释: 用户ID
+总列数: 10
+主键: id
+外键数: 3
+索引数: 0
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. user_id              int(11)                        [FK, NOT NULL] -> goods.id - 用户ID
+ 3. coupon_id            int(11)                        [FK, NOT NULL] -> goods.id - 优惠券ID
+ 4. used_time            datetime                       [DEFAULT] - 使用时间
+ 5. start_time           datetime                       [DEFAULT] - 有效期开始时间
+ 6. end_time             datetime                       [DEFAULT] - 有效期截至时间
+ 7. order_id             int(11)                        [FK, DEFAULT] -> goods.id - 订单ID
+ 8. add_time             datetime                       [DEFAULT] - 创建时间
+ 9. update_time          datetime                       [DEFAULT] - 更新时间
+10. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  user_id -> goods.id
+  coupon_id -> goods.id
+  order_id -> goods.id
+
+========================================
+表结构详情: litemall_feedback
+表注释: 用户表的用户ID
+总列数: 12
+主键: id
+外键数: 1
+索引数: 1
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. user_id              int(11)                        [FK, NOT NULL, DEFAULT] -> goods.id - 用户表的用户ID
+ 3. username             varchar(63)                    [NOT NULL, DEFAULT] - 用户名称
+ 4. mobile               varchar(20)                    [NOT NULL, DEFAULT] - 手机号
+ 5. feed_type            varchar(63)                    [NOT NULL, DEFAULT] - 反馈类型
+ 6. content              varchar(1023)                  [NOT NULL] - 反馈内容
+ 7. status               int(3)                         [NOT NULL, DEFAULT] - 状态
+ 8. has_picture          tinyint(1)                     [DEFAULT] - 是否含有图片
+ 9. pic_urls             varchar(1023)                  [DEFAULT] - 图片地址列表，采用JSON数组格式
+10. add_time             datetime                       [DEFAULT] - 创建时间
+11. update_time          datetime                       [DEFAULT] - 更新时间
+12. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  user_id -> goods.id
+
+索引信息:
+  id_value: (status)
+
+========================================
+表结构详情: litemall_footprint
+表注释: 用户表的用户ID
+总列数: 6
+主键: id
+外键数: 2
+索引数: 0
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. user_id              int(11)                        [FK, NOT NULL, DEFAULT] -> goods.id - 用户表的用户ID
+ 3. goods_id             int(11)                        [FK, NOT NULL, DEFAULT] -> goods.id - 浏览商品ID
+ 4. add_time             datetime                       [DEFAULT] - 创建时间
+ 5. update_time          datetime                       [DEFAULT] - 更新时间
+ 6. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  user_id -> goods.id
+  goods_id -> goods.id
+
+========================================
+表结构详情: litemall_goods
+表注释: 商品编号
+总列数: 19
+主键: id
+外键数: 3
+索引数: 4
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. goods_sn             varchar(63)                    [FK, NOT NULL, DEFAULT] -> goods.goods_sn - 商品编号
+ 3. name                 varchar(127)                   [NOT NULL, DEFAULT] - 商品名称
+ 4. category_id          int(11)                        [FK, DEFAULT] -> goods.id - 商品所属类目ID
+ 5. brand_id             int(11)                        [FK, DEFAULT] -> goods.id
+ 6. gallery              varchar(1023)                  [DEFAULT] - 商品宣传图片列表，采用JSON数组格式
+ 7. keywords             varchar(255)                   [DEFAULT] - 商品关键字，采用逗号间隔
+ 8. brief                varchar(255)                   [DEFAULT] - 商品简介
+ 9. is_on_sale           tinyint(1)                     [DEFAULT] - 是否上架
+10. sort_order           smallint(4)                    [DEFAULT]
+11. pic_url              varchar(255)                   [DEFAULT] - 商品页面商品图片
+12. share_url            varchar(255)                   [DEFAULT] - 商品分享海报
+13. is_new               tinyint(1)                     [DEFAULT] - 是否新品首发，如果设置则可以在新品首发页面展示
+14. is_hot               tinyint(1)                     [DEFAULT] - 是否人气推荐，如果设置则可以在人气推荐页面展示
+15. unit                 varchar(31)                    [DEFAULT] - 商品单位，例如件、盒
+16. detail               text                           - 商品详细介绍，是富文本格式
+17. add_time             datetime                       [DEFAULT] - 创建时间
+18. update_time          datetime                       [DEFAULT] - 更新时间
+19. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  goods_sn -> goods.goods_sn
+  category_id -> goods.id
+  brand_id -> goods.id
+
+索引信息:
+  goods_sn: (goods_sn)
+  cat_id: (category_id)
+  brand_id: (brand_id)
+  sort_order: (sort_order)
+
+========================================
+表结构详情: litemall_goods_attribute
+表注释: 商品表的商品ID
+总列数: 7
+主键: id
+外键数: 1
+索引数: 1
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. goods_id             int(11)                        [FK, NOT NULL, DEFAULT] -> goods.id - 商品表的商品ID
+ 3. attribute            varchar(255)                   [NOT NULL] - 商品参数名称
+ 4. value                varchar(255)                   [NOT NULL] - 商品参数值
+ 5. add_time             datetime                       [DEFAULT] - 创建时间
+ 6. update_time          datetime                       [DEFAULT] - 更新时间
+ 7. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  goods_id -> goods.id
+
+索引信息:
+  goods_id: (goods_id)
+
+========================================
+表结构详情: litemall_goods_product
+表注释: 商品表的商品ID
+总列数: 8
+主键: id
+外键数: 1
+索引数: 1
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. goods_id             int(11)                        [FK, NOT NULL, DEFAULT] -> goods.id - 商品表的商品ID
+ 3. specifications       varchar(1023)                  [NOT NULL] - 商品规格值列表，采用JSON数组格式
+ 4. number               int(11)                        [NOT NULL, DEFAULT] - 商品货品数量
+ 5. url                  varchar(125)                   [DEFAULT] - 商品货品图片
+ 6. add_time             datetime                       [DEFAULT] - 创建时间
+ 7. update_time          datetime                       [DEFAULT] - 更新时间
+ 8. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  goods_id -> goods.id
+
+索引信息:
+  goods_id: (goods_id)
+
+========================================
+表结构详情: litemall_goods_specification
+表注释: 商品表的商品ID
+总列数: 8
+主键: id
+外键数: 1
+索引数: 1
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. goods_id             int(11)                        [FK, NOT NULL, DEFAULT] -> goods.id - 商品表的商品ID
+ 3. specification        varchar(255)                   [NOT NULL, DEFAULT] - 商品规格名称
+ 4. value                varchar(255)                   [NOT NULL, DEFAULT] - 商品规格值
+ 5. pic_url              varchar(255)                   [NOT NULL, DEFAULT] - 商品规格图片
+ 6. add_time             datetime                       [DEFAULT] - 创建时间
+ 7. update_time          datetime                       [DEFAULT] - 更新时间
+ 8. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  goods_id -> goods.id
+
+索引信息:
+  goods_id: (goods_id)
+
+========================================
+表结构详情: litemall_groupon
+表注释: 关联的订单ID
+总列数: 12
+主键: id
+外键数: 5
+索引数: 0
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. order_id             int(11)                        [FK, NOT NULL] -> goods.id - 关联的订单ID
+ 3. groupon_id           int(11)                        [FK, DEFAULT] -> goods.id - 如果是开团用户，则groupon_id是0；如果是参团用户，则groupon_id是团购活动ID
+ 4. rules_id             int(11)                        [FK, NOT NULL] -> goods.id - 团购规则ID，关联litemall_groupon_rules表ID字段
+ 5. user_id              int(11)                        [FK, NOT NULL] -> goods.id - 用户ID
+ 6. share_url            varchar(255)                   [DEFAULT] - 团购分享图片地址
+ 7. creator_user_id      int(11)                        [FK, NOT NULL] -> goods.id - 开团用户ID
+ 8. creator_user_time    datetime                       [DEFAULT] - 开团时间
+ 9. status               smallint(6)                    [DEFAULT] - 团购活动状态，开团未支付则0，开团中则1，开团失败则2
+10. add_time             datetime                       [NOT NULL] - 创建时间
+11. update_time          datetime                       [DEFAULT] - 更新时间
+12. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  order_id -> goods.id
+  groupon_id -> goods.id
+  rules_id -> goods.id
+  user_id -> goods.id
+  creator_user_id -> goods.id
+
+========================================
+表结构详情: litemall_groupon_rules
+表注释: 商品表的商品ID
+总列数: 10
+主键: id
+外键数: 1
+索引数: 1
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. goods_id             int(11)                        [FK, NOT NULL] -> goods.id - 商品表的商品ID
+ 3. goods_name           varchar(127)                   [NOT NULL] - 商品名称
+ 4. pic_url              varchar(255)                   [DEFAULT] - 商品图片或者商品货品图片
+ 5. discount_member      int(11)                        [NOT NULL] - 达到优惠条件的人数
+ 6. expire_time          datetime                       [DEFAULT] - 团购过期时间
+ 7. status               smallint(6)                    [DEFAULT] - 团购规则状态，正常上线则0，到期自动下线则1，管理手动下线则2
+ 8. add_time             datetime                       [NOT NULL] - 创建时间
+ 9. update_time          datetime                       [DEFAULT] - 更新时间
+10. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  goods_id -> goods.id
+
+索引信息:
+  goods_id: (goods_id)
+
+========================================
+表结构详情: litemall_issue
+表注释: 问题标题
+总列数: 6
+主键: id
+外键数: 0
+索引数: 0
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. question             varchar(255)                   [DEFAULT] - 问题标题
+ 3. answer               varchar(255)                   [DEFAULT] - 问题答案
+ 4. add_time             datetime                       [DEFAULT] - 创建时间
+ 5. update_time          datetime                       [DEFAULT] - 更新时间
+ 6. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+========================================
+表结构详情: litemall_keyword
+表注释: 关键字
+总列数: 9
+主键: id
+外键数: 0
+索引数: 0
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. keyword              varchar(127)                   [NOT NULL, DEFAULT] - 关键字
+ 3. url                  varchar(255)                   [NOT NULL, DEFAULT] - 关键字的跳转链接
+ 4. is_hot               tinyint(1)                     [NOT NULL, DEFAULT] - 是否是热门关键字
+ 5. is_default           tinyint(1)                     [NOT NULL, DEFAULT] - 是否是默认关键字
+ 6. sort_order           int(11)                        [NOT NULL, DEFAULT] - 排序
+ 7. add_time             datetime                       [DEFAULT] - 创建时间
+ 8. update_time          datetime                       [DEFAULT] - 更新时间
+ 9. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+========================================
+表结构详情: litemall_log
+表注释: 管理员
+总列数: 11
+主键: id
+外键数: 0
+索引数: 0
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. admin                varchar(45)                    [DEFAULT] - 管理员
+ 3. ip                   varchar(45)                    [DEFAULT] - 管理员地址
+ 4. type                 int(11)                        [DEFAULT] - 操作分类
+ 5. action               varchar(45)                    [DEFAULT] - 操作动作
+ 6. status               tinyint(1)                     [DEFAULT] - 操作状态
+ 7. result               varchar(127)                   [DEFAULT] - 操作结果，或者成功消息，或者失败消息
+ 8. comment              varchar(255)                   [DEFAULT] - 补充信息
+ 9. add_time             datetime                       [DEFAULT] - 创建时间
+10. update_time          datetime                       [DEFAULT] - 更新时间
+11. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+========================================
+表结构详情: litemall_notice
+表注释: 通知标题
+总列数: 7
+主键: id
+外键数: 1
+索引数: 0
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. title                varchar(63)                    [DEFAULT] - 通知标题
+ 3. content              varchar(511)                   [DEFAULT] - 通知内容
+ 4. admin_id             int(11)                        [FK, DEFAULT] -> goods.id - 创建通知的管理员ID，如果是系统内置通知则是0.
+ 5. add_time             datetime                       [DEFAULT] - 创建时间
+ 6. update_time          datetime                       [DEFAULT] - 更新时间
+ 7. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  admin_id -> goods.id
+
+========================================
+表结构详情: litemall_notice_admin
+表注释: 通知ID
+总列数: 8
+主键: id
+外键数: 2
+索引数: 0
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. notice_id            int(11)                        [FK, DEFAULT] -> goods.id - 通知ID
+ 3. notice_title         varchar(63)                    [DEFAULT] - 通知标题
+ 4. admin_id             int(11)                        [FK, DEFAULT] -> goods.id - 接收通知的管理员ID
+ 5. read_time            datetime                       [DEFAULT] - 阅读时间，如果是NULL则是未读状态
+ 6. add_time             datetime                       [DEFAULT] - 创建时间
+ 7. update_time          datetime                       [DEFAULT] - 更新时间
+ 8. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  notice_id -> goods.id
+  admin_id -> goods.id
+
+========================================
+表结构详情: litemall_order
+表注释: 用户表的用户ID
+总列数: 23
+主键: id
+外键数: 4
+索引数: 0
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. user_id              int(11)                        [FK, NOT NULL] -> goods.id - 用户表的用户ID
+ 3. order_sn             varchar(63)                    [FK, NOT NULL] -> goods.goods_sn - 订单编号
+ 4. order_status         smallint(6)                    [NOT NULL] - 订单状态
+ 5. aftersale_status     smallint(6)                    [DEFAULT] - 售后状态，0是可申请，1是用户已申请，2是管理员审核通过，3是管理员退款成功，4是管理员审核拒绝，5是用户已取消
+ 6. consignee            varchar(63)                    [NOT NULL] - 收货人名称
+ 7. mobile               varchar(63)                    [NOT NULL] - 收货人手机号
+ 8. address              varchar(127)                   [NOT NULL] - 收货具体地址
+ 9. message              varchar(512)                   [NOT NULL, DEFAULT] - 用户订单留言
+10. pay_id               varchar(63)                    [FK, DEFAULT] -> goods.id - 微信付款编号
+11. pay_time             datetime                       [DEFAULT] - 微信付款时间
+12. ship_sn              varchar(63)                    [FK, DEFAULT] -> goods.goods_sn - 发货编号
+13. ship_channel         varchar(63)                    [DEFAULT] - 发货快递公司
+14. ship_time            datetime                       [DEFAULT] - 发货开始时间
+15. refund_type          varchar(63)                    [DEFAULT] - 退款方式
+16. refund_content       varchar(127)                   [DEFAULT] - 退款备注
+17. refund_time          datetime                       [DEFAULT] - 退款时间
+18. confirm_time         datetime                       [DEFAULT] - 用户确认收货时间
+19. comments             smallint(6)                    [DEFAULT] - 待评价订单商品数量
+20. end_time             datetime                       [DEFAULT] - 订单关闭时间
+21. add_time             datetime                       [DEFAULT] - 创建时间
+22. update_time          datetime                       [DEFAULT] - 更新时间
+23. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  user_id -> goods.id
+  order_sn -> goods.goods_sn
+  pay_id -> goods.id
+  ship_sn -> goods.goods_sn
+
+========================================
+表结构详情: litemall_order_goods
+表注释: 订单表的订单ID
+总列数: 13
+主键: id
+外键数: 4
+索引数: 2
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. order_id             int(11)                        [FK, NOT NULL, DEFAULT] -> goods.id - 订单表的订单ID
+ 3. goods_id             int(11)                        [FK, NOT NULL, DEFAULT] -> goods.id - 商品表的商品ID
+ 4. goods_name           varchar(127)                   [NOT NULL, DEFAULT] - 商品名称
+ 5. goods_sn             varchar(63)                    [FK, NOT NULL, DEFAULT] -> goods.goods_sn - 商品编号
+ 6. product_id           int(11)                        [FK, NOT NULL, DEFAULT] -> goods.id - 商品货品表的货品ID
+ 7. number               smallint(5)                    [NOT NULL, DEFAULT] - 商品货品的购买数量
+ 8. specifications       varchar(1023)                  [NOT NULL] - 商品货品的规格列表
+ 9. pic_url              varchar(255)                   [NOT NULL, DEFAULT] - 商品货品图片或者商品图片
+10. comment              int(11)                        [DEFAULT] - 订单商品评论，如果是-1，则超期不能评价；如果是0，则可以评价；如果其他值，则是comment表里面的评论ID。
+11. add_time             datetime                       [DEFAULT] - 创建时间
+12. update_time          datetime                       [DEFAULT] - 更新时间
+13. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  order_id -> goods.id
+  goods_id -> goods.id
+  goods_sn -> goods.goods_sn
+  product_id -> goods.id
+
+索引信息:
+  order_id: (order_id)
+  goods_id: (goods_id)
+
+========================================
+表结构详情: litemall_permission
+表注释: 角色ID
+总列数: 6
+主键: id
+外键数: 1
+索引数: 0
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. role_id              int(11)                        [FK, DEFAULT] -> goods.id - 角色ID
+ 3. permission           varchar(63)                    [DEFAULT] - 权限
+ 4. add_time             datetime                       [DEFAULT] - 创建时间
+ 5. update_time          datetime                       [DEFAULT] - 更新时间
+ 6. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  role_id -> goods.id
+
+========================================
+表结构详情: litemall_region
+表注释: 行政区域父ID，例如区县的pid指向市，市的pid指向省，省的pid则是0
+总列数: 5
+主键: id
+外键数: 0
+索引数: 3
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. pid                  int(11)                        [NOT NULL, DEFAULT] - 行政区域父ID，例如区县的pid指向市，市的pid指向省，省的pid则是0
+ 3. name                 varchar(120)                   [NOT NULL, DEFAULT] - 行政区域名称
+ 4. type                 tinyint(3)                     [NOT NULL, DEFAULT] - 行政区域类型，如如1则是省， 如果是2则是市，如果是3则是区县
+ 5. code                 int(11)                        [NOT NULL, DEFAULT] - 行政区域编码
+
+索引信息:
+  parent_id: (pid)
+  region_type: (type)
+  agency_id: (code)
+
+========================================
+表结构详情: litemall_role
+表注释: 角色名称
+总列数: 7
+主键: id
+外键数: 0
+索引数: 1
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. name                 varchar(63)                    [NOT NULL] - 角色名称
+ 3. desc                 varchar(1023)                  [DEFAULT] - 角色描述
+ 4. enabled              tinyint(1)                     [DEFAULT] - 是否启用
+ 5. add_time             datetime                       [DEFAULT] - 创建时间
+ 6. update_time          datetime                       [DEFAULT] - 更新时间
+ 7. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+索引信息:
+  name_UNIQUE: (name)
+
+========================================
+表结构详情: litemall_search_history
+表注释: 用户表的用户ID
+总列数: 7
+主键: id
+外键数: 1
+索引数: 0
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. user_id              int(11)                        [FK, NOT NULL] -> goods.id - 用户表的用户ID
+ 3. keyword              varchar(63)                    [NOT NULL] - 搜索关键字
+ 4. from                 varchar(63)                    [NOT NULL, DEFAULT] - 搜索来源，如pc、wx、app
+ 5. add_time             datetime                       [DEFAULT] - 创建时间
+ 6. update_time          datetime                       [DEFAULT] - 更新时间
+ 7. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+外键关系:
+  user_id -> goods.id
+
+========================================
+表结构详情: litemall_storage
+表注释: 文件的唯一索引
+总列数: 9
+主键: id
+外键数: 0
+索引数: 1
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. key                  varchar(63)                    [NOT NULL] - 文件的唯一索引
+ 3. name                 varchar(255)                   [NOT NULL] - 文件名
+ 4. type                 varchar(20)                    [NOT NULL] - 文件类型
+ 5. size                 int(11)                        [NOT NULL] - 文件大小
+ 6. url                  varchar(255)                   [DEFAULT] - 文件访问链接
+ 7. add_time             datetime                       [DEFAULT] - 创建时间
+ 8. update_time          datetime                       [DEFAULT] - 更新时间
+ 9. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+索引信息:
+  key: (key)
+
+========================================
+表结构详情: litemall_system
+表注释: 系统配置名
+总列数: 6
+主键: id
+外键数: 0
+索引数: 0
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. key_name             varchar(255)                   [NOT NULL] - 系统配置名
+ 3. key_value            varchar(255)                   [NOT NULL] - 系统配置值
+ 4. add_time             datetime                       [DEFAULT] - 创建时间
+ 5. update_time          datetime                       [DEFAULT] - 更新时间
+ 6. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+========================================
+表结构详情: litemall_topic
+表注释: 专题标题
+总列数: 11
+主键: id
+外键数: 0
+索引数: 1
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. title                varchar(255)                   [NOT NULL, DEFAULT] - 专题标题
+ 3. subtitle             varchar(255)                   [DEFAULT] - 专题子标题
+ 4. content              text                           - 专题内容，富文本格式
+ 5. read_count           varchar(255)                   [DEFAULT] - 专题阅读量
+ 6. pic_url              varchar(255)                   [DEFAULT] - 专题图片
+ 7. sort_order           int(11)                        [DEFAULT] - 排序
+ 8. goods                varchar(1023)                  [DEFAULT] - 专题相关商品，采用JSON数组格式
+ 9. add_time             datetime                       [DEFAULT] - 创建时间
+10. update_time          datetime                       [DEFAULT] - 更新时间
+11. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+索引信息:
+  topic_id: (id)
+
+========================================
+表结构详情: litemall_user
+表注释: 用户名称
+总列数: 16
+主键: id
+外键数: 0
+索引数: 1
+========================================
+
+列信息:
+ 1. id                   int(11)                        [PK, NOT NULL]
+ 2. username             varchar(63)                    [NOT NULL] - 用户名称
+ 3. password             varchar(63)                    [NOT NULL, DEFAULT] - 用户密码
+ 4. gender               tinyint(3)                     [NOT NULL, DEFAULT] - 性别：0 未知， 1男， 1 女
+ 5. birthday             date                           [DEFAULT] - 生日
+ 6. last_login_time      datetime                       [DEFAULT] - 最近一次登录时间
+ 7. last_login_ip        varchar(63)                    [NOT NULL, DEFAULT] - 最近一次登录IP地址
+ 8. user_level           tinyint(3)                     [DEFAULT] - 0 普通用户，1 VIP用户，2 高级VIP用户
+ 9. nickname             varchar(63)                    [NOT NULL, DEFAULT] - 用户昵称或网络名称
+10. mobile               varchar(20)                    [NOT NULL, DEFAULT] - 用户手机号码
+11. avatar               varchar(255)                   [NOT NULL, DEFAULT] - 用户头像图片
+12. weixin_openid        varchar(63)                    [NOT NULL, DEFAULT] - 微信登录openid
+13. session_key          varchar(100)                   [NOT NULL, DEFAULT] - 微信登录会话KEY
+14. add_time             datetime                       [DEFAULT] - 创建时间
+15. update_time          datetime                       [DEFAULT] - 更新时间
+16. deleted              tinyint(1)                     [DEFAULT] - 逻辑删除
+
+索引信息:
+  user_name: (username)
+

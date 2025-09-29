@@ -1,0 +1,478 @@
+erDiagram
+
+    litemall_ad {
+        int id [PK]
+        varchar name
+        varchar link
+        varchar url
+        tinyint position
+        varchar content
+        datetime start_time
+        datetime end_time
+        tinyint enabled
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_address {
+        int id [PK]
+        varchar name
+        int user_id [FK]
+        varchar province
+        varchar city
+        varchar county
+        varchar address_detail
+        char area_code
+        char postal_code
+        varchar tel
+        tinyint is_default
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_admin {
+        int id [PK]
+        varchar username
+        varchar password
+        varchar last_login_ip
+        datetime last_login_time
+        varchar avatar
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+        varchar role_ids
+    }
+
+    litemall_aftersale {
+        int id [PK]
+        varchar aftersale_sn [FK]
+        int order_id [FK]
+        int user_id [FK]
+        smallint type
+        varchar reason
+        varchar pictures
+        varchar comment
+        smallint status
+        datetime handle_time
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_brand {
+        int id [PK]
+        varchar name
+        varchar desc
+        varchar pic_url
+        tinyint sort_order
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_cart {
+        int id [PK]
+        int user_id [FK]
+        int goods_id [FK]
+        varchar goods_sn [FK]
+        varchar goods_name
+        int product_id [FK]
+        smallint number
+        varchar specifications
+        tinyint checked
+        varchar pic_url
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_category {
+        int id [PK]
+        varchar name
+        varchar keywords
+        varchar desc
+        int pid
+        varchar icon_url
+        varchar pic_url
+        varchar level
+        tinyint sort_order
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_collect {
+        int id [PK]
+        int user_id [FK]
+        int value_id [FK]
+        tinyint type
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_comment {
+        int id [PK]
+        int value_id [FK]
+        tinyint type
+        varchar content
+        varchar admin_content
+        int user_id [FK]
+        tinyint has_picture
+        varchar pic_urls
+        smallint star
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_coupon {
+        int id [PK]
+        varchar name
+        varchar desc
+        varchar tag
+        int total
+        smallint limit
+        smallint type
+        smallint status
+        smallint goods_type
+        varchar goods_value
+        varchar code
+        smallint time_type
+        smallint days
+        datetime start_time
+        datetime end_time
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_coupon_user {
+        int id [PK]
+        int user_id [FK]
+        int coupon_id [FK]
+        datetime used_time
+        datetime start_time
+        datetime end_time
+        int order_id [FK]
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_feedback {
+        int id [PK]
+        int user_id [FK]
+        varchar username
+        varchar mobile
+        varchar feed_type
+        varchar content
+        int status
+        tinyint has_picture
+        varchar pic_urls
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_footprint {
+        int id [PK]
+        int user_id [FK]
+        int goods_id [FK]
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_goods {
+        int id [PK]
+        varchar goods_sn [FK]
+        varchar name
+        int category_id [FK]
+        int brand_id [FK]
+        varchar gallery
+        varchar keywords
+        varchar brief
+        tinyint is_on_sale
+        smallint sort_order
+        varchar pic_url
+        varchar share_url
+        tinyint is_new
+        tinyint is_hot
+        varchar unit
+        text detail
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_goods_attribute {
+        int id [PK]
+        int goods_id [FK]
+        varchar attribute
+        varchar value
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_goods_product {
+        int id [PK]
+        int goods_id [FK]
+        varchar specifications
+        int number
+        varchar url
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_goods_specification {
+        int id [PK]
+        int goods_id [FK]
+        varchar specification
+        varchar value
+        varchar pic_url
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_groupon {
+        int id [PK]
+        int order_id [FK]
+        int groupon_id [FK]
+        int rules_id [FK]
+        int user_id [FK]
+        varchar share_url
+        int creator_user_id [FK]
+        datetime creator_user_time
+        smallint status
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_groupon_rules {
+        int id [PK]
+        int goods_id [FK]
+        varchar goods_name
+        varchar pic_url
+        int discount_member
+        datetime expire_time
+        smallint status
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_issue {
+        int id [PK]
+        varchar question
+        varchar answer
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_keyword {
+        int id [PK]
+        varchar keyword
+        varchar url
+        tinyint is_hot
+        tinyint is_default
+        int sort_order
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_log {
+        int id [PK]
+        varchar admin
+        varchar ip
+        int type
+        varchar action
+        tinyint status
+        varchar result
+        varchar comment
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_notice {
+        int id [PK]
+        varchar title
+        varchar content
+        int admin_id [FK]
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_notice_admin {
+        int id [PK]
+        int notice_id [FK]
+        varchar notice_title
+        int admin_id [FK]
+        datetime read_time
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_order {
+        int id [PK]
+        int user_id [FK]
+        varchar order_sn [FK]
+        smallint order_status
+        smallint aftersale_status
+        varchar consignee
+        varchar mobile
+        varchar address
+        varchar message
+        varchar pay_id [FK]
+        datetime pay_time
+        varchar ship_sn [FK]
+        varchar ship_channel
+        datetime ship_time
+        varchar refund_type
+        varchar refund_content
+        datetime refund_time
+        datetime confirm_time
+        smallint comments
+        datetime end_time
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_order_goods {
+        int id [PK]
+        int order_id [FK]
+        int goods_id [FK]
+        varchar goods_name
+        varchar goods_sn [FK]
+        int product_id [FK]
+        smallint number
+        varchar specifications
+        varchar pic_url
+        int comment
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_permission {
+        int id [PK]
+        int role_id [FK]
+        varchar permission
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_region {
+        int id [PK]
+        int pid
+        varchar name
+        tinyint type
+        int code
+    }
+
+    litemall_role {
+        int id [PK]
+        varchar name
+        varchar desc
+        tinyint enabled
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_search_history {
+        int id [PK]
+        int user_id [FK]
+        varchar keyword
+        varchar from
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_storage {
+        int id [PK]
+        varchar key
+        varchar name
+        varchar type
+        int size
+        varchar url
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_system {
+        int id [PK]
+        varchar key_name
+        varchar key_value
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_topic {
+        int id [PK]
+        varchar title
+        varchar subtitle
+        text content
+        varchar read_count
+        varchar pic_url
+        int sort_order
+        varchar goods
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+
+    litemall_user {
+        int id [PK]
+        varchar username
+        varchar password
+        tinyint gender
+        date birthday
+        datetime last_login_time
+        varchar last_login_ip
+        tinyint user_level
+        varchar nickname
+        varchar mobile
+        varchar avatar
+        varchar weixin_openid
+        varchar session_key
+        datetime add_time
+        datetime update_time
+        tinyint deleted
+    }
+    litemall_address ||--o{ goods : "user_id -> id"
+    litemall_aftersale ||--o{ goods : "aftersale_sn -> goods_sn"
+    litemall_cart ||--o{ goods : "user_id -> id"
+    litemall_collect ||--o{ goods : "user_id -> id"
+    litemall_comment ||--o{ goods : "value_id -> id"
+    litemall_coupon_user ||--o{ goods : "user_id -> id"
+    litemall_feedback ||--o{ goods : "user_id -> id"
+    litemall_footprint ||--o{ goods : "user_id -> id"
+    litemall_goods ||--o{ goods : "goods_sn -> goods_sn"
+    litemall_goods_attribute ||--o{ goods : "goods_id -> id"
+    litemall_goods_product ||--o{ goods : "goods_id -> id"
+    litemall_goods_specification ||--o{ goods : "goods_id -> id"
+    litemall_groupon ||--o{ goods : "order_id -> id"
+    litemall_groupon_rules ||--o{ goods : "goods_id -> id"
+    litemall_notice ||--o{ goods : "admin_id -> id"
+    litemall_notice_admin ||--o{ goods : "notice_id -> id"
+    litemall_order ||--o{ goods : "user_id -> id"
+    litemall_order_goods ||--o{ goods : "order_id -> id"
+    litemall_permission ||--o{ goods : "role_id -> id"
+    litemall_search_history ||--o{ goods : "user_id -> id"

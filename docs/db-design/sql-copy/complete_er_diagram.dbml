@@ -1,0 +1,534 @@
+
+Table litemall_ad {
+  id integer [pk, not null]
+  name varchar [not null] [note: '广告标题']
+  link varchar [not null] [note: '所广告的商品页面或者活动页面链接地址']
+  url varchar [not null] [note: '广告宣传图片']
+  position boolean [note: '广告位置：1则是首页']
+  content varchar [note: '活动内容']
+  start_time datetime [note: '广告开始时间']
+  end_time datetime [note: '广告结束时间']
+  enabled boolean [note: '是否启动']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '广告标题'
+}
+
+Table litemall_address {
+  id integer [pk, not null]
+  name varchar [not null] [note: '收货人名称']
+  user_id integer [ref, not null] [note: '用户表的用户ID']
+  province varchar [not null] [note: '行政区域表的省ID']
+  city varchar [not null] [note: '行政区域表的市ID']
+  county varchar [not null] [note: '行政区域表的区县ID']
+  address_detail varchar [not null] [note: '详细收货地址']
+  area_code char [note: '地区编码']
+  postal_code char [note: '邮政编码']
+  tel varchar [not null] [note: '手机号码']
+  is_default boolean [not null] [note: '是否默认地址']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '收货人名称'
+}
+
+Table litemall_admin {
+  id integer [pk, not null]
+  username varchar [not null] [note: '管理员名称']
+  password varchar [not null] [note: '管理员密码']
+  last_login_ip varchar [note: '最近一次登录IP地址']
+  last_login_time datetime [note: '最近一次登录时间']
+  avatar varchar [note: '头像图片']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  role_ids varchar [note: '角色列表']
+  Note: '管理员名称'
+}
+
+Table litemall_aftersale {
+  id integer [pk, not null]
+  aftersale_sn varchar [ref] [note: '售后编号']
+  order_id integer [ref, not null] [note: '订单ID']
+  user_id integer [ref, not null] [note: '用户ID']
+  type smallint [note: '售后类型，0是未收货退款，1是已收货（无需退货）退款，2用户退货退款']
+  reason varchar [note: '退款原因']
+  pictures varchar [note: '退款凭证图片链接数组']
+  comment varchar [note: '退款说明']
+  status smallint [note: '售后状态，0是可申请，1是用户已申请，2是管理员审核通过，3是管理员退款成功，4是管理员审核拒绝，5是用户已取消']
+  handle_time datetime [note: '管理员操作时间']
+  add_time datetime [note: '添加时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '售后编号'
+}
+
+Table litemall_brand {
+  id integer [pk, not null]
+  name varchar [not null] [note: '品牌商名称']
+  desc varchar [not null] [note: '品牌商简介']
+  pic_url varchar [not null] [note: '品牌商页的品牌商图片']
+  sort_order boolean
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '品牌商名称'
+}
+
+Table litemall_cart {
+  id integer [pk, not null]
+  user_id integer [ref] [note: '用户表的用户ID']
+  goods_id integer [ref] [note: '商品表的商品ID']
+  goods_sn varchar [ref] [note: '商品编号']
+  goods_name varchar [note: '商品名称']
+  product_id integer [ref] [note: '商品货品表的货品ID']
+  number smallint [note: '商品货品的数量']
+  specifications varchar [note: '商品规格值列表，采用JSON数组格式']
+  checked boolean [note: '购物车中商品是否选择状态']
+  pic_url varchar [note: '商品图片或者商品货品图片']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '用户表的用户ID'
+}
+
+Table litemall_category {
+  id integer [pk, not null]
+  name varchar [not null] [note: '类目名称']
+  keywords varchar [not null] [note: '类目关键字，以JSON数组格式']
+  desc varchar [note: '类目广告语介绍']
+  pid integer [not null] [note: '父类目ID']
+  icon_url varchar [note: '类目图标']
+  pic_url varchar [note: '类目图片']
+  level varchar
+  sort_order boolean [note: '排序']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '类目名称'
+}
+
+Table litemall_collect {
+  id integer [pk, not null]
+  user_id integer [ref, not null] [note: '用户表的用户ID']
+  value_id integer [ref, not null] [note: '如果type=0，则是商品ID；如果type=1，则是专题ID']
+  type boolean [not null] [note: '收藏类型，如果type=0，则是商品ID；如果type=1，则是专题ID']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '用户表的用户ID'
+}
+
+Table litemall_comment {
+  id integer [pk, not null]
+  value_id integer [ref, not null] [note: '如果type=0，则是商品评论；如果是type=1，则是专题评论。']
+  type boolean [not null] [note: '评论类型，如果type=0，则是商品评论；如果是type=1，则是专题评论；']
+  content varchar [note: '评论内容']
+  admin_content varchar [note: '管理员回复内容']
+  user_id integer [ref, not null] [note: '用户表的用户ID']
+  has_picture boolean [note: '是否含有图片']
+  pic_urls varchar [note: '图片地址列表，采用JSON数组格式']
+  star smallint [note: '评分， 1-5']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '如果type=0，则是商品评论；如果是type=1，则是专题评论。'
+}
+
+Table litemall_coupon {
+  id integer [pk, not null]
+  name varchar [not null] [note: '优惠券名称']
+  desc varchar [note: '优惠券介绍，通常是显示优惠券使用限制文字']
+  tag varchar [note: '优惠券标签，例如新人专用']
+  total integer [not null] [note: '优惠券数量，如果是0，则是无限量']
+  limit smallint [note: '用户领券限制数量，如果是0，则是不限制；默认是1，限领一张.']
+  type smallint [note: '优惠券赠送类型，如果是0则通用券，用户领取；如果是1，则是注册赠券；如果是2，则是优惠券码兑换；']
+  status smallint [note: '优惠券状态，如果是0则是正常可用；如果是1则是过期; 如果是2则是下架。']
+  goods_type smallint [note: '商品限制类型，如果0则全商品，如果是1则是类目限制，如果是2则是商品限制。']
+  goods_value varchar [note: '商品限制值，goods_type如果是0则空集合，如果是1则是类目集合，如果是2则是商品集合。']
+  code varchar [note: '优惠券兑换码']
+  time_type smallint [note: '有效时间限制，如果是0，则基于领取时间的有效天数days；如果是1，则start_time和end_time是优惠券有效期；']
+  days smallint [note: '基于领取时间的有效天数days。']
+  start_time datetime [note: '使用券开始时间']
+  end_time datetime [note: '使用券截至时间']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '优惠券名称'
+}
+
+Table litemall_coupon_user {
+  id integer [pk, not null]
+  user_id integer [ref, not null] [note: '用户ID']
+  coupon_id integer [ref, not null] [note: '优惠券ID']
+  used_time datetime [note: '使用时间']
+  start_time datetime [note: '有效期开始时间']
+  end_time datetime [note: '有效期截至时间']
+  order_id integer [ref] [note: '订单ID']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '用户ID'
+}
+
+Table litemall_feedback {
+  id integer [pk, not null]
+  user_id integer [ref, not null] [note: '用户表的用户ID']
+  username varchar [not null] [note: '用户名称']
+  mobile varchar [not null] [note: '手机号']
+  feed_type varchar [not null] [note: '反馈类型']
+  content varchar [not null] [note: '反馈内容']
+  status integer [not null] [note: '状态']
+  has_picture boolean [note: '是否含有图片']
+  pic_urls varchar [note: '图片地址列表，采用JSON数组格式']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '用户表的用户ID'
+}
+
+Table litemall_footprint {
+  id integer [pk, not null]
+  user_id integer [ref, not null] [note: '用户表的用户ID']
+  goods_id integer [ref, not null] [note: '浏览商品ID']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '用户表的用户ID'
+}
+
+Table litemall_goods {
+  id integer [pk, not null]
+  goods_sn varchar [ref, not null] [note: '商品编号']
+  name varchar [not null] [note: '商品名称']
+  category_id integer [ref] [note: '商品所属类目ID']
+  brand_id integer [ref]
+  gallery varchar [note: '商品宣传图片列表，采用JSON数组格式']
+  keywords varchar [note: '商品关键字，采用逗号间隔']
+  brief varchar [note: '商品简介']
+  is_on_sale boolean [note: '是否上架']
+  sort_order smallint
+  pic_url varchar [note: '商品页面商品图片']
+  share_url varchar [note: '商品分享海报']
+  is_new boolean [note: '是否新品首发，如果设置则可以在新品首发页面展示']
+  is_hot boolean [note: '是否人气推荐，如果设置则可以在人气推荐页面展示']
+  unit varchar [note: '商品单位，例如件、盒']
+  detail text [note: '商品详细介绍，是富文本格式']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '商品编号'
+}
+
+Table litemall_goods_attribute {
+  id integer [pk, not null]
+  goods_id integer [ref, not null] [note: '商品表的商品ID']
+  attribute varchar [not null] [note: '商品参数名称']
+  value varchar [not null] [note: '商品参数值']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '商品表的商品ID'
+}
+
+Table litemall_goods_product {
+  id integer [pk, not null]
+  goods_id integer [ref, not null] [note: '商品表的商品ID']
+  specifications varchar [not null] [note: '商品规格值列表，采用JSON数组格式']
+  number integer [not null] [note: '商品货品数量']
+  url varchar [note: '商品货品图片']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '商品表的商品ID'
+}
+
+Table litemall_goods_specification {
+  id integer [pk, not null]
+  goods_id integer [ref, not null] [note: '商品表的商品ID']
+  specification varchar [not null] [note: '商品规格名称']
+  value varchar [not null] [note: '商品规格值']
+  pic_url varchar [not null] [note: '商品规格图片']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '商品表的商品ID'
+}
+
+Table litemall_groupon {
+  id integer [pk, not null]
+  order_id integer [ref, not null] [note: '关联的订单ID']
+  groupon_id integer [ref] [note: '如果是开团用户，则groupon_id是0；如果是参团用户，则groupon_id是团购活动ID']
+  rules_id integer [ref, not null] [note: '团购规则ID，关联litemall_groupon_rules表ID字段']
+  user_id integer [ref, not null] [note: '用户ID']
+  share_url varchar [note: '团购分享图片地址']
+  creator_user_id integer [ref, not null] [note: '开团用户ID']
+  creator_user_time datetime [note: '开团时间']
+  status smallint [note: '团购活动状态，开团未支付则0，开团中则1，开团失败则2']
+  add_time datetime [not null] [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '关联的订单ID'
+}
+
+Table litemall_groupon_rules {
+  id integer [pk, not null]
+  goods_id integer [ref, not null] [note: '商品表的商品ID']
+  goods_name varchar [not null] [note: '商品名称']
+  pic_url varchar [note: '商品图片或者商品货品图片']
+  discount_member integer [not null] [note: '达到优惠条件的人数']
+  expire_time datetime [note: '团购过期时间']
+  status smallint [note: '团购规则状态，正常上线则0，到期自动下线则1，管理手动下线则2']
+  add_time datetime [not null] [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '商品表的商品ID'
+}
+
+Table litemall_issue {
+  id integer [pk, not null]
+  question varchar [note: '问题标题']
+  answer varchar [note: '问题答案']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '问题标题'
+}
+
+Table litemall_keyword {
+  id integer [pk, not null]
+  keyword varchar [not null] [note: '关键字']
+  url varchar [not null] [note: '关键字的跳转链接']
+  is_hot boolean [not null] [note: '是否是热门关键字']
+  is_default boolean [not null] [note: '是否是默认关键字']
+  sort_order integer [not null] [note: '排序']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '关键字'
+}
+
+Table litemall_log {
+  id integer [pk, not null]
+  admin varchar [note: '管理员']
+  ip varchar [note: '管理员地址']
+  type integer [note: '操作分类']
+  action varchar [note: '操作动作']
+  status boolean [note: '操作状态']
+  result varchar [note: '操作结果，或者成功消息，或者失败消息']
+  comment varchar [note: '补充信息']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '管理员'
+}
+
+Table litemall_notice {
+  id integer [pk, not null]
+  title varchar [note: '通知标题']
+  content varchar [note: '通知内容']
+  admin_id integer [ref] [note: '创建通知的管理员ID，如果是系统内置通知则是0.']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '通知标题'
+}
+
+Table litemall_notice_admin {
+  id integer [pk, not null]
+  notice_id integer [ref] [note: '通知ID']
+  notice_title varchar [note: '通知标题']
+  admin_id integer [ref] [note: '接收通知的管理员ID']
+  read_time datetime [note: '阅读时间，如果是NULL则是未读状态']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '通知ID'
+}
+
+Table litemall_order {
+  id integer [pk, not null]
+  user_id integer [ref, not null] [note: '用户表的用户ID']
+  order_sn varchar [ref, not null] [note: '订单编号']
+  order_status smallint [not null] [note: '订单状态']
+  aftersale_status smallint [note: '售后状态，0是可申请，1是用户已申请，2是管理员审核通过，3是管理员退款成功，4是管理员审核拒绝，5是用户已取消']
+  consignee varchar [not null] [note: '收货人名称']
+  mobile varchar [not null] [note: '收货人手机号']
+  address varchar [not null] [note: '收货具体地址']
+  message varchar [not null] [note: '用户订单留言']
+  pay_id varchar [ref] [note: '微信付款编号']
+  pay_time datetime [note: '微信付款时间']
+  ship_sn varchar [ref] [note: '发货编号']
+  ship_channel varchar [note: '发货快递公司']
+  ship_time datetime [note: '发货开始时间']
+  refund_type varchar [note: '退款方式']
+  refund_content varchar [note: '退款备注']
+  refund_time datetime [note: '退款时间']
+  confirm_time datetime [note: '用户确认收货时间']
+  comments smallint [note: '待评价订单商品数量']
+  end_time datetime [note: '订单关闭时间']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '用户表的用户ID'
+}
+
+Table litemall_order_goods {
+  id integer [pk, not null]
+  order_id integer [ref, not null] [note: '订单表的订单ID']
+  goods_id integer [ref, not null] [note: '商品表的商品ID']
+  goods_name varchar [not null] [note: '商品名称']
+  goods_sn varchar [ref, not null] [note: '商品编号']
+  product_id integer [ref, not null] [note: '商品货品表的货品ID']
+  number smallint [not null] [note: '商品货品的购买数量']
+  specifications varchar [not null] [note: '商品货品的规格列表']
+  pic_url varchar [not null] [note: '商品货品图片或者商品图片']
+  comment integer [note: '订单商品评论，如果是-1，则超期不能评价；如果是0，则可以评价；如果其他值，则是comment表里面的评论ID。']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '订单表的订单ID'
+}
+
+Table litemall_permission {
+  id integer [pk, not null]
+  role_id integer [ref] [note: '角色ID']
+  permission varchar [note: '权限']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '角色ID'
+}
+
+Table litemall_region {
+  id integer [pk, not null]
+  pid integer [not null] [note: '行政区域父ID，例如区县的pid指向市，市的pid指向省，省的pid则是0']
+  name varchar [not null] [note: '行政区域名称']
+  type boolean [not null] [note: '行政区域类型，如如1则是省， 如果是2则是市，如果是3则是区县']
+  code integer [not null] [note: '行政区域编码']
+  Note: '行政区域父ID，例如区县的pid指向市，市的pid指向省，省的pid则是0'
+}
+
+Table litemall_role {
+  id integer [pk, not null]
+  name varchar [not null] [note: '角色名称']
+  desc varchar [note: '角色描述']
+  enabled boolean [note: '是否启用']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '角色名称'
+}
+
+Table litemall_search_history {
+  id integer [pk, not null]
+  user_id integer [ref, not null] [note: '用户表的用户ID']
+  keyword varchar [not null] [note: '搜索关键字']
+  from varchar [not null] [note: '搜索来源，如pc、wx、app']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '用户表的用户ID'
+}
+
+Table litemall_storage {
+  id integer [pk, not null]
+  key varchar [not null] [note: '文件的唯一索引']
+  name varchar [not null] [note: '文件名']
+  type varchar [not null] [note: '文件类型']
+  size integer [not null] [note: '文件大小']
+  url varchar [note: '文件访问链接']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '文件的唯一索引'
+}
+
+Table litemall_system {
+  id integer [pk, not null]
+  key_name varchar [not null] [note: '系统配置名']
+  key_value varchar [not null] [note: '系统配置值']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '系统配置名'
+}
+
+Table litemall_topic {
+  id integer [pk, not null]
+  title varchar [not null] [note: '专题标题']
+  subtitle varchar [note: '专题子标题']
+  content text [note: '专题内容，富文本格式']
+  read_count varchar [note: '专题阅读量']
+  pic_url varchar [note: '专题图片']
+  sort_order integer [note: '排序']
+  goods varchar [note: '专题相关商品，采用JSON数组格式']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '专题标题'
+}
+
+Table litemall_user {
+  id integer [pk, not null]
+  username varchar [not null] [note: '用户名称']
+  password varchar [not null] [note: '用户密码']
+  gender boolean [not null] [note: '性别：0 未知， 1男， 1 女']
+  birthday date [note: '生日']
+  last_login_time datetime [note: '最近一次登录时间']
+  last_login_ip varchar [not null] [note: '最近一次登录IP地址']
+  user_level boolean [note: '0 普通用户，1 VIP用户，2 高级VIP用户']
+  nickname varchar [not null] [note: '用户昵称或网络名称']
+  mobile varchar [not null] [note: '用户手机号码']
+  avatar varchar [not null] [note: '用户头像图片']
+  weixin_openid varchar [not null] [note: '微信登录openid']
+  session_key varchar [not null] [note: '微信登录会话KEY']
+  add_time datetime [note: '创建时间']
+  update_time datetime [note: '更新时间']
+  deleted boolean [note: '逻辑删除']
+  Note: '用户名称'
+}
+Ref: litemall_address.user_id > goods.id
+Ref: litemall_aftersale.aftersale_sn > goods.goods_sn
+Ref: litemall_aftersale.order_id > goods.id
+Ref: litemall_aftersale.user_id > goods.id
+Ref: litemall_cart.user_id > goods.id
+Ref: litemall_cart.goods_id > goods.id
+Ref: litemall_cart.goods_sn > goods.goods_sn
+Ref: litemall_cart.product_id > goods.id
+Ref: litemall_collect.user_id > goods.id
+Ref: litemall_collect.value_id > goods.id
+Ref: litemall_comment.value_id > goods.id
+Ref: litemall_comment.user_id > goods.id
+Ref: litemall_coupon_user.user_id > goods.id
+Ref: litemall_coupon_user.coupon_id > goods.id
+Ref: litemall_coupon_user.order_id > goods.id
+Ref: litemall_feedback.user_id > goods.id
+Ref: litemall_footprint.user_id > goods.id
+Ref: litemall_footprint.goods_id > goods.id
+Ref: litemall_goods.goods_sn > goods.goods_sn
+Ref: litemall_goods.category_id > goods.id
+Ref: litemall_goods.brand_id > goods.id
+Ref: litemall_goods_attribute.goods_id > goods.id
+Ref: litemall_goods_product.goods_id > goods.id
+Ref: litemall_goods_specification.goods_id > goods.id
+Ref: litemall_groupon.order_id > goods.id
+Ref: litemall_groupon.groupon_id > goods.id
+Ref: litemall_groupon.rules_id > goods.id
+Ref: litemall_groupon.user_id > goods.id
+Ref: litemall_groupon.creator_user_id > goods.id
+Ref: litemall_groupon_rules.goods_id > goods.id
+Ref: litemall_notice.admin_id > goods.id
+Ref: litemall_notice_admin.notice_id > goods.id
+Ref: litemall_notice_admin.admin_id > goods.id
+Ref: litemall_order.user_id > goods.id
+Ref: litemall_order.order_sn > goods.goods_sn
+Ref: litemall_order.pay_id > goods.id
+Ref: litemall_order.ship_sn > goods.goods_sn
+Ref: litemall_order_goods.order_id > goods.id
+Ref: litemall_order_goods.goods_id > goods.id
+Ref: litemall_order_goods.goods_sn > goods.goods_sn
+Ref: litemall_order_goods.product_id > goods.id
+Ref: litemall_permission.role_id > goods.id
+Ref: litemall_search_history.user_id > goods.id

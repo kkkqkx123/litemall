@@ -1,0 +1,322 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+增强版E-R图生成器 - 支持解析所有表和外键关系
+"""
+
+import re
+import os
+
+def extract_all_tables(sql_content):
+    """提取SQL文件中所有的表名"""
+    table_pattern = r'CREATE TABLE `([^`]+)`'
+    tables = re.findall(table_pattern, sql_content)
+    return tables
+
+def parse_table_enhanced(sql_content: str, target_table: str):
+    """增强版表结构解析 - 支持外键识别"""
+    # 查找目标表的CREATE TABLE语句
+    table_pattern = rf'CREATE TABLE `{re.escape(target_table)}`\s*\((.*?)ENGINE'
+    table_match = re.search(table_pattern, sql_content, re.DOTALL)
+    
+    if not table_match:
+        print(f"未找到表 {target_table}")
+        return None
+    
+    table_definition = table_match.group(0)
+    
+    # 查找表注释
+    comment_match = re.search(r"COMMENT\s*'([^']+)'", table_definition)
+    comment = comment_match.group(1) if comment_match else ""
+    
+    table_info = {
+        'name': target_table,
+        'comment': comment,
+        'columns': [],
+        'primary_keys': [],
+        'foreign_keys': [],
+        'indexes': []
+    }
+    
+    # 提取列定义部分（括号内的内容）
+    # 找到第一个左括号和最后一个右括号
+    brace_start = table_definition.find('(')
+    brace_end = table_definition.rfind(')')
+    
+    if brace_start == -1 or brace_end == -1:
+        print(f"未找到表 {target_table} 的列定义范围")
+        return None
+    
+    column_section = table_definition[brace_start + 1:brace_end]
+    
+    # 按行分割列定义
+    lines = [line.strip() for line in column_section.split('\n') if line.strip()]
+    
+    for line in lines:
+        # 跳过空行和注释行
+        if not line or line.startswith('--'):
+            continue
+            
+        # 解析列定义
+        if line.startswith('`'):
+            # 解析列定义 - 更精确的正则表达式
+            column_match = re.match(r'`(\w+)`\s+([^,]+?)(?:,\s*)?(?:--.*)?$', line.strip())
+            if column_match:
+                column_name = column_match.group(1)
+                column_def = column_match.group(2).strip()
+                
+                # 提取数据类型
+                type_match = re.match(r'(\w+(?:\([^)]+\))?)\s*(.*)', column_def)
+                if type_match:
+                    column_type = type_match.group(1)
+                    constraints = type_match.group(2)
+                else:
+                    column_type = column_def
+                    constraints = ""
+                
+                # 提取注释
+                comment_match = re.search(r"COMMENT\s*'([^']+)'", line)
+                column_comment = comment_match.group(1) if comment_match else ""
+                
+                # 检查是否为主键
+                is_primary = 'PRIMARY KEY' in line or 'AUTO_INCREMENT' in column_def
+                is_not_null = 'NOT NULL' in column_def
+                has_default = 'DEFAULT' in column_def
+                
+                # 检查外键约束
+                is_foreign_key = False
+                referenced_table = None
+                referenced_column = None
+                
+                # 查找外键引用（通过KEY和FOREIGN KEY）
+                if 'KEY' in line and not 'PRIMARY KEY' in line:
+                    # 这可能是外键索引
+                    key_match = re.search(r'KEY\s+`?(\w+)`?\s*\(`(\w+)`\)', line)
+                    if key_match and key_match.group(2) == column_name:
+                        # 记录索引信息，后续可能关联到外键
+                        table_info['indexes'].append({
+                            'name': key_match.group(1),
+                            'column': column_name
+                        })
+                
+                column_info = {
+                    'name': column_name,
+                    'type': column_type,
+                    'comment': column_comment,
+                    'is_primary': is_primary,
+                    'is_not_null': is_not_null,
+                    'has_default': has_default,
+                    'is_foreign_key': is_foreign_key,
+                    'referenced_table': referenced_table,
+                    'referenced_column': referenced_column
+                }
+                
+                table_info['columns'].append(column_info)
+                
+                if is_primary:
+                    table_info['primary_keys'].append(column_name)
+        
+        # 解析表级约束（主键、外键、唯一键等）
+        elif 'PRIMARY KEY' in line and '(`' in line:
+            # 解析复合主键
+            pk_columns = re.findall(r'`([^`]+)`', line)
+            for col in pk_columns:
+                if col not in table_info['primary_keys']:
+                    table_info['primary_keys'].append(col)
+        
+        elif 'KEY' in line and not 'PRIMARY KEY' in line:
+            # 解析索引
+            key_match = re.search(r'(?:KEY|INDEX)\s+`?(\w+)`?\s*\(([^)]+)\)', line)
+            if key_match:
+                key_name = key_match.group(1)
+                key_columns = re.findall(r'`([^`]+)`', key_match.group(2))
+                table_info['indexes'].append({
+                    'name': key_name,
+                    'columns': key_columns
+                })
+    
+    # 基于列名和索引推断外键关系
+    infer_foreign_keys(table_info, sql_content)
+    
+    return table_info
+
+def infer_foreign_keys(table_info, sql_content):
+    """基于列名和索引推断外键关系"""
+    foreign_key_patterns = [
+        (r'(\w+)_id$', 'user', 'id'),
+        (r'(\w+)_id$', 'goods', 'id'),
+        (r'(\w+)_id$', 'order', 'id'),
+        (r'(\w+)_id$', 'category', 'id'),
+        (r'(\w+)_id$', 'brand', 'id'),
+        (r'(\w+)_id$', 'coupon', 'id'),
+        (r'parent_(\w+)_id$', 'category', 'id'),
+        (r'(\w+)_sn$', 'goods', 'goods_sn'),
+    ]
+    
+    for column in table_info['columns']:
+        if column['name'].endswith('_id') or column['name'].endswith('_sn'):
+            for pattern, ref_table, ref_column in foreign_key_patterns:
+                if re.match(pattern, column['name']):
+                    # 检查引用的表是否存在
+                    if f'`{ref_table}`' in sql_content:
+                        column['is_foreign_key'] = True
+                        column['referenced_table'] = ref_table
+                        column['referenced_column'] = ref_column
+                        
+                        table_info['foreign_keys'].append({
+                            'column': column['name'],
+                            'referenced_table': ref_table,
+                            'referenced_column': ref_column
+                        })
+                        break
+
+def generate_mermaid_diagram_simple(table_info):
+    """生成Mermaid格式的E-R图"""
+    if not table_info or not table_info['columns']:
+        return ""
+    
+    mermaid_code = f"""erDiagram
+    {table_info['name']} {{"""
+    
+    for col in table_info['columns']:
+        # 简化数据类型显示
+        simple_type = col['type'].split('(')[0] if '(' in col['type'] else col['type']
+        
+        # 添加主键标记
+        pk_indicator = " PK" if col['is_primary'] else ""
+        
+        mermaid_code += f"\n        {col['name']} {simple_type}{pk_indicator}"
+    
+    mermaid_code += "\n    }"
+    
+    return mermaid_code
+
+def generate_dbml_diagram_simple(table_info):
+    """生成DBML格式的E-R图"""
+    if not table_info or not table_info['columns']:
+        return ""
+    
+    dbml_code = f"""Table {table_info['name']} {{"""
+    
+    for col in table_info['columns']:
+        # 转换数据类型
+        dbml_type = convert_to_dbml_type_simple(col['type'])
+        
+        # 添加约束
+        constraints = []
+        if col['is_primary']:
+            constraints.append("primary key")
+        
+        constraint_str = ""
+        if constraints:
+            constraint_str = f" [{', '.join(constraints)}]"
+        
+        # 添加注释
+        comment_str = ""
+        if col['comment']:
+            comment_str = f" [note: '{col['comment']}']"
+        
+        dbml_code += f"\n  {col['name']} {dbml_type}{constraint_str}{comment_str}"
+    
+    dbml_code += "\n}"
+    
+    return dbml_code
+
+def convert_to_dbml_type_simple(mysql_type: str) -> str:
+    """将MySQL数据类型转换为DBML类型"""
+    type_mapping = {
+        'int': 'integer',
+        'tinyint': 'boolean',
+        'smallint': 'smallint',
+        'varchar': 'varchar',
+        'char': 'char',
+        'text': 'text',
+        'decimal': 'decimal',
+        'datetime': 'datetime',
+        'date': 'date',
+        'time': 'time'
+    }
+    
+    base_type = mysql_type.split('(')[0].lower()
+    return type_mapping.get(base_type, 'varchar')
+
+def generate_detailed_text_diagram_simple(table_info):
+    """生成详细的文本格式E-R图"""
+    if not table_info or not table_info['columns']:
+        return ""
+    
+    text_diagram = f"""表结构详情: {table_info['name']}
+表注释: {table_info['comment']}
+总列数: {len(table_info['columns'])}
+主键: {', '.join(table_info['primary_keys']) if table_info['primary_keys'] else '无'}
+
+列信息:
+"""
+    
+    for i, col in enumerate(table_info['columns'], 1):
+        primary_indicator = " (主键)" if col['is_primary'] else ""
+        comment = f" - {col['comment']}" if col['comment'] else ""
+        
+        # 限制类型显示长度
+        type_display = col['type'][:25] + "..." if len(col['type']) > 25 else col['type']
+        
+        text_diagram += f"{i:2d}. {col['name']:20} {type_display:30}{primary_indicator}{comment}\n"
+    
+    return text_diagram
+
+def main():
+    """主函数"""
+    sql_file_path = "sql-copy/litemall_table.sql"
+    
+    # 测试解析单个表
+    print("正在简单解析 litemall_ad 表...")
+    table_info = parse_table_simple(sql_file_path, "litemall_ad")
+    
+    if table_info and table_info['columns']:
+        print(f"\n✅ 成功解析表: {table_info['name']}")
+        print(f"📝 表注释: {table_info['comment']}")
+        print(f"🔢 列数: {len(table_info['columns'])}")
+        print(f"🔑 主键: {table_info['primary_keys']}")
+        
+        # 显示前几列信息
+        print("\n📋 前5列信息:")
+        for i, col in enumerate(table_info['columns'][:5], 1):
+            print(f"  {i}. {col['name']} - {col['type']}")
+        
+        # 生成Mermaid格式
+        mermaid_diagram = generate_mermaid_diagram_simple(table_info)
+        with open("simple_er_diagram.mmd", "w", encoding="utf-8") as f:
+            f.write(mermaid_diagram)
+        print("\n📊 已生成Mermaid格式E-R图: simple_er_diagram.mmd")
+        
+        # 生成DBML格式
+        dbml_diagram = generate_dbml_diagram_simple(table_info)
+        with open("simple_er_diagram.dbml", "w", encoding="utf-8") as f:
+            f.write(dbml_diagram)
+        print("📊 已生成DBML格式E-R图: simple_er_diagram.dbml")
+        
+        # 生成文本格式
+        text_diagram = generate_detailed_text_diagram_simple(table_info)
+        with open("simple_er_diagram.txt", "w", encoding="utf-8") as f:
+            f.write(text_diagram)
+        print("📊 已生成文本格式E-R图: simple_er_diagram.txt")
+        
+        # 显示部分内容
+        print("\n" + "="*60)
+        print("生成的Mermaid E-R图:")
+        print(mermaid_diagram)
+        
+        print("\n" + "="*60)
+        print("生成的DBML E-R图:")
+        print(dbml_diagram)
+        
+        print("\n" + "="*60)
+        print("生成的文本E-R图 (前10列):")
+        lines = text_diagram.split('\n')
+        print('\n'.join(lines[:15]))
+        
+    else:
+        print("❌ 解析失败或未找到列信息")
+
+if __name__ == "__main__":
+    main()
