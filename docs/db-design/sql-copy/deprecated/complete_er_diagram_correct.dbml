@@ -1,0 +1,195 @@
+Project litemall {
+  database_type: 'MySQL'
+  Note: 'litemall电商系统数据库设计'
+}
+
+Table litemall_user {
+  id integer [pk, not null]
+  username varchar [not null]
+  password varchar [not null]
+  gender boolean [not null]
+  birthday date
+  last_login_time datetime
+  last_login_ip varchar [not null]
+  user_level boolean
+  nickname varchar [not null]
+  mobile varchar [not null]
+  avatar varchar [not null]
+  weixin_openid varchar [not null]
+  session_key varchar [not null]
+  add_time datetime
+  update_time datetime
+  deleted boolean
+  Note: '用户表'
+}
+
+Table litemall_goods {
+  id integer [pk, not null]
+  goods_sn varchar [not null]
+  name varchar [not null]
+  category_id integer [not null]
+  brand_id integer
+  gallery varchar
+  keywords varchar
+  brief varchar
+  is_on_sale boolean [not null]
+  sort_order smallint [not null]
+  pic_url varchar
+  share_url varchar
+  is_new boolean [not null]
+  is_hot boolean [not null]
+  unit varchar
+  counter_price decimal
+  retail_price decimal [not null]
+  detail text
+  add_time datetime
+  update_time datetime
+  deleted boolean
+  Note: '商品表'
+}
+
+Table litemall_order {
+  id integer [pk, not null]
+  user_id integer [not null]
+  order_sn varchar [not null]
+  order_status smallint [not null]
+  consignee varchar [not null]
+  mobile varchar [not null]
+  address varchar [not null]
+  message varchar [not null]
+  pay_id varchar
+  pay_time datetime
+  ship_sn varchar
+  ship_channel varchar
+  ship_time datetime
+  confirm_time datetime
+  comments smallint
+  end_time datetime
+  add_time datetime
+  update_time datetime
+  deleted boolean
+  Note: '订单表'
+}
+
+Table litemall_order_goods {
+  id integer [pk, not null]
+  order_id integer [not null]
+  goods_id integer [not null]
+  goods_name varchar [not null]
+  goods_sn varchar [not null]
+  product_id integer [not null]
+  number smallint [not null]
+  price decimal [not null]
+  specifications varchar [not null]
+  pic_url varchar [not null]
+  comment integer
+  add_time datetime
+  update_time datetime
+  deleted boolean
+  Note: '订单商品表'
+}
+
+Table litemall_category {
+  id integer [pk, not null]
+  name varchar [not null]
+  keywords varchar
+  desc varchar
+  pid integer [not null]
+  icon_url varchar
+  pic_url varchar
+  level varchar
+  sort_order smallint
+  add_time datetime
+  update_time datetime
+  deleted boolean
+  Note: '分类表'
+}
+
+Table litemall_cart {
+  id integer [pk, not null]
+  user_id integer [not null]
+  goods_id integer [not null]
+  goods_sn varchar [not null]
+  goods_name varchar [not null]
+  product_id integer [not null]
+  price decimal [not null]
+  number smallint [not null]
+  specifications varchar [not null]
+  checked boolean [not null]
+  pic_url varchar [not null]
+  add_time datetime
+  update_time datetime
+  deleted boolean
+  Note: '购物车表'
+}
+
+Table litemall_address {
+  id integer [pk, not null]
+  user_id integer [not null]
+  name varchar [not null]
+  mobile varchar [not null]
+  province integer [not null]
+  city integer [not null]
+  county integer [not null]
+  address_detail varchar [not null]
+  area_code varchar
+  postal_code varchar
+  is_default boolean [not null]
+  add_time datetime
+  update_time datetime
+  deleted boolean
+  Note: '收货地址表'
+}
+
+Table litemall_admin {
+  id integer [pk, not null]
+  username varchar [not null]
+  password varchar [not null]
+  last_login_ip varchar
+  last_login_time datetime
+  avatar varchar
+  add_time datetime
+  update_time datetime
+  deleted boolean
+  Note: '管理员表'
+}
+
+Table litemall_role {
+  id integer [pk, not null]
+  name varchar [not null]
+  desc varchar
+  enabled boolean
+  add_time datetime
+  update_time datetime
+  deleted boolean
+  Note: '角色表'
+}
+
+Table litemall_permission {
+  id integer [pk, not null]
+  role_id integer
+  permission varchar
+  add_time datetime
+  update_time datetime
+  deleted boolean
+  Note: '权限表'
+}
+
+// 用户相关外键
+Ref: litemall_address.user_id > litemall_user.id
+Ref: litemall_cart.user_id > litemall_user.id
+
+// 商品相关外键
+Ref: litemall_cart.goods_id > litemall_goods.id
+Ref: litemall_goods.category_id > litemall_category.id
+
+// 订单相关外键
+Ref: litemall_order.user_id > litemall_user.id
+Ref: litemall_order_goods.order_id > litemall_order.id
+Ref: litemall_order_goods.goods_id > litemall_goods.id
+
+// 分类相关外键
+Ref: litemall_category.pid > litemall_category.id
+
+// 权限相关外键
+Ref: litemall_permission.role_id > litemall_role.id
