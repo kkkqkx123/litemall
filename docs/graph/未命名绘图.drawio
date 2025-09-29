@@ -1,0 +1,64 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.0.4 Chrome/128.0.6613.186 Electron/32.2.5 Safari/537.36" version="26.0.4">
+  <diagram id="R2lEEEUBdFMjLlhIrx00" name="Page-1">
+    <mxGraphModel dx="666" dy="462" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" extFonts="Permanent Marker^https://fonts.googleapis.com/css?family=Permanent+Marker">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-1" value="用户" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="470" width="40" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-2" value="商品" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="345" y="470" width="40" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-23" value="订单" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="385" y="390" width="40" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-24" value="分类" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="390" y="540" width="40" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-25" value="地址" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="380" width="40" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-26" value="购物车" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="520" y="410" width="40" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-27" value="收藏" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="520" y="440" width="40" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-29" value="搜索历史" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="515" y="480" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-30" value="意见反馈" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="520" y="520" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-32" value="浏览足迹" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="510" y="560" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-34" value="优惠券" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="490" y="590" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-35" value="售后" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="470" y="340" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-36" value="评论" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="310" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-37" value="品牌" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="410" width="40" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-38" value="商品属性" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="255" y="440" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-39" value="商品规格" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="255" y="470" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-40" value="团购规则" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="250" y="500" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="rFYcgC0ifJ-qKOonMQU6-41" value="产品" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="270" y="530" width="50" height="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
