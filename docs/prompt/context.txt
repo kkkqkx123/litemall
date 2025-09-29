@@ -1,0 +1,42 @@
+litemall
+├── deploy
+├── doc
+├── docker
+├── docs
+│   ├── architecture
+│   ├── db-design
+│   │   ├── sql-copy
+│   │   │   ├── dbml-deprecated
+│   │   │   ├── ER
+│   │   │   ├── Graphviz
+│   │   │   ├── litemall_schema.sql
+│   │   │   └── litemall_table.sql
+│   │   ├── E-R图绘制指南.md
+│   │   ├── README.md
+│   │   ├── 作业.txt
+│   │   ├── 具体要求.txt
+│   │   ├── 整合要求文档.md
+│   │   ├── 表关系分析.md
+│   │   └── 要求.txt
+│   ├── graph
+│   ├── startup
+│   └── db.md
+├── litemall-admin
+├── litemall-admin-api
+├── litemall-all
+├── litemall-all-war
+├── litemall-core
+├── litemall-db
+├── litemall-vue
+├── litemall-wx
+├── litemall-wx-api
+├── META-INF
+├── renard-wx
+├── scripts
+├── CHANGELOG.md
+├── CONTRIBUTE.md
+├── LICENSE
+├── pom.xml
+├── README.md
+├── SECURITY.md
+└── 使用说明.txt
