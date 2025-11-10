@@ -106,4 +106,43 @@
         WHERE c.deleted = 0 AND g.deleted = 0
         ORDER BY c.sort_order, c.name
     </select>
+    
+    <!-- 商品评论统计列表 -->
+    <select id="statGoodsComment" resultType="map">
+        SELECT 
+            g.id AS goods_id,
+            g.name AS goods_name,
+            c.name AS category_name,
+            COUNT(cmt.id) AS comment_count
+        FROM litemall_goods g
+        LEFT JOIN litemall_category c ON g.category_id = c.id
+        LEFT JOIN litemall_comment cmt ON g.id = cmt.value_id AND cmt.type = 0 AND cmt.deleted = 0
+        WHERE g.deleted = 0
+        <if test="categoryId != null">
+            AND g.category_id = #{categoryId}
+        </if>
+        GROUP BY g.id, g.name, c.name
+        HAVING COUNT(cmt.id) > 0
+        ORDER BY comment_count DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <!-- 商品评论总数统计（用于分页） -->
+    <select id="countGoodsComment" resultType="int">
+        SELECT COUNT(DISTINCT g.id)
+        FROM litemall_goods g
+        LEFT JOIN litemall_comment cmt ON g.id = cmt.value_id AND cmt.type = 0 AND cmt.deleted = 0
+        WHERE g.deleted = 0 AND cmt.id IS NOT NULL
+        <if test="categoryId != null">
+            AND g.category_id = #{categoryId}
+        </if>
+    </select>
+    
+    <!-- 获取商品评论内容（用于词云） -->
+    <select id="getGoodsComments" resultType="map">
+        SELECT content
+        FROM litemall_comment
+        WHERE value_id = #{goodsId} AND type = 0 AND deleted = 0
+        ORDER BY add_time DESC
+    </select>
 </mapper>

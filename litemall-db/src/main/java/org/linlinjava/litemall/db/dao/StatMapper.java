@@ -46,4 +46,29 @@ public interface StatMapper {
      * @return 商品分类列表
      */
     List<Map> statGoodsCategories();
+    
+    /**
+     * 商品评论统计列表
+     * @param categoryId 商品分类ID，可为null
+     * @param offset 偏移量
+     * @param limit 每页条数
+     * @return 商品评论统计数据
+     */
+    List<Map> statGoodsComment(@Param("categoryId") Integer categoryId,
+                              @Param("offset") Integer offset,
+                              @Param("limit") Integer limit);
+    
+    /**
+     * 商品评论统计总数（用于分页）
+     * @param categoryId 商品分类ID，可为null
+     * @return 总记录数
+     */
+    int countGoodsComment(@Param("categoryId") Integer categoryId);
+    
+    /**
+     * 获取商品评论内容（用于词云）
+     * @param goodsId 商品ID
+     * @return 评论内容列表
+     */
+    List<Map> getGoodsComments(@Param("goodsId") Integer goodsId);
 }

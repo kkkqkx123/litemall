@@ -7,6 +7,7 @@ import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.admin.vo.StatVo;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.db.service.StatService;
+import org.linlinjava.litemall.core.wordcloud.WordCloudService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,9 @@ public class AdminStatController {
 
     @Autowired
     private StatService statService;
+
+    @Autowired
+    private WordCloudService wordCloudService;
 
     @RequiresPermissions("admin:stat:user")
     @RequiresPermissionsDesc(menu = {"统计管理", "用户统计"}, button = "查询")
@@ -138,6 +143,91 @@ public class AdminStatController {
     public Object statGoodsCategories() {
         List<Map> categories = statService.statGoodsCategories();
         return ResponseUtil.ok(categories);
+    }
+
+    /**
+     * 商品评论统计接口
+     * @param categoryId 商品分类ID，可为null
+     * @param page 页码
+     * @param limit 每页条数
+     * @return 商品评论统计数据
+     */
+    @RequiresPermissions("admin:stat:goods")
+    @RequiresPermissionsDesc(menu = {"统计管理", "商品评论统计"}, button = "查询")
+    @GetMapping("/goods/comment")
+    public Object statGoodsComment(@RequestParam(value = "categoryId", required = false) Integer categoryId,
+                                 @RequestParam(value = "page", defaultValue = "1") Integer page,
+                                 @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
+        
+        // 参数校验
+        if (page == null || page < 1) {
+            page = 1;
+        }
+        if (limit == null || limit < 1) {
+            limit = 10;
+        }
+        if (limit > 100) {
+            limit = 100;
+        }
+        
+        // 查询数据
+        List<Map> rows = statService.statGoodsComment(categoryId, page, limit);
+        int total = statService.countGoodsComment(categoryId);
+        
+        // 构建返回结果
+        Map<String, Object> result = new HashMap<>();
+        result.put("rows", rows);
+        result.put("total", total);
+        result.put("page", page);
+        result.put("limit", limit);
+        result.put("pages", (int) Math.ceil((double) total / limit));
+        
+        return ResponseUtil.ok(result);
+    }
+    
+    /**
+     * 商品评论词云接口
+     * @param goodsId 商品ID
+     * @param maxWords 最大词数
+     * @return 词云数据
+     */
+    @RequiresPermissions("admin:stat:goods")
+    @RequiresPermissionsDesc(menu = {"统计管理", "商品评论词云"}, button = "生成词云")
+    @GetMapping("/goods/wordcloud")
+    public Object generateWordCloud(@RequestParam(value = "goodsId") Integer goodsId,
+                                  @RequestParam(value = "maxWords", defaultValue = "50") Integer maxWords) {
+        
+        // 参数校验
+        if (goodsId == null || goodsId < 1) {
+            return ResponseUtil.fail(400, "商品ID不能为空");
+        }
+        if (maxWords == null || maxWords < 1) {
+            maxWords = 50;
+        }
+        if (maxWords > 200) {
+            maxWords = 200;
+        }
+        
+        // 获取商品评论内容
+        List<Map> comments = statService.getGoodsComments(goodsId);
+        if (comments == null || comments.isEmpty()) {
+            return ResponseUtil.ok(new ArrayList<>());
+        }
+        
+        // 提取评论文本
+        List<String> commentTexts = comments.stream()
+            .map(comment -> (String) comment.get("content"))
+            .filter(text -> text != null && !text.trim().isEmpty())
+            .collect(java.util.stream.Collectors.toList());
+        
+        if (commentTexts.isEmpty()) {
+            return ResponseUtil.ok(new ArrayList<>());
+        }
+        
+        // 生成词云
+        List<WordCloudService.WordCloudData> wordCloudData = wordCloudService.generateWordCloud(commentTexts, maxWords);
+        
+        return ResponseUtil.ok(wordCloudData);
     }
 
 }

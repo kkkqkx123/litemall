@@ -1,0 +1,3 @@
+1. .\stash2sequence.ps1
+2. repomix --files 相对路径[空格分隔]
+3. 后续使用go脚本提取

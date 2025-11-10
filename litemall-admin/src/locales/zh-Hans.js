@@ -52,6 +52,7 @@ export default {
       stat_order: '订单统计',
       stat_goods: '商品统计',
       stat_goods_rating: '商品评分统计',
+      stat_comment: '商品评论统计',
       external_link: '外链',
       external_link_tencent_cos: '腾讯云存储',
       external_link_tencent_sms: '腾讯云短信',

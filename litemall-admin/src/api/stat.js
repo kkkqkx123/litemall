@@ -46,3 +46,19 @@ export function statGoodsCategories() {
     method: 'get'
   })
 }
+
+export function statGoodsComment(query) {
+  return request({
+    url: '/stat/goods/comment',
+    method: 'get',
+    params: query
+  })
+}
+
+export function generateWordCloud(query) {
+  return request({
+    url: '/stat/goods/wordcloud',
+    method: 'get',
+    params: query
+  })
+}
