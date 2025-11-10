@@ -538,6 +538,16 @@ export const asyncRoutes = [
           title: 'app.menu.stat_goods',
           noCache: true
         }
+      },
+      {
+        path: 'goods-rating',
+        component: () => import('@/views/stat/goods-rating'),
+        name: 'statGoodsRating',
+        meta: {
+          perms: ['GET /admin/stat/goods/rating'],
+          title: 'app.menu.stat_goods_rating',
+          noCache: true
+        }
       }
     ]
   },

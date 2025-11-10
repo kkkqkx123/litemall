@@ -55,4 +55,55 @@
         from litemall_order_goods
         group by substr(add_time,1, 10)
     </select>
+    
+    <!-- 商品评分统计 -->
+    <select id="statGoodsRating" resultType="map">
+        SELECT 
+            g.id AS goods_id,
+            g.name AS goods_name,
+            c.name AS category_name,
+            COALESCE(AVG(cmt.star), 0) AS avg_rating,
+            COALESCE(COUNT(cmt.id), 0) AS rating_count
+        FROM litemall_goods g
+        LEFT JOIN litemall_category c ON g.category_id = c.id
+        LEFT JOIN litemall_comment cmt ON g.id = cmt.value_id AND cmt.type = 0 AND cmt.deleted = 0
+        WHERE g.deleted = 0
+        <if test="categoryId != null">
+            AND g.category_id = #{categoryId}
+        </if>
+        GROUP BY g.id, g.name, c.name
+        <choose>
+            <when test="sort == 'avg_rating' and order == 'asc'">
+                ORDER BY avg_rating ASC, rating_count DESC
+            </when>
+            <when test="sort == 'avg_rating' and order == 'desc'">
+                ORDER BY avg_rating DESC, rating_count DESC
+            </when>
+            <otherwise>
+                ORDER BY g.add_time DESC
+            </otherwise>
+        </choose>
+    </select>
+    
+    <!-- 商品评分统计总数（用于分页） -->
+    <select id="countGoodsRating" resultType="int">
+        SELECT COUNT(DISTINCT g.id)
+        FROM litemall_goods g
+        LEFT JOIN litemall_category c ON g.category_id = c.id
+        WHERE g.deleted = 0
+        <if test="categoryId != null">
+            AND g.category_id = #{categoryId}
+        </if>
+    </select>
+    
+    <!-- 商品分类列表（用于筛选） -->
+    <select id="statGoodsCategories" resultType="map">
+        SELECT DISTINCT
+            c.id,
+            c.name
+        FROM litemall_category c
+        INNER JOIN litemall_goods g ON c.id = g.category_id
+        WHERE c.deleted = 0 AND g.deleted = 0
+        ORDER BY c.sort_order, c.name
+    </select>
 </mapper>

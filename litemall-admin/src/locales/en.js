@@ -51,6 +51,7 @@ export default {
       stat_user: 'User stats',
       stat_order: 'Order stats',
       stat_goods: 'Goods stats',
+      stat_goods_rating: 'Goods rating stats',
       external_link: 'External links',
       external_link_tencent_cos: 'Tencent cloud storage',
       external_link_tencent_sms: 'Tencent cloud SMS',

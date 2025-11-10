@@ -34,4 +34,48 @@ public class StatService {
     public List<Map> statGoods() {
         return statMapper.statGoods();
     }
+    
+    /**
+     * 商品评分统计查询
+     * @param categoryId 商品分类ID，可为null
+     * @param sort 排序字段：avg_rating
+     * @param order 排序方式：asc/desc
+     * @param page 页码
+     * @param limit 每页条数
+     * @return 商品评分统计数据
+     */
+    public List<Map> statGoodsRating(Integer categoryId, String sort, String order, Integer page, Integer limit) {
+        // 参数校验
+        if (page == null || page < 1) {
+            page = 1;
+        }
+        if (limit == null || limit < 1) {
+            limit = 10;
+        }
+        if (limit > 100) {
+            limit = 100;
+        }
+        
+        // 计算分页参数
+        int offset = (page - 1) * limit;
+        
+        return statMapper.statGoodsRating(categoryId, sort, order, offset, limit);
+    }
+    
+    /**
+     * 商品评分统计总数（用于分页）
+     * @param categoryId 商品分类ID，可为null
+     * @return 总记录数
+     */
+    public int countGoodsRating(Integer categoryId) {
+        return statMapper.countGoodsRating(categoryId);
+    }
+    
+    /**
+     * 获取商品分类列表（用于筛选）
+     * @return 商品分类列表
+     */
+    public List<Map> statGoodsCategories() {
+        return statMapper.statGoodsCategories();
+    }
 }

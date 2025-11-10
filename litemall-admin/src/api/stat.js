@@ -31,3 +31,18 @@ export function statGoods(query) {
     params: query
   })
 }
+
+export function statGoodsRating(query) {
+  return request({
+    url: '/stat/goods/rating',
+    method: 'get',
+    params: query
+  })
+}
+
+export function statGoodsCategories() {
+  return request({
+    url: '/stat/goods/categories',
+    method: 'get'
+  })
+}
