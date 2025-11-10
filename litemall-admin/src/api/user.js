@@ -12,7 +12,7 @@ export function userDetail(id) {
   return request({
     url: '/user/detail',
     method: 'get',
-    params: {id}
+    params: { id }
   })
 }
 
@@ -53,6 +53,22 @@ export function listFootprint(query) {
     url: '/footprint/list',
     method: 'get',
     params: query
+  })
+}
+
+export function deleteFootprint(data) {
+  return request({
+    url: '/footprint/delete',
+    method: 'delete',
+    data
+  })
+}
+
+export function batchDeleteFootprint(data) {
+  return request({
+    url: '/footprint/batch-delete',
+    method: 'post',
+    data
   })
 }
 

@@ -8,6 +8,8 @@
         from litemall_user
         group by substr(add_time,1,10)
     </select>
+    
+    <!-- 原始订单统计查询 -->
     <select id="statOrder" resultType="map">
         select
         substr(add_time,1,10) as day,
@@ -19,6 +21,31 @@
         where order_status in(401,402)
         group by substr(add_time,1,10)
     </select>
+    
+    <!-- 增强版订单统计查询，支持时间维度和商品类别筛选 -->
+    <select id="statOrderEnhanced" resultType="map">
+        select
+        <choose>
+            <when test="timeDimension == 'day'">substr(o.add_time,1,10)</when>
+            <when test="timeDimension == 'week'">date_format(o.add_time,'%Y-%u')</when>
+            <when test="timeDimension == 'month'">substr(o.add_time,1,7)</when>
+            <otherwise>substr(o.add_time,1,10)</otherwise>
+        </choose> as period,
+        count(o.id) as orders,
+        count(distinct o.user_id) as customers,
+        sum(o.actual_price) as amount,
+        round(sum(o.actual_price)/count(distinct o.user_id),2) as pcr
+        from litemall_order o
+        left join litemall_order_goods og on o.id = og.order_id
+        left join litemall_goods g on og.goods_id = g.id
+        where o.order_status in(401,402)
+        <if test="categoryId != null">
+            and g.category_id = #{categoryId}
+        </if>
+        group by period
+        order by period
+    </select>
+    
     <select id="statGoods" resultType="map">
         select
         substr(add_time,1, 10) as day,

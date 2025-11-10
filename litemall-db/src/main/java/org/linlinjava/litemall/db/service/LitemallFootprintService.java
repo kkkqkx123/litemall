@@ -63,4 +63,8 @@ public class LitemallFootprintService {
         PageHelper.startPage(page, size);
         return footprintMapper.selectByExample(example);
     }
+
+    public void deleteByExample(LitemallFootprintExample example) {
+        footprintMapper.logicalDeleteByExample(example);
+    }
 }

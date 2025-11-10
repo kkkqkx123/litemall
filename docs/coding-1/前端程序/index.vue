@@ -1,3 +1,4 @@
+<!-- litemall-admin\src\views\dashboard\index.vue -->
 <template>
   <div class="dashboard-editor-container">
 

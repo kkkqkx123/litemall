@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -43,6 +44,26 @@ public class AdminStatController {
     public Object statOrder() {
         List<Map> rows = statService.statOrder();
         String[] columns = new String[]{"day", "orders", "customers", "amount", "pcr"};
+        StatVo statVo = new StatVo();
+        statVo.setColumns(columns);
+        statVo.setRows(rows);
+
+        return ResponseUtil.ok(statVo);
+    }
+
+    /**
+     * 增强版订单统计接口，支持时间维度和商品类别筛选
+     * @param timeDimension 时间维度：day/week/month
+     * @param categoryId 商品类别ID，可为null
+     * @return 订单统计数据
+     */
+    @RequiresPermissions("admin:stat:order")
+    @RequiresPermissionsDesc(menu = {"统计管理", "订单统计"}, button = "增强查询")
+    @GetMapping("/order/enhanced")
+    public Object statOrderEnhanced(@RequestParam(value = "timeDimension", defaultValue = "day") String timeDimension,
+                                  @RequestParam(value = "categoryId", required = false) Integer categoryId) {
+        List<Map> rows = statService.statOrderEnhanced(timeDimension, categoryId);
+        String[] columns = new String[]{"period", "orders", "customers", "amount", "pcr"};
         StatVo statVo = new StatVo();
         statVo.setColumns(columns);
         statVo.setRows(rows);
