@@ -95,7 +95,7 @@ public class PermissionUtil {
             }
 
             Class<?> clz = bean.getClass();
-            Class controllerClz = clz.getSuperclass();
+            Class controllerClz = clz;
             RequestMapping clazzRequestMapping = AnnotationUtils.findAnnotation(controllerClz, RequestMapping.class);
             List<Method> methods = MethodUtils.getMethodsListWithAnnotation(controllerClz, RequiresPermissions.class);
             for (Method method : methods) {
@@ -134,6 +134,24 @@ public class PermissionUtil {
                     permissions.add(permission);
                     continue;
                 }
+                
+                // 添加对RequestMapping注解的支持
+                RequestMapping requestMapping = AnnotationUtils.getAnnotation(method, RequestMapping.class);
+                if (requestMapping != null) {
+                    // 检查是否有method属性，如果没有则默认为GET
+                    String methodType = "GET";
+                    if (requestMapping.method().length > 0) {
+                        methodType = requestMapping.method()[0].name();
+                    }
+                    api = methodType + " " + api + requestMapping.value()[0];
+                    Permission permission = new Permission();
+                    permission.setRequiresPermissions(requiresPermissions);
+                    permission.setRequiresPermissionsDesc(requiresPermissionsDesc);
+                    permission.setApi(api);
+                    permissions.add(permission);
+                    continue;
+                }
+                
                 // TODO
                 // 这里只支持GetMapping注解或者PostMapping注解，应该进一步提供灵活性
                 throw new RuntimeException("目前权限管理应该在method的前面使用GetMapping注解或者PostMapping注解");
