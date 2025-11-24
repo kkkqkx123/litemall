@@ -37,12 +37,12 @@
     <el-table v-loading="listLoading" :data="list" element-loading-text="Loading" border fit highlight-current-row>
       <el-table-column align="center" label="商品ID" width="80">
         <template slot-scope="scope">
-          {{ scope.row.goodsId }}
+          {{ scope.row.goods_id }}
         </template>
       </el-table-column>
       <el-table-column label="商品名称" min-width="150">
         <template slot-scope="scope">
-          {{ scope.row.goodsName }}
+          {{ scope.row.goods_name }}
         </template>
       </el-table-column>
       <el-table-column label="分类" width="120" align="center">
@@ -78,22 +78,12 @@
         <div v-if="wordCloudData.length === 0" class="no-data">
           暂无评论数据
         </div>
-        <div v-else class="word-cloud">
-          <span
-            v-for="(word, index) in wordCloudData"
-            :key="index"
-            :style="{
-              fontSize: word.fontSize + 'px',
-              color: word.color,
-              margin: '5px',
-              display: 'inline-block',
-              cursor: 'pointer'
-            }"
-            @click="handleWordClick(word)"
-          >
-            {{ word.text }}
-          </span>
-        </div>
+        <WordCloud
+          v-else
+          :data="wordCloudData"
+          :max-words="50"
+          @word-click="handleWordClick"
+        />
       </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="wordCloudDialogVisible = false">关闭</el-button>
@@ -185,25 +175,30 @@ export default {
     },
     // 全局词云相关方法
     getGlobalWordCloud() {
-      // 获取全局词云数据，这里可以调用API获取所有商品的词云数据
-      // 暂时使用模拟数据
-      this.globalWordCloudData = [
-        { word: '质量好', frequency: 120 },
-        { word: '性价比高', frequency: 95 },
-        { word: '发货快', frequency: 80 },
-        { word: '包装精美', frequency: 65 },
-        { word: '服务态度好', frequency: 55 },
-        { word: '物流快', frequency: 45 },
-        { word: '正品', frequency: 40 },
-        { word: '物美价廉', frequency: 35 },
-        { word: '满意', frequency: 30 },
-        { word: '推荐', frequency: 25 }
-      ]
+      // 获取热门商品的词云数据
+      // 使用有评论数据的商品ID来生成词云
+      const popularGoodsIds = [1181000, 1006002] // 从评论数据中获取的热门商品ID
+
+      // 获取第一个热门商品的词云数据作为示例
+      getGoodsWordCloud(popularGoodsIds[0]).then(response => {
+        if (response.data.data && response.data.data.length > 0) {
+          // 转换后端返回的格式为WordCloud组件期望的格式
+          this.globalWordCloudData = response.data.data.map(item => ({
+            word: item.name,
+            frequency: item.value
+          }))
+        } else {
+          // 如果没有数据，显示提示信息
+          this.globalWordCloudData = []
+        }
+      }).catch(() => {
+        this.globalWordCloudData = []
+      })
     },
     handleRefreshGlobalWordCloud() {
       this.getGlobalWordCloud()
       this.$message({
-        message: '全局词云已刷新',
+        message: '词云数据已刷新',
         type: 'success',
         duration: 2000
       })

@@ -38,7 +38,7 @@
         from litemall_order o
         left join litemall_order_goods og on o.id = og.order_id
         left join litemall_goods g on og.goods_id = g.id
-        where o.order_status in(401,402)
+        where o.order_status in(201,301,401,402)  -- 包含已付款、已发货、已完成的订单状态
         <if test="categoryId != null">
             and g.category_id = #{categoryId}
         </if>
