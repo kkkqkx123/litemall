@@ -100,7 +100,8 @@
     <select id="statGoodsCategories" resultType="map">
         SELECT DISTINCT
             c.id,
-            c.name
+            c.name,
+            c.sort_order
         FROM litemall_category c
         INNER JOIN litemall_goods g ON c.id = g.category_id
         WHERE c.deleted = 0 AND g.deleted = 0

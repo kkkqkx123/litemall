@@ -90,6 +90,27 @@ if (-not $SkipBackend) {
         Write-Host "Error: Maven not found, please install Maven and configure environment variables" -ForegroundColor Red
         exit 1
     }
+    
+    # Check if MySQL is running
+    if (-not $SkipDatabaseCheck) {
+        Write-Host "Checking MySQL database connection..."
+        try {
+            $MySQLConnection = Test-NetConnection -ComputerName localhost -Port 3306 -WarningAction SilentlyContinue
+            if (-not $MySQLConnection.TcpTestSucceeded) {
+                Write-Host "❌ MySQL service is not running or port 3306 is not open" -ForegroundColor Red
+                Write-Host "Please ensure MySQL is installed and running, database 'litemall' is created" -ForegroundColor Yellow
+                Write-Host "Database connection URL: jdbc:mysql://127.0.0.1:3306/litemall" -ForegroundColor Yellow
+                Write-Host "Username: root, Password: 1234567kk" -ForegroundColor Yellow
+                pause
+                exit 1
+            }
+            Write-Host "✅ MySQL connection is normal" -ForegroundColor Green
+        } catch {
+            Write-Host "Could not check MySQL connection, please ensure MySQL is running" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "⚠️ Skipping database connection check" -ForegroundColor Yellow
+    }
 
     if (-not (Test-Path $BackendJarPath) -and -not $SkipBuild) {
         Write-Host "Backend JAR file not found, starting build..."
