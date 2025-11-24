@@ -11,6 +11,7 @@ import org.linlinjava.litemall.core.wordcloud.WordCloudService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -193,8 +194,8 @@ public class AdminStatController {
      */
     @RequiresPermissions("admin:stat:goods")
     @RequiresPermissionsDesc(menu = {"统计管理", "商品评论词云"}, button = "生成词云")
-    @GetMapping("/stat/goods/wordcloud")
-    public Object generateWordCloud(@RequestParam(value = "goodsId") Integer goodsId,
+    @GetMapping("/goods/wordcloud/{goodsId}")
+    public Object generateWordCloud(@PathVariable(value = "goodsId") Integer goodsId,
                                   @RequestParam(value = "maxWords", defaultValue = "50") Integer maxWords) {
         
         // 参数校验

@@ -55,10 +55,9 @@ export function statGoodsComment(query) {
   })
 }
 
-export function generateWordCloud(query) {
+export function getGoodsWordCloud(goodsId) {
   return request({
-    url: '/stat/goods/wordcloud',
-    method: 'get',
-    params: query
+    url: `/stat/goods/wordcloud/${goodsId}`,
+    method: 'get'
   })
 }

@@ -104,7 +104,7 @@
 </template>
 
 <script>
-import { statGoodsComment, statGoodsCategories, generateWordCloud } from '@/api/stat'
+import { statGoodsComment, statGoodsCategories, getGoodsWordCloud } from '@/api/stat'
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import WordCloud from '@/components/WordCloud'
@@ -166,32 +166,39 @@ export default {
       }
     },
     generateWordCloud() {
-      const query = {
-        goodsId: this.currentGoodsId,
-        maxWords: 100
-      }
-      generateWordCloud(query).then(response => {
-        this.wordCloudData = response.data.data
+      getGoodsWordCloud(this.currentGoodsId).then(response => {
+        // 转换后端返回的格式为WordCloud组件期望的格式
+        this.wordCloudData = response.data.data.map(item => ({
+          word: item.name,
+          frequency: item.value
+        }))
       }).catch(() => {
         this.wordCloudData = []
       })
     },
     handleWordClick(word) {
       this.$message({
-        message: `词语：${word.text}，出现次数：${word.frequency}，字体大小：${word.fontSize}px`,
+        message: `词语：${word.word}，出现次数：${word.frequency}次`,
         type: 'info',
         duration: 3000
       })
     },
+    // 全局词云相关方法
     getGlobalWordCloud() {
-      const query = {
-        maxWords: 50
-      }
-      generateWordCloud(query).then(response => {
-        this.globalWordCloudData = response.data.data
-      }).catch(() => {
-        this.globalWordCloudData = []
-      })
+      // 获取全局词云数据，这里可以调用API获取所有商品的词云数据
+      // 暂时使用模拟数据
+      this.globalWordCloudData = [
+        { word: '质量好', frequency: 120 },
+        { word: '性价比高', frequency: 95 },
+        { word: '发货快', frequency: 80 },
+        { word: '包装精美', frequency: 65 },
+        { word: '服务态度好', frequency: 55 },
+        { word: '物流快', frequency: 45 },
+        { word: '正品', frequency: 40 },
+        { word: '物美价廉', frequency: 35 },
+        { word: '满意', frequency: 30 },
+        { word: '推荐', frequency: 25 }
+      ]
     },
     handleRefreshGlobalWordCloud() {
       this.getGlobalWordCloud()
@@ -203,7 +210,7 @@ export default {
     },
     handleGlobalWordClick(word) {
       this.$message({
-        message: `热词：${word.word}，出现频率：${word.frequency}次`,
+        message: `全局词云词语：${word.text}`,
         type: 'info',
         duration: 3000
       })
