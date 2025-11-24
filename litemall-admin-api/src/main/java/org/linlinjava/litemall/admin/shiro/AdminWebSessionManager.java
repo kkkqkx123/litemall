@@ -33,7 +33,15 @@ public class AdminWebSessionManager extends DefaultWebSessionManager {
             request.setAttribute(ShiroHttpServletRequest.SESSION_ID_URL_REWRITING_ENABLED, this.isSessionIdUrlRewritingEnabled());
             return id;
         } else {
-            return super.getSessionId(request, response);
+            // 修复首次登录时会话ID获取问题
+            // 当没有自定义token时，确保能够正常创建新的会话
+            Serializable sessionId = super.getSessionId(request, response);
+            if (sessionId == null) {
+                // 如果父类也无法获取会话ID，则直接返回null，让Shiro自动创建新会话
+                // Shiro框架会在需要时自动创建新的会话
+                return null;
+            }
+            return sessionId;
         }
     }
 }

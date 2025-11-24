@@ -193,7 +193,7 @@ public class AdminStatController {
      */
     @RequiresPermissions("admin:stat:goods")
     @RequiresPermissionsDesc(menu = {"统计管理", "商品评论词云"}, button = "生成词云")
-    @GetMapping("/goods/wordcloud")
+    @GetMapping("/stat/goods/wordcloud")
     public Object generateWordCloud(@RequestParam(value = "goodsId") Integer goodsId,
                                   @RequestParam(value = "maxWords", defaultValue = "50") Integer maxWords) {
         
@@ -227,7 +227,16 @@ public class AdminStatController {
         // 生成词云
         List<WordCloudService.WordCloudData> wordCloudData = wordCloudService.generateWordCloud(commentTexts, maxWords);
         
-        return ResponseUtil.ok(wordCloudData);
+        // 转换为前端期望的格式
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (WordCloudService.WordCloudData data : wordCloudData) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("name", data.getText());
+            item.put("value", data.getFrequency());
+            result.add(item);
+        }
+        
+        return ResponseUtil.ok(result);
     }
 
 }
