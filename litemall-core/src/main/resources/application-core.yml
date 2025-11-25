@@ -111,3 +111,53 @@ litemall:
       accessKey: 111111
       secretKey: xxxxxx
       bucketName: litemall
+
+  # ModelScope大模型配置
+  modelscope:
+    api-key: demo-key  # 当前为演示模式，无需真实API密钥
+    api-url: https://api.modelscope.cn/v1  # ModelScope API地址
+    enabled: true  # 启用问答功能
+    max-context-length: 3  # 重试次数
+    session-timeout: 30000  # 会话超时时间（毫秒）
+    
+    # 安全与限流配置
+    security:
+      # 输入验证
+      validation:
+        max-question-length: 500    # 最大问题长度
+        max-context-length: 5000    # 最大上下文长度
+        allowed-characters: "[\\u4e00-\\u9fa5\\w\\s\\d.,!?;:'\"()\\-]+"  # 允许的字符
+      
+      # SQL注入防护
+      sql-injection:
+        enabled: true
+        patterns:
+          - "(\\b(union|select|insert|update|delete|drop|create|alter|exec|execute)\\b)"
+          - "(--|#|/\\*|\\*/|xp_)"
+      
+      # 限流配置
+      rate-limiting:
+        enabled: true
+        # 基于IP的限流
+        ip-based:
+          requests-per-minute: 60
+          burst-size: 10
+        # 基于用户的限流
+        user-based:
+          requests-per-minute: 100
+          burst-size: 20
+    
+    # 监控指标配置
+    metrics:
+      enabled: true
+      # 业务指标
+      questions:
+        counter: true        # 问题计数器
+        timer: true          # 响应时间计时器
+      # 技术指标
+      llm:
+        counter: true        # LLM调用计数器
+        timer: true          # LLM响应时间
+      database:
+        counter: true        # 数据库查询计数器
+        timer: true        # 数据库查询时间

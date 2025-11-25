@@ -105,14 +105,6 @@ LLM输出解析和查询构建逻辑详见：<mcfile name="llm-qa-parser.md" pat
 - 支持大小写敏感配置
 - 正则表达式批量匹配
 
-### 4.3 缓存优化
-可选的Redis缓存实现，详见：<mcfile name="llm-qa-design.md" path="d:\项目\Spring\litemall\docs\coding-2\llm-qa-design.md"></mcfile>
-
-缓存策略：
-- 问答结果缓存
-- LLM响应缓存
-- 热点问题预缓存
-
 ## 5. 部署配置
 
 ### 5.1 数据库配置
@@ -140,53 +132,39 @@ LLM输出解析和查询构建逻辑详见：<mcfile name="llm-qa-parser.md" pat
 3. 数据库初始化和表创建
 4. 服务健康检查和API测试
 
-## 6. 监控与运维
-
-### 6.1 健康检查
-健康检查实现参考：<mcfile name="llm-qa-design.md" path="d:\项目\Spring\litemall\docs\coding-2\llm-qa-design.md"></mcfile>
-
-监控指标：
-- LLM服务连接状态
-- 数据库连接状态
-- 服务响应时间
-- 错误率统计
-
-### 6.2 性能监控
-性能指标收集详见：<mcfile name="llm-qa-design.md" path="d:\项目\Spring\litemall\docs\coding-2\llm-qa-design.md"></mcfile>
-
-监控维度：
-- 问题处理数量
-- 平均响应时间
-- 活跃会话数
-- LLM调用成功率
-
-## 7. 测试验证
-
-### 7.1 API接口测试
+## 6. 测试验证
 测试用例和验证方法参考：<mcfile name="llm-qa-design.md" path="d:\项目\Spring\litemall\docs\coding-2\llm-qa-design.md"></mcfile>
 
-测试场景：
+### 6.1 结果过滤机制测试
+结果过滤功能测试用例详见：<mcfile name="LLMQAServiceTest.java" path="d:\项目\Spring\litemall\litemall-core\src\test\java\org\linlinjava\litemall\core\llm\service\LLMQAServiceTest.java"></mcfile>
+
+测试覆盖场景：
+- **精确匹配测试** - 验证exact模式能准确匹配完整商品名称
+- **包含匹配测试** - 验证contains模式能匹配包含关键词的商品
+- **前缀匹配测试** - 验证starts_with模式能匹配指定前缀的商品
+- **后缀匹配测试** - 验证ends_with模式能匹配指定后缀的商品
+- **正则表达式测试** - 验证regex模式支持复杂模式匹配
+- **大小写敏感测试** - 验证case_sensitive参数的有效性
+- **多字段匹配测试** - 验证名称和简介字段的同时匹配
+- **无匹配结果测试** - 验证空结果的正确处理
+- **集成测试** - 验证executeQuery方法中的过滤流程
+
+### 6.2 核心功能测试
+基础测试场景：
 - 价格范围查询测试
 - 库存状态查询测试
 - 品牌筛选测试
 - 多条件组合查询测试
+- 会话管理功能测试
+- 异常处理测试
 
-### 7.2 性能测试
-性能基准和优化建议详见各模块文档中的性能说明章节。
+### 6.3 性能测试
+性能指标验证：
+- 结果过滤响应时间 < 100ms
+- 并发查询处理能力
+- 内存使用效率
+- 数据库查询优化效果
 
-## 8. 后续扩展
-
-### 8.1 功能扩展
-- 商品推荐算法集成
-- 多语言支持
-- 语音输入输出
-- 图像识别查询
-
-### 8.2 技术优化
-- 异步处理优化
-- 分布式缓存
-- 数据库读写分离
-- 微服务架构升级
 
 ---
 
