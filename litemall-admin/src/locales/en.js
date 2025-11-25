@@ -27,6 +27,7 @@ export default {
       goods_create: 'Add goods',
       goods_edit: 'Edit goods',
       goods_comment: 'Comments',
+      goods_llm_qa: 'Smart Goods Q&A',
       promotion: 'Promotion',
       promotion_ad: 'Ads',
       promotion_coupon: 'Coupons',

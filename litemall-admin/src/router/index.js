@@ -280,6 +280,16 @@ export const asyncRoutes = [
           title: 'app.menu.goods_comment',
           noCache: true
         }
+      },
+      {
+        path: 'llm-qa',
+        component: () => import('@/views/goods/llm-qa'),
+        name: 'llmQA',
+        meta: {
+          perms: ['GET /admin/llm/qa'],
+          title: 'app.menu.goods_llm_qa',
+          noCache: true
+        }
       }
     ]
   },
