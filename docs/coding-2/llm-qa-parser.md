@@ -38,7 +38,16 @@ LLMOutputParser (LLM输出解析器)
 2. stock_check - 库存检查
 3. category_filter - 分类筛选
 4. keyword_search - 关键词搜索
-5. statistical - 统计查询
+5. name_pattern - 名称模式匹配
+6. specific_product - 特定商品查询
+7. statistical - 统计查询
+
+名称匹配模式：
+- exact - 精确匹配
+- contains - 包含匹配
+- starts_with - 前缀匹配
+- ends_with - 后缀匹配
+- regex - 正则表达式匹配
 
 输出要求：
 - 必须返回有效的JSON格式
@@ -46,11 +55,14 @@ LLMOutputParser (LLM输出解析器)
 - conditions中的字段必须是数据库中存在的字段
 - price字段使用数值范围，格式：{"min": 100, "max": 200}
 - number字段使用库存条件，格式：{"min": 10, "max": null}
+- name字段支持多种匹配模式，格式：{"pattern": "手机", "mode": "contains", "case_sensitive": false}
+- 支持多个查询条件组合
 
 示例输出：
 {
-  "query_type": "price_range",
+  "query_type": "name_pattern",
   "conditions": {
+    "name": {"pattern": "手机", "mode": "contains", "case_sensitive": false},
     "price": {"min": 100, "max": 200},
     "is_on_sale": 1
   },
@@ -251,7 +263,7 @@ public class QuerySchema {
         "properties", Map.of(
             "query_type", Map.of(
                 "type", "string",
-                "enum", List.of("price_range", "stock_check", "category_filter", "keyword_search", "statistical")
+                "enum", List.of("price_range", "stock_check", "category_filter", "keyword_search", "name_pattern", "specific_product", "statistical")
             ),
             "conditions", Map.of(
                 "type", "object",
@@ -260,8 +272,22 @@ public class QuerySchema {
                     "number", Map.of("type", "object"),
                     "category_id", Map.of("type", "integer"),
                     "is_on_sale", Map.of("type", "integer", "enum", List.of(0, 1)),
-                    "name", Map.of("type", "string"),
-                    "brief", Map.of("type", "string")
+                    "name", Map.of(
+                        "type", "object",
+                        "properties", Map.of(
+                            "pattern", Map.of("type", "string"),
+                            "mode", Map.of("type", "string", "enum", List.of("exact", "contains", "starts_with", "ends_with", "regex")),
+                            "case_sensitive", Map.of("type", "boolean")
+                        )
+                    ),
+                    "brief", Map.of(
+                        "type", "object",
+                        "properties", Map.of(
+                            "pattern", Map.of("type", "string"),
+                            "mode", Map.of("type", "string", "enum", List.of("exact", "contains", "starts_with", "ends_with", "regex")),
+                            "case_sensitive", Map.of("type", "boolean")
+                        )
+                    )
                 )
             ),
             "sort", Map.of("type", "string"),
@@ -405,6 +431,10 @@ public class QueryIntent {
         private Object value;                    // 值
         private Object minValue;                 // 最小值（范围查询）
         private Object maxValue;                 // 最大值（范围查询）
+        private String pattern;                  // 模式匹配字符串
+        private String matchMode;                // 匹配模式: exact, contains, starts_with, ends_with, regex
+        private Boolean caseSensitive;           // 是否大小写敏感
+        private List<String> patterns;           // 多个模式匹配
     }
 }
 ```
@@ -462,21 +492,30 @@ public class QueryIntentBuilder {
         builder.field(field);
         
         if (value instanceof JSONObject) {
+            JSONObject jsonValue = (JSONObject) value;
+            
+            // 检查是否为模式匹配条件
+            if (jsonValue.has("pattern")) {
+                return buildPatternCondition(builder, jsonValue);
+            }
+            
             // 范围查询
-            JSONObject rangeObj = (JSONObject) value;
             builder.operator("BETWEEN");
             
-            if (rangeObj.has("min")) {
-                builder.minValue(rangeObj.get("min"));
+            if (jsonValue.has("min")) {
+                builder.minValue(jsonValue.get("min"));
             }
-            if (rangeObj.has("max")) {
-                builder.maxValue(rangeObj.get("max"));
+            if (jsonValue.has("max")) {
+                builder.maxValue(jsonValue.get("max"));
             }
             
         } else if (value instanceof String) {
-            // 字符串查询
+            // 字符串查询（向后兼容）
             builder.operator("LIKE");
             builder.value("%" + value + "%");
+            builder.pattern((String) value);
+            builder.matchMode("contains");
+            builder.caseSensitive(false);
             
         } else {
             // 精确匹配
@@ -485,6 +524,84 @@ public class QueryIntentBuilder {
         }
         
         return builder.build();
+    }
+    
+    private QueryIntent.Condition buildPatternCondition(QueryIntent.Condition.ConditionBuilder builder, JSONObject patternObj) {
+        String pattern = patternObj.getString("pattern");
+        String matchMode = patternObj.has("mode") ? patternObj.getString("mode") : "contains";
+        Boolean caseSensitive = patternObj.has("case_sensitive") ? patternObj.getBoolean("case_sensitive") : false;
+        
+        builder.pattern(pattern);
+        builder.matchMode(matchMode);
+        builder.caseSensitive(caseSensitive);
+        
+        // 根据匹配模式生成对应的值
+        switch (matchMode) {
+            case "exact":
+                builder.operator("=");
+                builder.value(pattern);
+                break;
+            case "contains":
+                builder.operator("LIKE");
+                builder.value("%" + pattern + "%");
+                break;
+            case "starts_with":
+                builder.operator("LIKE");
+                builder.value(pattern + "%");
+                break;
+            case "ends_with":
+                builder.operator("LIKE");
+                builder.value("%" + pattern);
+                break;
+            case "regex":
+                builder.operator("REGEXP");
+                builder.value(pattern);
+                break;
+            default:
+                builder.operator("LIKE");
+                builder.value("%" + pattern + "%");
+                break;
+            default:
+                builder.operator("LIKE");
+                builder.value("%" + pattern + "%");
+        }
+        
+        return builder.build();
+    }
+    
+    // 构建多个模式匹配条件
+    public QueryIntent.Condition buildMultiPatternCondition(String field, List<String> patterns, String matchMode, Boolean caseSensitive) {
+        QueryIntent.Condition.ConditionBuilder builder = QueryIntent.Condition.builder();
+        builder.field(field);
+        builder.operator("IN");
+        builder.patterns(patterns);
+        builder.matchMode(matchMode);
+        builder.caseSensitive(caseSensitive);
+        
+        // 生成IN查询的值列表
+        List<String> values = patterns.stream()
+            .map(pattern -> transformPattern(pattern, matchMode))
+            .collect(Collectors.toList());
+        
+        builder.value(values);
+        return builder.build();
+    }
+    
+    private String transformPattern(String pattern, String matchMode) {
+        switch (matchMode) {
+            case "exact":
+                return pattern;
+            case "contains":
+                return "%" + pattern + "%";
+            case "starts_with":
+                return pattern + "%";
+            case "ends_with":
+                return "%" + pattern;
+            case "regex":
+                return pattern;
+            default:
+                return pattern;
+        }
     }
 }
 ```
@@ -559,6 +676,10 @@ public class SQLQueryBuilder {
                 sql.append("AND ").append(field).append(" LIKE ? ");
                 break;
                 
+            case "REGEXP":
+                sql.append("AND ").append(field).append(" REGEXP ? ");
+                break;
+                
             case "BETWEEN":
                 if (condition.getMinValue() != null && condition.getMaxValue() != null) {
                     sql.append("AND ").append(field).append(" BETWEEN ? AND ? ");
@@ -570,11 +691,27 @@ public class SQLQueryBuilder {
                 break;
                 
             case "IN":
-                sql.append("AND ").append(field).append(" IN (?) ");
+                buildInCondition(sql, field, condition);
                 break;
                 
             default:
                 throw new SQLBuildException("不支持的操作符: " + operator);
+        }
+    }
+    
+    private void buildInCondition(StringBuilder sql, String field, QueryIntent.Condition condition) {
+        Object value = condition.getValue();
+        if (value instanceof List) {
+            List<?> values = (List<?>) value;
+            if (values.isEmpty()) {
+                sql.append("AND 1=0 "); // 空列表时返回无结果
+            } else {
+                sql.append("AND ").append(field).append(" IN (");
+                sql.append(String.join(", ", Collections.nCopies(values.size(), "?")));
+                sql.append(") ");
+            }
+        } else {
+            sql.append("AND ").append(field).append(" = ? ");
         }
     }
     
@@ -630,6 +767,7 @@ public class SQLParameterBinder {
         switch (operator) {
             case "=":
             case "LIKE":
+            case "REGEXP":
                 parameters.add(condition.getValue());
                 break;
                 
@@ -745,6 +883,10 @@ public class ParseExceptionHandler {
             return parseStockQuestion(llmOutput);
         } else if (llmOutput.contains("分类")) {
             return parseCategoryQuestion(llmOutput);
+        } else if (llmOutput.contains("手机") || llmOutput.contains("电脑") || llmOutput.contains("衣服")) {
+            return parseProductCategoryQuestion(llmOutput);
+        } else if (llmOutput.contains("苹果") || llmOutput.contains("华为") || llmOutput.contains("小米")) {
+            return parseBrandQuestion(llmOutput);
         }
         
         // 默认返回错误查询
@@ -783,6 +925,76 @@ public class ParseExceptionHandler {
         }
         
         return createErrorQuery("无法解析价格范围");
+    }
+    
+    private ParsedQuery parseProductCategoryQuestion(String text) {
+        // 提取商品类别关键词
+        List<String> categories = new ArrayList<>();
+        if (text.contains("手机")) categories.add("手机");
+        if (text.contains("电脑")) categories.add("电脑");
+        if (text.contains("衣服")) categories.add("衣服");
+        
+        if (!categories.isEmpty()) {
+            QueryIntent intent = QueryIntent.builder()
+                .queryType("name_pattern")
+                .conditions(Map.of(
+                    "name", QueryIntent.Condition.builder()
+                        .field("name")
+                        .operator("IN")
+                        .patterns(categories)
+                        .matchMode("contains")
+                        .caseSensitive(false)
+                        .build()
+                ))
+                .build();
+            
+            // 构建IN查询
+            String placeholders = String.join(",", Collections.nCopies(categories.size(), "?"));
+            String sql = "SELECT id, name, price, number FROM litemall_goods WHERE name IN (" + placeholders + ") AND is_on_sale = 1";
+            List<Object> parameters = new ArrayList<>(categories);
+            
+            return ParsedQuery.builder()
+                .queryIntent(intent)
+                .sql(sql)
+                .parameters(parameters)
+                .build();
+        }
+        
+        return createErrorQuery("无法解析商品类别");
+    }
+    
+    private ParsedQuery parseBrandQuestion(String text) {
+        // 提取品牌关键词
+        List<String> brands = new ArrayList<>();
+        if (text.contains("苹果")) brands.add("苹果");
+        if (text.contains("华为")) brands.add("华为");
+        if (text.contains("小米")) brands.add("小米");
+        
+        if (!brands.isEmpty()) {
+            QueryIntent intent = QueryIntent.builder()
+                .queryType("name_pattern")
+                .conditions(Map.of(
+                    "name", QueryIntent.Condition.builder()
+                        .field("name")
+                        .operator("LIKE")
+                        .pattern(brands.get(0)) // 取第一个品牌
+                        .matchMode("contains")
+                        .caseSensitive(false)
+                        .build()
+                ))
+                .build();
+            
+            String sql = "SELECT id, name, price, number FROM litemall_goods WHERE name LIKE ? AND is_on_sale = 1";
+            List<Object> parameters = Arrays.asList("%" + brands.get(0) + "%");
+            
+            return ParsedQuery.builder()
+                .queryIntent(intent)
+                .sql(sql)
+                .parameters(parameters)
+                .build();
+        }
+        
+        return createErrorQuery("无法解析品牌信息");
     }
     
     private ParsedQuery createErrorQuery(String errorMessage) {
