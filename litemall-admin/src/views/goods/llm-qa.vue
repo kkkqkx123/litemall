@@ -139,7 +139,7 @@ export default {
           maxResults: 10
         })
 
-        if (response.success) {
+        if (response.errno === 0) {
           // 添加到消息列表
           this.messages.push({
             type: 'assistant',
@@ -155,11 +155,25 @@ export default {
             this.scrollToBottom()
           })
         } else {
-          this.showError(response.message || '请求失败')
+          this.showError(response.errmsg || '请求失败')
         }
       } catch (error) {
         console.error('发送问题失败:', error)
-        this.showError('发送失败，请稍后重试')
+        let errorMessage = '发送失败，请稍后重试'
+
+        // 处理后端返回的错误信息
+        if (error.response && error.response.data) {
+          const errorData = error.response.data
+          if (errorData.errmsg) {
+            errorMessage = errorData.errmsg
+          } else if (errorData.message) {
+            errorMessage = errorData.message
+          }
+        } else if (error.message) {
+          errorMessage = error.message
+        }
+
+        this.showError(errorMessage)
       } finally {
         this.isLoading = false
       }

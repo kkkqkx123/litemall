@@ -15,7 +15,7 @@ import request from '@/utils/request'
  */
 export function askQuestion(data) {
   return request({
-    url: '/admin/llm/qa/ask',
+    url: '/admin/llm/qa',
     method: 'post',
     data
   })
@@ -28,7 +28,7 @@ export function askQuestion(data) {
  */
 export function getSessionHistory(sessionId) {
   return request({
-    url: '/admin/llm/qa/session/' + sessionId + '/history',
+    url: `/admin/llm/qa/${sessionId}/history`,
     method: 'get'
   })
 }
@@ -51,7 +51,7 @@ export function getSessionStatistics() {
  */
 export function clearSession(sessionId) {
   return request({
-    url: '/admin/llm/qa/session/' + sessionId + '/clear',
+    url: `/admin/llm/qa/${sessionId}/clear`,
     method: 'delete'
   })
 }
