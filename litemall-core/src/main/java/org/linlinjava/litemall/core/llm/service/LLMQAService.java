@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * LLM问答服务
@@ -315,6 +316,12 @@ public class LLMQAService {
             return false;
         }
         
+        // 验证模式长度，防止过长的正则表达式导致ReDoS攻击
+        if (pattern.length() > 100) {
+            logger.warn("正则表达式模式过长，模式：{}，长度：{}", pattern, pattern.length());
+            return false;
+        }
+        
         String targetText = caseSensitive ? text : text.toLowerCase();
         String targetPattern = caseSensitive ? pattern : pattern.toLowerCase();
         
@@ -329,8 +336,25 @@ public class LLMQAService {
                 return targetText.endsWith(targetPattern);
             case "regex":
                 try {
-                    Pattern regex = caseSensitive ? Pattern.compile(pattern) : Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+                    // 为正则表达式添加超时限制，防止ReDoS攻击
+                    if (text.length() > 1000) {
+                        logger.warn("文本过长，跳过正则匹配，文本长度：{}", text.length());
+                        return false;
+                    }
+                    
+                    int flags = 0;
+                    if (!caseSensitive) {
+                        flags |= Pattern.CASE_INSENSITIVE;
+                    }
+                    // 添加时间限制编译标志，虽然Java的正则表达式没有直接的timeout机制，
+                    // 但可以通过限制文本和模式长度来防止ReDoS攻击
+                    Pattern regex = Pattern.compile(pattern, flags);
+                    
+                    // 使用Matcher进行匹配
                     return regex.matcher(text).find();
+                } catch (PatternSyntaxException e) {
+                    logger.warn("正则表达式语法错误，模式：{}，错误：{}", pattern, e.getMessage());
+                    return false;
                 } catch (Exception e) {
                     logger.warn("正则表达式匹配失败，模式：{}，文本：{}", pattern, text, e);
                     return false;

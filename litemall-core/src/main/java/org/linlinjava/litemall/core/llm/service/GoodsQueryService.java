@@ -353,19 +353,34 @@ public class GoodsQueryService {
             String searchKeyword = "%" + keyword + "%";
             
             conn = dataSource.getConnection();
-            String sql = "SELECT * FROM litemall_goods " +
-                        "WHERE (name LIKE ? OR keywords LIKE ? OR brief LIKE ?) " +
-                        "AND is_on_sale = 1 AND deleted = 0 " +
-                        "ORDER BY sort_order ASC, add_time DESC";
+            StringBuilder sqlBuilder = new StringBuilder(
+                "SELECT * FROM litemall_goods " +
+                "WHERE (name LIKE ? OR keywords LIKE ? OR brief LIKE ?) " +
+                "AND is_on_sale = 1 AND deleted = 0 " +
+                "ORDER BY sort_order ASC, add_time DESC"
+            );
             
-            if (limit != null && limit > 0) {
-                sql += " LIMIT " + limit;
+            // 验证limit参数，防止SQL注入
+            if (limit != null) {
+                if (limit < 0) {
+                    throw new IllegalArgumentException("限制数量不能为负数");
+                }
+                if (limit > 1000) {
+                    limit = 1000; // 设置合理的上限
+                    logger.warn("限制数量超过上限，已调整为1000");
+                }
+                sqlBuilder.append(" LIMIT ?");
             }
             
-            stmt = conn.prepareStatement(sql);
+            stmt = conn.prepareStatement(sqlBuilder.toString());
             stmt.setString(1, searchKeyword);
             stmt.setString(2, searchKeyword);
             stmt.setString(3, searchKeyword);
+            
+            // 设置limit参数
+            if (limit != null) {
+                stmt.setInt(4, limit);
+            }
             
             rs = stmt.executeQuery();
             

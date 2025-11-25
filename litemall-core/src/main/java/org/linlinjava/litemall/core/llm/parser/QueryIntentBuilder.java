@@ -164,6 +164,44 @@ public class QueryIntentBuilder {
     }
     
     /**
+     * 创建分类筛选查询意图
+     * @param categoryId 分类ID
+     * @return 查询意图对象
+     */
+    public QueryIntent buildCategoryFilterQuery(Integer categoryId) {
+        QueryIntent intent = new QueryIntent();
+        intent.setQueryType(QueryType.CATEGORY_FILTER.getValue());
+        
+        Map<String, Object> conditions = new HashMap<>();
+        if (categoryId != null) {
+            conditions.put("category_id", categoryId);
+        }
+        conditions.put("is_on_sale", 1); // 只查询在售商品
+        
+        intent.setConditions(conditions);
+        return intent;
+    }
+    
+    /**
+     * 创建特定商品查询意图
+     * @param goodsId 商品ID
+     * @return 查询意图对象
+     */
+    public QueryIntent buildSpecificProductQuery(Integer goodsId) {
+        QueryIntent intent = new QueryIntent();
+        intent.setQueryType(QueryType.SPECIFIC_PRODUCT.getValue());
+        
+        Map<String, Object> conditions = new HashMap<>();
+        if (goodsId != null) {
+            conditions.put("id", goodsId);
+        }
+        conditions.put("is_on_sale", 1); // 只查询在售商品
+        
+        intent.setConditions(conditions);
+        return intent;
+    }
+    
+    /**
      * 创建统计查询意图
      * @param statisticType 统计类型
      * @return 查询意图对象

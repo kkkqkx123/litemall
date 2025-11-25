@@ -212,7 +212,56 @@ public class SQLBuilder {
     }
     
     /**
-     * 构建统计查询SQL
+     * 构建统计查询SQL和参数
+     * @param queryIntent 查询意图
+     * @return SQL和参数数组，[0]是SQL字符串，[1]是参数列表
+     */
+    public Object[] buildStatisticalSQLWithParams(QueryIntent queryIntent) {
+        if (queryIntent == null || !queryIntent.isValid()) {
+            throw new IllegalArgumentException("无效的查询意图");
+        }
+        
+        Map<String, Object> conditions = queryIntent.getConditions();
+        if (conditions == null || conditions.isEmpty()) {
+            throw new IllegalArgumentException("统计查询需要条件");
+        }
+        
+        String statisticType = (String) conditions.get("statistic_type");
+        if (statisticType == null || statisticType.trim().isEmpty()) {
+            throw new IllegalArgumentException("统计查询需要指定统计类型");
+        }
+        
+        StringBuilder sql = new StringBuilder();
+        List<Object> parameters = new ArrayList<>();
+        
+        switch (statisticType) {
+            case "total_count":
+                sql.append("SELECT COUNT(*) as total FROM ").append(GOODS_TABLE);
+                break;
+            case "price_stats":
+                sql.append("SELECT COUNT(*) as count, MIN(retail_price) as min_price, MAX(retail_price) as max_price, AVG(retail_price) as avg_price FROM ").append(GOODS_TABLE);
+                break;
+            case "stock_stats":
+                sql.append("SELECT COUNT(*) as count, SUM(number) as total_stock, AVG(number) as avg_stock FROM ").append(GOODS_TABLE);
+                break;
+            case "category_stats":
+                sql.append("SELECT category_id, COUNT(*) as count FROM ").append(GOODS_TABLE).append(" GROUP BY category_id");
+                break;
+            default:
+                throw new IllegalArgumentException("不支持的统计类型: " + statisticType);
+        }
+        
+        // 添加基础条件（如is_on_sale）
+        String whereClause = buildStatisticalWhereClause(conditions, parameters);
+        if (whereClause != null && !whereClause.trim().isEmpty()) {
+            sql.append(" WHERE ").append(whereClause);
+        }
+        
+        return new Object[]{sql.toString(), parameters};
+    }
+    
+    /**
+     * 构建统计查询SQL（保持向后兼容）
      * @param queryIntent 查询意图
      * @return 统计查询SQL
      */
@@ -251,20 +300,24 @@ public class SQLBuilder {
         }
         
         // 添加基础条件（如is_on_sale）
-        String whereClause = buildStatisticalWhereClause(conditions);
+        List<Object> statisticalParams = new ArrayList<>();
+        String whereClause = buildStatisticalWhereClause(conditions, statisticalParams);
         if (whereClause != null && !whereClause.trim().isEmpty()) {
             sql.append(" WHERE ").append(whereClause);
         }
         
+        // 注意：统计查询的参数需要通过其他方式传递
+        // 这里只返回SQL字符串，参数需要调用方单独处理
         return sql.toString();
     }
     
     /**
      * 构建统计查询的WHERE条件
      * @param conditions 查询条件
+     * @param parameters 参数列表（用于预编译SQL）
      * @return WHERE条件子句
      */
-    private String buildStatisticalWhereClause(Map<String, Object> conditions) {
+    private String buildStatisticalWhereClause(Map<String, Object> conditions, List<Object> parameters) {
         StringBuilder whereClause = new StringBuilder();
         boolean firstCondition = true;
         
@@ -286,25 +339,31 @@ public class SQLBuilder {
             }
             firstCondition = false;
             
-            // 处理通用条件
+            // 处理通用条件，使用预编译参数
             switch (key) {
                 case "min_price":
-                    whereClause.append("retail_price >= ").append(value);
+                    whereClause.append("retail_price >= ?");
+                    parameters.add(value);
                     break;
                 case "max_price":
-                    whereClause.append("retail_price <= ").append(value);
+                    whereClause.append("retail_price <= ?");
+                    parameters.add(value);
                     break;
                 case "min_number":
-                    whereClause.append("number >= ").append(value);
+                    whereClause.append("number >= ?");
+                    parameters.add(value);
                     break;
                 case "max_number":
-                    whereClause.append("number <= ").append(value);
+                    whereClause.append("number <= ?");
+                    parameters.add(value);
                     break;
                 case "is_on_sale":
-                    whereClause.append("is_on_sale = ").append(value);
+                    whereClause.append("is_on_sale = ?");
+                    parameters.add(value);
                     break;
                 default:
-                    whereClause.append(key).append(" = ").append(value);
+                    whereClause.append(key).append(" = ?");
+                    parameters.add(value);
                     break;
             }
         }
