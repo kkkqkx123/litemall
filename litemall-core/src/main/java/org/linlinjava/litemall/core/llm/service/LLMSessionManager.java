@@ -17,9 +17,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * 负责管理用户会话，包括会话创建、状态维护、超时处理等
  */
 @Service
-public class SessionManager {
+public class LLMSessionManager {
     
-    private static final Logger logger = LoggerFactory.getLogger(SessionManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(LLMSessionManager.class);
     
     // 会话超时时间（30分钟）
     private static final long SESSION_TIMEOUT = 30 * 60 * 1000L;
@@ -36,7 +36,7 @@ public class SessionManager {
     // 定时清理任务
     private final ScheduledExecutorService cleanupExecutor;
     
-    public SessionManager() {
+    public LLMSessionManager() {
         // 启动定时清理任务
         cleanupExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread thread = new Thread(r, "SessionCleanupThread");

@@ -46,7 +46,7 @@ public class LLMQAService {
     private GoodsQueryService goodsQueryService;
     
     @Autowired
-    private SessionManager sessionManager;
+    private LLMSessionManager sessionManager;
     
     /**
      * 处理商品问答请求
@@ -483,7 +483,7 @@ public class LLMQAService {
      * @return 会话历史
      */
     public Object getSessionHistory(String sessionId) {
-        SessionManager.Session session = sessionManager.getSession(sessionId);
+        LLMSessionManager.Session session = sessionManager.getSession(sessionId);
         if (session == null) {
             throw new RuntimeException("会话不存在或已过期");
         }
