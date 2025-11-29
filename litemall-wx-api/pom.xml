@@ -49,7 +49,24 @@
             <groupId>com.github.binarywang</groupId>
             <artifactId>weixin-java-miniapp</artifactId>
         </dependency>
-        <!-- SpringDoc OpenAPI 替代 SpringFox -->
+        <!-- SpringDoc OpenAPI - 微信小程序API文档生成
+             替代已弃用的SpringFox Swagger2，提供OpenAPI 3规范支持
+             
+             本模块配置：
+             - 分组名称: wx
+             - 扫描包: org.linlinjava.litemall.wx.web
+             - 文档标题: litemall-wx API
+             - 文档描述: litemall小商场API
+             
+             访问地址：
+             - 单体服务: http://localhost:8080/swagger-ui.html#/wx
+             - 独立服务: http://localhost:8082/swagger-ui.html#/wx
+             
+             配置类：
+             - WxSwagger2Configuration.java (历史命名，实际使用SpringDoc)
+             
+             版本：2.8.5 (与Spring Boot 3.5.6兼容)
+        -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>

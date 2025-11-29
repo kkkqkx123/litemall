@@ -159,7 +159,30 @@
                 <artifactId>spring-boot-starter-mail</artifactId>
             </dependency>
 
-            <!-- SpringDoc OpenAPI 替代 SpringFox -->
+            <!-- SpringDoc OpenAPI - 现代化API文档生成解决方案
+                 替代已弃用的SpringFox Swagger2，完全兼容Spring Boot 3.x
+                 提供OpenAPI 3规范支持，包含Swagger UI界面
+                 
+                 主要特性：
+                 - 支持OpenAPI 3.0规范
+                 - 与Spring Boot 3.x完全兼容（Jakarta EE命名空间）
+                 - 零配置启动，自动扫描API
+                 - 支持API分组和版本控制
+                 - 提供在线测试功能
+                 
+                 访问地址：
+                 - Swagger UI: http://localhost:8080/swagger-ui.html
+                 - OpenAPI JSON: http://localhost:8080/v3/api-docs
+                 
+                 配置方式：
+                 1. 通过application.yml配置（推荐）
+                 2. 通过Java配置类配置
+                 3. 通过注解配置
+                 
+                 版本说明：
+                 2.8.5版本与Spring Boot 3.5.6完全兼容
+                 包含springdoc-openapi-starter-webmvc-ui和swagger-ui依赖
+            -->
             <dependency>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>

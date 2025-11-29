@@ -50,7 +50,24 @@
             <groupId>com.github.penggle</groupId>
             <artifactId>kaptcha</artifactId>
         </dependency>
-        <!-- SpringDoc OpenAPI 替代 SpringFox -->
+        <!-- SpringDoc OpenAPI - 管理后台API文档生成
+             替代已弃用的SpringFox Swagger2，提供OpenAPI 3规范支持
+             
+             本模块配置：
+             - 分组名称: admin
+             - 扫描包: org.linlinjava.litemall.admin.web
+             - 文档标题: litemall-admin API
+             - 文档描述: litemall管理后台API
+             
+             访问地址：
+             - 单体服务: http://localhost:8080/swagger-ui.html#/admin
+             - 独立服务: http://localhost:8083/swagger-ui.html#/admin
+             
+             配置类：
+             - AdminSwagger2Configuration.java (历史命名，实际使用SpringDoc)
+             
+             版本：2.8.5 (与Spring Boot 3.5.6兼容)
+        -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>

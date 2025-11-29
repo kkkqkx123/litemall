@@ -39,8 +39,8 @@ export QA_MAX_RETRIES="3"
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/litemall?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
-    username: kkkqkx
-    password: 1234567kk
+    username: root
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
     
     # 连接池配置
