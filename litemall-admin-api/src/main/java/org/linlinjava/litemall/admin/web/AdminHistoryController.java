@@ -2,8 +2,6 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.core.validator.Order;
 import org.linlinjava.litemall.core.validator.Sort;
@@ -25,8 +23,6 @@ public class AdminHistoryController {
     @Autowired
     private LitemallSearchHistoryService searchHistoryService;
 
-    @RequiresPermissions("admin:history:list")
-    @RequiresPermissionsDesc(menu = {"用户管理", "搜索历史"}, button = "查询")
     @GetMapping("/list")
     public Object list(String userId, String keyword,
                        @RequestParam(defaultValue = "1") Integer page,

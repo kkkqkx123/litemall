@@ -2,9 +2,10 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.apache.shiro.subject.Subject;
+import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
+import org.linlinjava.litemall.admin.security.AdminUserDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.core.util.JacksonUtil;
 import org.linlinjava.litemall.core.util.ResponseUtil;
@@ -60,9 +61,12 @@ public class AdminNoticeController {
     }
 
     private Integer getAdminId(){
-        Subject currentUser = SecurityUtils.getSubject();
-        LitemallAdmin admin = (LitemallAdmin) currentUser.getPrincipal();
-        return admin.getId();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("用户未认证");
+        }
+        AdminUserDetails adminUserDetails = (AdminUserDetails) authentication.getPrincipal();
+        return adminUserDetails.getAdmin().getId();
     }
 
     @RequiresPermissions("admin:notice:create")

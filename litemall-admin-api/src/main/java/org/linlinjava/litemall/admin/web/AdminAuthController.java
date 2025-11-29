@@ -3,13 +3,6 @@ package org.linlinjava.litemall.admin.web;
 import com.google.code.kaptcha.Producer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.LockedAccountException;
-import org.apache.shiro.authc.UnknownAccountException;
-import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.authz.annotation.RequiresAuthentication;
-import org.apache.shiro.subject.Subject;
 import org.linlinjava.litemall.admin.service.LogHelper;
 import org.linlinjava.litemall.admin.util.Permission;
 import org.linlinjava.litemall.admin.util.PermissionUtil;
@@ -20,6 +13,10 @@ import org.linlinjava.litemall.db.domain.LitemallAdmin;
 import org.linlinjava.litemall.db.service.LitemallAdminService;
 import org.linlinjava.litemall.db.service.LitemallPermissionService;
 import org.linlinjava.litemall.db.service.LitemallRoleService;
+import org.linlinjava.litemall.admin.security.AdminUserDetails;
+import org.linlinjava.litemall.admin.security.JwtTokenProvider;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.StringUtils;
@@ -54,6 +51,9 @@ public class AdminAuthController {
 
     @Autowired
     private Producer kaptchaProducer;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     @GetMapping("/kaptcha")
     public Object kaptcha(HttpServletRequest request) {
@@ -103,28 +103,24 @@ public class AdminAuthController {
 //            return ResponseUtil.fail(ADMIN_INVALID_KAPTCHA, "验证码不正确", doKaptcha(request));
 //        }
 
-        Subject currentUser = SecurityUtils.getSubject();
-        try {
-            currentUser.login(new UsernamePasswordToken(username, password));
-        } catch (UnknownAccountException uae) {
+        // Spring Security会自动处理认证，这里只需要检查认证状态
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
             logHelper.logAuthFail("登录", "用户帐号或密码不正确");
             return ResponseUtil.fail(ADMIN_INVALID_ACCOUNT, "用户帐号或密码不正确", doKaptcha(request));
-        } catch (LockedAccountException lae) {
-            logHelper.logAuthFail("登录", "用户帐号已锁定不可用");
-            return ResponseUtil.fail(ADMIN_INVALID_ACCOUNT, "用户帐号已锁定不可用");
-
-        } catch (AuthenticationException ae) {
-            logHelper.logAuthFail("登录", "认证失败");
-            return ResponseUtil.fail(ADMIN_INVALID_ACCOUNT, "认证失败");
         }
 
-        currentUser = SecurityUtils.getSubject();
-        LitemallAdmin admin = (LitemallAdmin) currentUser.getPrincipal();
+        // 获取认证后的用户信息
+        AdminUserDetails userDetails = (AdminUserDetails) authentication.getPrincipal();
+        LitemallAdmin admin = userDetails.getAdmin();
         admin.setLastLoginIp(IpUtil.getIpAddr(request));
         admin.setLastLoginTime(LocalDateTime.now());
         adminService.updateById(admin);
 
         logHelper.logAuthSucceed("登录");
+
+        // 生成JWT令牌
+        String token = jwtTokenProvider.generateToken(authentication);
 
         // userInfo
         Map<String, Object> adminInfo = new HashMap<String, Object>();
@@ -132,7 +128,7 @@ public class AdminAuthController {
         adminInfo.put("avatar", admin.getAvatar());
 
         Map<Object, Object> result = new HashMap<Object, Object>();
-        result.put("token", currentUser.getSession().getId());
+        result.put("token", token);
         result.put("adminInfo", adminInfo);
         return ResponseUtil.ok(result);
     }
@@ -140,22 +136,25 @@ public class AdminAuthController {
     /*
      *
      */
-    @RequiresAuthentication
     @PostMapping("/logout")
     public Object logout() {
-        Subject currentUser = SecurityUtils.getSubject();
+        // Spring Security会自动处理登出，这里只需要清除认证上下文
+        SecurityContextHolder.clearContext();
 
         logHelper.logAuthSucceed("退出");
-        currentUser.logout();
         return ResponseUtil.ok();
     }
 
 
-    @RequiresAuthentication
     @GetMapping("/info")
     public Object info() {
-        Subject currentUser = SecurityUtils.getSubject();
-        LitemallAdmin admin = (LitemallAdmin) currentUser.getPrincipal();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+            return ResponseUtil.unlogin();
+        }
+
+        AdminUserDetails userDetails = (AdminUserDetails) authentication.getPrincipal();
+        LitemallAdmin admin = userDetails.getAdmin();
 
         Map<String, Object> data = new HashMap<>();
         data.put("name", admin.getUsername());

@@ -79,6 +79,7 @@
                         <configuration>
                             <executable>true</executable>
                             <classifier>exec</classifier>
+                            <mainClass>org.linlinjava.litemall.wx.WxApplication</mainClass>
                         </configuration>
                     </execution>
                 </executions>

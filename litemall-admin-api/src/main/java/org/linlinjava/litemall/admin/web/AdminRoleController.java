@@ -2,10 +2,11 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.apache.shiro.subject.Subject;
+import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
 import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
+import org.linlinjava.litemall.admin.security.AdminUserDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.linlinjava.litemall.admin.util.AdminResponseCode;
 import org.linlinjava.litemall.admin.util.Permission;
 import org.linlinjava.litemall.admin.util.PermissionUtil;
@@ -196,8 +197,13 @@ public class AdminRoleController {
             assignedPermissions = permissionService.queryByRoleId(roleId);
         }
 
-        Subject currentUser = SecurityUtils.getSubject();
-        LitemallAdmin currentAdmin = (LitemallAdmin) currentUser.getPrincipal();
+        // 使用Spring Security获取当前用户信息
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+            return ResponseUtil.unlogin();
+        }
+        AdminUserDetails userDetails = (AdminUserDetails) authentication.getPrincipal();
+        LitemallAdmin currentAdmin = userDetails.getAdmin();
         Integer[] roles = currentAdmin.getRoleIds();
         List<Integer> roleIds = Arrays.asList(roles);
         Set<String> curPermissions = null;

@@ -2,9 +2,9 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.annotation.RequiresAuthentication;
-import org.apache.shiro.subject.Subject;
+import org.linlinjava.litemall.admin.security.AdminUserDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.linlinjava.litemall.core.util.JacksonUtil;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.core.util.bcrypt.BCryptPasswordEncoder;
@@ -43,7 +43,6 @@ public class AdminProfileController {
     @Autowired
     private LitemallNoticeAdminService noticeAdminService;
 
-    @RequiresAuthentication
     @PostMapping("/password")
     public Object create(@RequestBody String body) {
         String oldPassword = JacksonUtil.parseString(body, "oldPassword");
@@ -55,8 +54,12 @@ public class AdminProfileController {
             return ResponseUtil.badArgument();
         }
 
-        Subject currentUser = SecurityUtils.getSubject();
-        LitemallAdmin admin = (LitemallAdmin) currentUser.getPrincipal();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseUtil.fail(401, "未授权访问");
+        }
+        AdminUserDetails adminUserDetails = (AdminUserDetails) authentication.getPrincipal();
+        LitemallAdmin admin = adminUserDetails.getAdmin();
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         if (!encoder.matches(oldPassword, admin.getPassword())) {
@@ -71,9 +74,12 @@ public class AdminProfileController {
     }
 
     private Integer getAdminId(){
-        Subject currentUser = SecurityUtils.getSubject();
-        LitemallAdmin admin = (LitemallAdmin) currentUser.getPrincipal();
-        return admin.getId();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("用户未认证");
+        }
+        AdminUserDetails adminUserDetails = (AdminUserDetails) authentication.getPrincipal();
+        return adminUserDetails.getAdmin().getId();
     }
 
     @RequiresAuthentication
