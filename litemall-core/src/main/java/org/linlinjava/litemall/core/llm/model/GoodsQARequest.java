@@ -1,7 +1,7 @@
 package org.linlinjava.litemall.core.llm.model;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 /**
  * 商品问答请求模型

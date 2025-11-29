@@ -6,10 +6,10 @@ import org.apache.commons.logging.LogFactory;
 import org.linlinjava.litemall.core.express.config.ExpressProperties;
 import org.linlinjava.litemall.core.express.dao.ExpressInfo;
 import org.linlinjava.litemall.core.util.HttpUtil;
-import org.springframework.util.Base64Utils;
 
 import java.net.URLEncoder;
 import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -138,7 +138,7 @@ public class ExpressService {
         byte[] src;
         try {
             src = MD5(content, charset).getBytes(charset);
-            return Base64Utils.encodeToString(src);
+            return Base64.getEncoder().encodeToString(src);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
