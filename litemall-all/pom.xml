@@ -34,6 +34,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.linlinjava</groupId>
             <artifactId>litemall-core</artifactId>
         </dependency>
@@ -53,6 +58,12 @@
             <artifactId>litemall-admin-api</artifactId>
         </dependency>
 
+        <!-- MySQL 驱动依赖 -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -63,12 +74,6 @@
                 <configuration>
                     <executable>true</executable>
                     <classifier>exec</classifier>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.hibernate.validator</groupId>
-                            <artifactId>hibernate-validator</artifactId>
-                        </exclude>
-                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
