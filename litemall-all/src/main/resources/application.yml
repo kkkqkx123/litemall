@@ -12,6 +12,14 @@ spring:
     driver-class-name:  com.mysql.cj.jdbc.Driver
     username:  root
     password:  root
+  security:
+    user:
+      name: admin
+      password: admin123
+      roles: ADMIN
+    basic:
+      enabled: false
+
 
 server:
   port: 8080
