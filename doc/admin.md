@@ -11,7 +11,7 @@
   * vue-element-admin 4.3.0
   * 其他，见package.json
 * 管理后台后端, 即litemall-admin-api模块
-  * Spring Boot 2.x
+  * Spring Boot 3.x
   * Spring MVC
 
 目前存在的问题：
@@ -72,7 +72,7 @@
 
 ### 4.1.8 安全
 
-这里的安全基于Shiro。
+这里的安全基于Spring Security。
 
 #### 4.1.8.1 认证
 
@@ -149,21 +149,21 @@
 因此，管理员勾选一个权限以后，后台权限即授权成功，同时前端的菜单权限和按钮权限也自动调整。
 具体实现细节见下文。
 
-后端权限基于shiro来实现，相关代码见litemall-admin-api模块。
+后端权限基于Spring Security来实现，相关代码见litemall-admin-api模块。
 
 ##### 4.1.9.2 基本配置
 
-1. config子包的`ShiroConfig`引入了Shiro并配置了shirFilter、realm和sessionManager；
-2. shiroFilter配置只允许少量url可以匿名访问，其他url都需要登录才能访问；
-3. realm设置的是shiro子包的`AdminAuthorizingRealm`类，该类作用是认证和授权的功能；
-4. sessionManager设置的是shiro子包的`AdminWebSessionManager`类，该类作用是重置会话管理器。
+1. config子包的`SecurityConfig`引入了Spring Security并配置了安全过滤器链、认证管理器和会话管理器；
+2. 安全过滤器链配置只允许少量url可以匿名访问，其他url都需要登录才能访问；
+3. 认证管理器设置的是security子包的`AdminAuthenticationProvider`类，该类作用是认证和授权的功能；
+4. 会话管理器设置的是security子包的`AdminSessionManager`类，该类作用是重置会话管理器。
    默认会话管理器是基于cookie实现会话保持，而这里是基于自定义头部实现会话保持。
 
-经过以上步骤，shiro就配置正常。
+经过以上步骤，Spring Security就配置正常。
 * 当管理员登录时，先认证；
 * 认证成功，则授权，在后端内保存roles和permissions；同时，在响应头部写入自定义头部和sessionId；
 * 认证失败，则抛出认证异常；
-* 管理员再次访问页面时，shiro通过自定义头自动认证成功。
+* 管理员再次访问页面时，Spring Security通过自定义头自动认证成功。
 
 ##### 4.1.9.3 权限校验
 
@@ -194,9 +194,9 @@ public class AdminAdController {
 }
 ```
 
-而具体的权限校验逻辑则由shiro自动完成：
-1. 登录成功或者会话登录，shiro已经有当前用户的权限列表；
-2. 访问权限保护的方法时，shiro通过`RequiresPermissions`注解得到所需操作权限列表；
+而具体的权限校验逻辑则由Spring Security自动完成：
+1. 登录成功或者会话登录，Spring Security已经有当前用户的权限列表；
+2. 访问权限保护的方法时，Spring Security通过`@PreAuthorize`注解得到所需操作权限列表；
 3. 测试已分配的权限和操作所需权限是否一致，如果一致则可以调用方法，否则抛出无权限的异常。
 
 ##### 4.1.9.4 权限描述

@@ -5,7 +5,7 @@
 * 小商城前端，即litemall-wx模块和renard-wx模块
   * 微信小程序
 * 小商城后端，即litemall-wx-api模块
-  * Spring Boot 2.x
+  * Spring Boot 3.x
   * Spring MVC
   * [weixin-java-tools](https://gitee.com/binary/weixin-java-tools)
 

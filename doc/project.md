@@ -174,8 +174,8 @@ Spring Boot技术栈参考以下文档或者项目：
     
 2. Spring Boot 2.x
 
-    * https://docs.spring.io/spring-boot/docs/2.1.5.RELEASE/reference/htmlsingle/#getting-started-introducing-spring-boot
-    * https://docs.spring.io/spring-boot/docs/2.1.5.RELEASE/reference/htmlsingle/#using-boot-maven
+    * https://docs.spring.io/spring-boot/docs/3.5.6/reference/htmlsingle/#getting-started-introducing-spring-boot
+    * https://docs.spring.io/spring-boot/docs/3.5.6/reference/htmlsingle/#using-boot-maven
 
     这里需要了解RestController, Service等注解，以及如何使用自动化配置。 
     Spring Boot支持很多功能，开发者使用时查阅。
@@ -310,8 +310,10 @@ drop database if exists litemall;
 drop user if exists 'litemall'@'%';
 create database litemall default character set utf8mb4 collate utf8mb4_unicode_ci;
 use litemall;
-create user 'litemall'@'%' identified by 'litemall123456';
-grant all privileges on litemall.* to 'litemall'@'%';
+# Docker环境中，数据库已预配置，无需手动创建用户
+# 如需手动创建，使用以下命令：
+# create user 'kkkqkx'@'%' identified by '1234567kk';
+grant all privileges on litemall.* to 'kkkqkx'@'%';
 flush privilege
 ```
 可以看到几个命令，用于创建数据库、用户和访问权限，因此开发者可以利用
@@ -319,7 +321,7 @@ flush privilege
 
 ### 1.4.2 Spring Boot开发环境
 
-1. 安装JDK8（可以是Oracle JDK或者OpenJDK）
+1. 安装JDK21（可以是Oracle JDK或者OpenJDK）
 2. 安装Maven
 3. 安装Git（可选）
 4. 安装IDEA Community，建议安装Maven插件和Git插件。
@@ -500,8 +502,8 @@ spring:
     druid:
       url:  jdbc:mysql://localhost:3306/litemall?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&allowPublicKeyRetrieval=true&verifyServerCertificate=false&useSSL=false
       driver-class-name:  com.mysql.cj.jdbc.Driver
-      username:  litemall
-      password:  litemall123456
+      username:  kkkqkx
+      password:  1234567kk
       initial-size:  10
       max-active:  50
       min-idle:  10
@@ -856,13 +858,13 @@ litemall:
 
     如果开发者设置SSH密钥，可以采用免密码登录；否则采用账号和密码登录。
     
-#### 1.5.1.2 OpenJDK8
+#### 1.5.1.2 OpenJDK21
 
-这里可以安装openjdk-8-jre
+这里可以安装openjdk-21-jre
 
 ```bash
 sudo apt-get update
-sudo apt-get install openjdk-8-jre
+sudo apt-get install openjdk-21-jre
 ```
 
 如果希望采用jdk，而不是jre，则可以运行
@@ -873,7 +875,7 @@ sudo apt-get install openjdk-8-jdk
 ```
 
 注意
-> 如果用户想采用Oracle JDK8或者其他JDK环境，请查阅相关资料安装。
+> 如果用户想采用Oracle JDK21或者其他JDK环境，请查阅相关资料安装。
 
 #### 1.5.1.3 MySQL
 
@@ -934,11 +936,12 @@ sudo mysql_secure_installation
 
 #### 1.5.1.5 项目部署
 
-1. 远程服务器环境（MySQL和JDK1.8）已经安装好，请确保云服务器的安全组已经允许相应的端口。
+1. 远程服务器环境（MySQL和JDK21）已经安装好，请确保云服务器的安全组已经允许相应的端口。
 2. 导入db/litemall.sql
     ```bash
-    cd /home/ubuntu/deploy/db
-    mysql -h localhost -u $ROOT -p$PASSWORD < litemall.sql
+    # 如果数据库在Docker容器中，使用以下命令
+    docker cp /home/ubuntu/deploy/db/litemall.sql <mysql-container-name>:/tmp/
+    docker exec -i <mysql-container-name> mysql -u $ROOT -p$PASSWORD litemall < /tmp/litemall.sql
     ```
 3. 启动服务
     ```bash

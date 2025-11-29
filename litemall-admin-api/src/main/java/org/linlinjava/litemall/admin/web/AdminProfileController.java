@@ -3,6 +3,7 @@ package org.linlinjava.litemall.admin.web;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.linlinjava.litemall.admin.security.AdminUserDetails;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.linlinjava.litemall.core.util.JacksonUtil;
@@ -82,14 +83,14 @@ public class AdminProfileController {
         return adminUserDetails.getAdmin().getId();
     }
 
-    @RequiresAuthentication
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/nnotice")
     public Object nNotice() {
         int count = noticeAdminService.countUnread(getAdminId());
         return ResponseUtil.ok(count);
     }
 
-    @RequiresAuthentication
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/lsnotice")
     public Object lsNotice(String title, String type,
                             @RequestParam(defaultValue = "1") Integer page,
@@ -100,7 +101,7 @@ public class AdminProfileController {
         return ResponseUtil.okList(noticeList);
     }
 
-    @RequiresAuthentication
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/catnotice")
     public Object catNotice(@RequestBody String body) {
         Integer noticeId = JacksonUtil.parseInteger(body, "noticeId");
@@ -134,7 +135,7 @@ public class AdminProfileController {
         return ResponseUtil.ok(data);
     }
 
-    @RequiresAuthentication
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/bcatnotice")
     public Object bcatNotice(@RequestBody String body) {
         List<Integer> ids = JacksonUtil.parseIntegerList(body, "ids");
@@ -142,7 +143,7 @@ public class AdminProfileController {
         return ResponseUtil.ok();
     }
 
-    @RequiresAuthentication
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/rmnotice")
     public Object rmNotice(@RequestBody String body) {
         Integer id = JacksonUtil.parseInteger(body, "id");
@@ -153,7 +154,7 @@ public class AdminProfileController {
         return ResponseUtil.ok();
     }
 
-    @RequiresAuthentication
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/brmnotice")
     public Object brmNotice(@RequestBody String body) {
         List<Integer> ids = JacksonUtil.parseIntegerList(body, "ids");

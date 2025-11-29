@@ -13,7 +13,7 @@ litemall轻商城，是商城移动版本。
   * @xkeshi/vue-countdown
   * Vant
 * 轻商城后端，即litemall-wx-api模块，也就是和小商城后端是一样的。
-  * Spring Boot 2.x
+  * Spring Boot 3.x
   * Spring MVC
   * [weixin-java-tools](https://gitee.com/binary/weixin-java-tools)
 

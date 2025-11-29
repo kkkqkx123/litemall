@@ -46,10 +46,10 @@
 ## 📊 技术栈总览
 
 ### 后端技术栈
-- **框架**：Spring Boot 2.1.5 + MyBatis
+- **框架**：Spring Boot 3.5.6 + MyBatis
 - **数据库**：MySQL 8.x + Druid连接池
-- **安全**：Shiro权限框架 + JWT认证
-- **文档**：Swagger 2.x + SpringFox
+- **安全**：Spring Security权限框架 + JWT认证
+- **文档**：SpringDoc OpenAPI + Swagger UI
 - **构建**：Maven
 
 ### 前端技术栈

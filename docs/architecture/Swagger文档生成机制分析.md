@@ -172,7 +172,7 @@ java -jar target/litemall-admin-api-0.1.0-exec.jar --server.port=8083
 
 1. **生产环境**: 在生产环境中建议设置 `swagger.production=true` 来禁用文档
 2. **包扫描**: 确保控制器类在配置的扫描包路径下
-3. **版本兼容**: 当前使用的Springfox 2.x版本与Spring Boot 2.1.x兼容
+3. **版本兼容**: 当前使用的SpringDoc OpenAPI版本与Spring Boot 3.5.6兼容
 4. **依赖冲突**: 注意与其他Swagger相关依赖的版本冲突问题
 
 ## 相关文件清单

@@ -58,7 +58,7 @@ litemall = Spring Boot后端 + Vue管理员前端 + 微信小程序用户前端 
 
 1. 配置最小开发环境：
     * [MySQL](https://dev.mysql.com/downloads/mysql/)
-    * [JDK1.8或以上](http://www.oracle.com/technetwork/java/javase/overview/index.html)
+    * [JDK21或以上](http://www.oracle.com/technetwork/java/javase/overview/index.html)
     * [Maven](https://maven.apache.org/download.cgi)
     * [Nodejs](https://nodejs.org/en/download/)
     * [微信开发者工具](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)
@@ -67,6 +67,22 @@ litemall = Spring Boot后端 + Vue管理员前端 + 微信小程序用户前端 
     * litemall_schema.sql
     * litemall_table.sql
     * litemall_data.sql
+
+    注意：当前项目使用的数据库位于 Docker 容器中，MySQL 命令行工具也在 Docker 容器内。
+    需要通过 docker exec 操作名为 mysql 的容器来执行数据库操作。
+    数据库连接信息：
+    * 用户名: kkkqkx
+    * 密码: 1234567kk
+    * 导入命令示例（从项目根目录执行）：
+      ```bash
+      # 将SQL文件复制到容器中再执行
+      docker cp litemall-db/sql/litemall_schema.sql <mysql-container-name>:/tmp/
+      docker exec -i <mysql-container-name> mysql -u kkkqkx -p1234567kk litemall < /tmp/litemall_schema.sql
+      docker cp litemall-db/sql/litemall_table.sql <mysql-container-name>:/tmp/
+      docker exec -i <mysql-container-name> mysql -u kkkqkx -p1234567kk litemall < /tmp/litemall_table.sql
+      docker cp litemall-db/sql/litemall_data.sql <mysql-container-name>:/tmp/
+      docker exec -i <mysql-container-name> mysql -u kkkqkx -p1234567kk litemall < /tmp/litemall_data.sql
+      ```
 
 3. 启动小商场和管理后台的后端服务
 

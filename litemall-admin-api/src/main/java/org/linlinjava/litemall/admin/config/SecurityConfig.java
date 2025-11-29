@@ -2,7 +2,7 @@ package org.linlinjava.litemall.admin.config;
 
 import org.linlinjava.litemall.admin.security.JwtAuthenticationFilter;
 import org.linlinjava.litemall.admin.security.AdminUserDetailsService;
-import org.linlinjava.litemall.core.util.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

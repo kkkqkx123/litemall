@@ -238,8 +238,10 @@ drop database if exists litemall;
 drop user if exists 'litemall'@'localhost';
 create database litemall default character set utf8mb4 collate utf8mb4_unicode_ci;
 use litemall;
-create user 'litemall'@'localhost' identified by 'litemall123456';
-grant all privileges on litemall.* to 'litemall'@'localhost';
+# Docker环境中，数据库已预配置，无需手动创建用户
+# 如需手动创建，使用以下命令：
+create user 'kkkqkx'@'localhost' identified by '1234567kk';
+grant all privileges on litemall.* to 'kkkqkx'@'localhost';
 flush privileges;
 ```
 

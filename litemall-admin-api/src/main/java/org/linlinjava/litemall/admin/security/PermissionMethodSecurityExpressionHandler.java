@@ -4,24 +4,18 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
-import org.springframework.security.authentication.AuthenticationTrustResolver;
-import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.core.Authentication;
 
 import java.util.Arrays;
 
 public class PermissionMethodSecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
 
-    private AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
-
     @Override
     protected MethodSecurityExpressionOperations createSecurityExpressionRoot(
             Authentication authentication, MethodInvocation invocation) {
         PermissionMethodSecurityExpressionRoot root = 
             new PermissionMethodSecurityExpressionRoot(authentication);
-        root.setPermissionEvaluator(getPermissionEvaluator());
-        root.setTrustResolver(this.trustResolver);
-        root.setRoleHierarchy(getRoleHierarchy());
+        // 基类SecurityExpressionRoot已经通过DefaultMethodSecurityExpressionHandler配置了必要的组件
         return root;
     }
 }

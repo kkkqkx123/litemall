@@ -24,7 +24,7 @@ litemall-db模块是一个普通的Spring Boot应用，基于mybatis框架实现
 直接服务，没有使用Spring MVC技术。
 
 技术：
-* Spring Boot 2.x
+* Spring Boot 3.x
 * MySQL
 * Druid
 * Mybatis
