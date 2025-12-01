@@ -1,3 +1,8 @@
+始终实时更新todo list
+
+后端日志查看litemall-all\logs\log.log
+
+---
 当前项目使用的数据库位于docker。
 注意：本地没有mysql命令行程序，执行命令需要docker exec
 username:  root

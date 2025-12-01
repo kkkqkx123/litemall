@@ -7,7 +7,7 @@ import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.admin.service.LogHelper;
 import org.linlinjava.litemall.core.util.RegexUtil;
 import org.linlinjava.litemall.core.util.ResponseUtil;
-import org.linlinjava.litemall.core.util.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.linlinjava.litemall.core.validator.Order;
 import org.linlinjava.litemall.core.validator.Sort;
 import org.linlinjava.litemall.db.domain.LitemallAdmin;
@@ -35,6 +35,8 @@ public class AdminAdminController {
     private LitemallAdminService adminService;
     @Autowired
     private LogHelper logHelper;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @RequiresPermissions("admin:admin:list")
     @RequiresPermissionsDesc(menu = {"系统管理", "管理员管理"}, button = "查询")
@@ -79,8 +81,7 @@ public class AdminAdminController {
         }
 
         String rawPassword = admin.getPassword();
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        String encodedPassword = encoder.encode(rawPassword);
+        String encodedPassword = passwordEncoder.encode(rawPassword);
         admin.setPassword(encodedPassword);
         adminService.add(admin);
         logHelper.logAuthSucceed("添加管理员", username);

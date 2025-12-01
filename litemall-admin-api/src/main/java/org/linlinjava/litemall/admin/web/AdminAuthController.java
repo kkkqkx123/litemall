@@ -15,10 +15,12 @@ import org.linlinjava.litemall.db.service.LitemallPermissionService;
 import org.linlinjava.litemall.db.service.LitemallRoleService;
 import org.linlinjava.litemall.admin.security.AdminUserDetails;
 import org.linlinjava.litemall.admin.security.JwtTokenProvider;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -48,10 +50,10 @@ public class AdminAuthController {
     private LitemallPermissionService permissionService;
     @Autowired
     private LogHelper logHelper;
-
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     @Autowired
     private Producer kaptchaProducer;
-
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
@@ -103,23 +105,32 @@ public class AdminAuthController {
 //            return ResponseUtil.fail(ADMIN_INVALID_KAPTCHA, "验证码不正确", doKaptcha(request));
 //        }
 
-        // Spring Security会自动处理认证，这里只需要检查认证状态
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+        // 直接进行用户认证，而不是依赖Spring Security的自动认证
+        List<LitemallAdmin> adminList = adminService.findAdmin(username);
+        if (adminList.isEmpty()) {
             logHelper.logAuthFail("登录", "用户帐号或密码不正确");
-            return ResponseUtil.fail(ADMIN_INVALID_ACCOUNT, "用户帐号或密码不正确", doKaptcha(request));
+            return ResponseUtil.fail(ADMIN_INVALID_ACCOUNT, "用户帐号或密码不正确");
         }
 
-        // 获取认证后的用户信息
-        AdminUserDetails userDetails = (AdminUserDetails) authentication.getPrincipal();
-        LitemallAdmin admin = userDetails.getAdmin();
+        LitemallAdmin admin = adminList.get(0);
+        
+        // 验证密码
+        if (!passwordEncoder.matches(password, admin.getPassword())) {
+            logHelper.logAuthFail("登录", "用户帐号或密码不正确");
+            return ResponseUtil.fail(ADMIN_INVALID_ACCOUNT, "用户帐号或密码不正确");
+        }
+
+        // 更新最后登录信息
         admin.setLastLoginIp(IpUtil.getIpAddr(request));
         admin.setLastLoginTime(LocalDateTime.now());
         adminService.updateById(admin);
 
         logHelper.logAuthSucceed("登录");
 
-        // 生成JWT令牌
+        // 创建认证对象并生成JWT令牌
+        AdminUserDetails userDetails = new AdminUserDetails(admin, new ArrayList<>());
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            userDetails, null, userDetails.getAuthorities());
         String token = jwtTokenProvider.generateToken(authentication);
 
         // userInfo

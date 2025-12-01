@@ -11,7 +11,7 @@ import org.linlinjava.litemall.core.util.CharUtil;
 import org.linlinjava.litemall.core.util.JacksonUtil;
 import org.linlinjava.litemall.core.util.RegexUtil;
 import org.linlinjava.litemall.core.util.ResponseUtil;
-import org.linlinjava.litemall.core.util.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.linlinjava.litemall.db.domain.LitemallUser;
 import org.linlinjava.litemall.db.service.CouponAssignService;
 import org.linlinjava.litemall.db.service.LitemallUserService;
@@ -55,6 +55,8 @@ public class WxAuthController {
 
     @Autowired
     private CouponAssignService couponAssignService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * 账号登录
@@ -81,8 +83,7 @@ public class WxAuthController {
             user = userList.get(0);
         }
 
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        if (!encoder.matches(password, user.getPassword())) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             return ResponseUtil.fail(AUTH_INVALID_ACCOUNT, "账号密码不对");
         }
 
@@ -291,8 +292,7 @@ public class WxAuthController {
         }
 
         LitemallUser user = null;
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        String encodedPassword = encoder.encode(password);
+        String encodedPassword = passwordEncoder.encode(password);
         user = new LitemallUser();
         user.setUsername(username);
         user.setPassword(encodedPassword);
@@ -403,8 +403,7 @@ public class WxAuthController {
             user = userList.get(0);
         }
 
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        String encodedPassword = encoder.encode(password);
+        String encodedPassword = passwordEncoder.encode(password);
         user.setPassword(encodedPassword);
 
         if (userService.updateById(user) == 0) {
@@ -454,8 +453,7 @@ public class WxAuthController {
         }
         user = userService.findById(userId);
 
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        if (!encoder.matches(password, user.getPassword())) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             return ResponseUtil.fail(AUTH_INVALID_ACCOUNT, "账号密码不对");
         }
 

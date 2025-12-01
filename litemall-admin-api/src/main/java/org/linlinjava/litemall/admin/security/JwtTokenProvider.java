@@ -15,7 +15,7 @@ import java.util.Date;
 public class JwtTokenProvider {
     private final Log logger = LogFactory.getLog(JwtTokenProvider.class);
 
-    @Value("${app.jwt.secret:mySecretKey}")
+    @Value("${app.jwt.secret:APZvEuDRA9S2j2m9bpBKPPEiCbSRChKayBYEDc4RIK8=}")
     private String jwtSecret;
 
     @Value("${app.jwt.expiration:86400000}")
@@ -31,29 +31,29 @@ public class JwtTokenProvider {
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .subject(userDetails.getUsername())
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(getSigningKey())
                 .compact();
     }
 
     public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parser()
+        JwtParser parser = Jwts.parser()
                 .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-
-        return claims.getSubject();
+                .build();
+        
+        Jws<Claims> jws = parser.parseSignedClaims(token);
+        return jws.getPayload().getSubject();
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()
+            JwtParser parser = Jwts.parser()
                     .verifyWith(getSigningKey())
-                    .build()
-                    .parseSignedClaims(token);
+                    .build();
+            
+            parser.parseSignedClaims(token);
             return true;
         } catch (MalformedJwtException ex) {
             logger.error("Invalid JWT token");

@@ -8,7 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.linlinjava.litemall.core.util.JacksonUtil;
 import org.linlinjava.litemall.core.util.ResponseUtil;
-import org.linlinjava.litemall.core.util.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.linlinjava.litemall.core.validator.Order;
 import org.linlinjava.litemall.core.validator.Sort;
 import org.linlinjava.litemall.db.domain.LitemallAdmin;
@@ -43,6 +43,8 @@ public class AdminProfileController {
     private LitemallNoticeService noticeService;
     @Autowired
     private LitemallNoticeAdminService noticeAdminService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/password")
     public Object create(@RequestBody String body) {
@@ -62,12 +64,11 @@ public class AdminProfileController {
         AdminUserDetails adminUserDetails = (AdminUserDetails) authentication.getPrincipal();
         LitemallAdmin admin = adminUserDetails.getAdmin();
 
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        if (!encoder.matches(oldPassword, admin.getPassword())) {
+        if (!passwordEncoder.matches(oldPassword, admin.getPassword())) {
             return ResponseUtil.fail(ADMIN_INVALID_ACCOUNT, "账号密码不对");
         }
 
-        String encodedNewPassword = encoder.encode(newPassword);
+        String encodedNewPassword = passwordEncoder.encode(newPassword);
         admin.setPassword(encodedNewPassword);
 
         adminService.updateById(admin);
