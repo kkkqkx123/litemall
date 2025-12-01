@@ -31,11 +31,12 @@ server:
 logging:
   config: classpath:logback-spring.xml
   level:
-    root: ERROR
-    org.springframework: ERROR
+    root: INFO
+    org.springframework: INFO
     org.mybatis: ERROR
-    org.linlinjava.litemall: ERROR
+    org.linlinjava.litemall: DEBUG
     org.linlinjava.litemall.core.llm: DEBUG    # LLM模块日志
+    org.linlinjava.litemall.admin.security.JwtAuthenticationFilter: TRACE
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
