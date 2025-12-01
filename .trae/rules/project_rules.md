@@ -2,6 +2,8 @@
 
 后端日志查看litemall-all\logs\log.log
 
+sql测试数据由js脚本生成
+
 ---
 当前项目使用的数据库位于docker。
 注意：本地没有mysql命令行程序，执行命令需要docker exec

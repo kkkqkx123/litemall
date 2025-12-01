@@ -16,6 +16,19 @@ public interface StatMapper {
      * @return 订单统计数据
      */
     List<Map> statOrderEnhanced(@Param("timeDimension") String timeDimension, @Param("categoryId") Integer categoryId);
+    
+    /**
+     * 增强版订单统计查询，支持时间范围和商品类别筛选
+     * @param timeDimension 时间维度：day/week/month/quarter/year
+     * @param categoryId 商品类别ID，可为null
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return 订单统计数据
+     */
+    List<Map> statOrderEnhancedWithTimeRange(@Param("timeDimension") String timeDimension, 
+                                           @Param("categoryId") Integer categoryId,
+                                           @Param("startTime") java.time.LocalDateTime startTime,
+                                           @Param("endTime") java.time.LocalDateTime endTime);
 
     List<Map> statGoods();
     

@@ -3,12 +3,34 @@
     <!-- 筛选条件区域 -->
     <el-card class="filter-container">
       <el-form :inline="true" :model="filterForm" size="small">
-        <el-form-item label="时间维度">
-          <el-select v-model="filterForm.timeDimension" placeholder="选择时间维度" @change="handleFilterChange">
-            <el-option label="按日" value="day" />
-            <el-option label="按周" value="week" />
-            <el-option label="按月" value="month" />
+        <el-form-item label="年份">
+          <el-input-number v-model="filterForm.year" :min="2020" :max="2030" controls-position="right" @change="handleFilterChange" />
+        </el-form-item>
+        <el-form-item label="季度">
+          <el-select v-model="filterForm.quarter" placeholder="选择季度" clearable @change="handleFilterChange">
+            <el-option label="全部" value="" />
+            <el-option label="Q1" value="1" />
+            <el-option label="Q2" value="2" />
+            <el-option label="Q3" value="3" />
+            <el-option label="Q4" value="4" />
           </el-select>
+        </el-form-item>
+        <el-form-item label="月份">
+          <el-select v-model="filterForm.month" placeholder="选择月份" clearable @change="handleFilterChange">
+            <el-option label="全部" value="" />
+            <el-option v-for="month in 12" :key="month" :label="month + '月'" :value="month" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="日期">
+          <el-date-picker
+            v-model="filterForm.day"
+            type="date"
+            placeholder="选择日期"
+            format="yyyy-MM-dd"
+            value-format="yyyy-MM-dd"
+            clearable
+            @change="handleFilterChange"
+          />
         </el-form-item>
         <el-form-item label="商品类别">
           <el-select v-model="filterForm.categoryId" placeholder="选择商品类别" clearable @change="handleFilterChange">
@@ -45,8 +67,11 @@ export default {
       chartSettings: {},
       chartExtend: {},
       filterForm: {
-        timeDimension: 'day',
-        categoryId: null
+        categoryId: null,
+        year: new Date().getFullYear(),
+        quarter: '',
+        month: '',
+        day: null
       },
       categoryOptions: [
         { value: 1005000, label: '新鲜水果' },
@@ -68,8 +93,11 @@ export default {
   methods: {
     loadData() {
       const query = {
-        timeDimension: this.filterForm.timeDimension,
-        categoryId: this.filterForm.categoryId
+        categoryId: this.filterForm.categoryId,
+        year: this.filterForm.year,
+        quarter: this.filterForm.quarter,
+        month: this.filterForm.month,
+        day: this.filterForm.day
       }
 
       statOrderEnhanced(query).then(response => {
@@ -95,9 +123,13 @@ export default {
       this.loadData()
     },
     handleReset() {
+      const currentDate = new Date()
       this.filterForm = {
-        timeDimension: 'day',
-        categoryId: null
+        categoryId: null,
+        year: currentDate.getFullYear(),
+        quarter: '',
+        month: '',
+        day: null
       }
       this.loadData()
     }

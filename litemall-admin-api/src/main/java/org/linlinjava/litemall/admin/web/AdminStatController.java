@@ -60,16 +60,54 @@ public class AdminStatController {
 
     /**
      * 增强版订单统计接口，支持时间维度和商品类别筛选
-     * @param timeDimension 时间维度：day/week/month
+     * 支持按年、季、月、日进行级联筛选，包含日期有效性验证
+     * @param timeDimension 时间维度：day/week/month/quarter/year
      * @param categoryId 商品类别ID，可为null
+     * @param year 年份，可为null
+     * @param quarter 季度(1-4)，可为null
+     * @param month 月份(1-12)，可为null
+     * @param day 日期(1-31)，可为null
      * @return 订单统计数据
      */
     @RequiresPermissions("admin:stat:order")
     @RequiresPermissionsDesc(menu = {"统计管理", "订单统计"}, button = "增强查询")
     @GetMapping("/order/enhanced")
     public Object statOrderEnhanced(@RequestParam(value = "timeDimension", defaultValue = "day") String timeDimension,
-                                  @RequestParam(value = "categoryId", required = false) Integer categoryId) {
-        List<Map> rows = statService.statOrderEnhanced(timeDimension, categoryId);
+                                  @RequestParam(value = "categoryId", required = false) Integer categoryId,
+                                  @RequestParam(value = "year", required = false) Integer year,
+                                  @RequestParam(value = "quarter", required = false) Integer quarter,
+                                  @RequestParam(value = "month", required = false) Integer month,
+                                  @RequestParam(value = "day", required = false) Integer day) {
+        
+        // 参数验证
+        if (quarter != null && (quarter < 1 || quarter > 4)) {
+            return ResponseUtil.fail(502, "季度参数必须在1-4之间");
+        }
+        
+        if (month != null && (month < 1 || month > 12)) {
+            return ResponseUtil.fail(502, "月份参数必须在1-12之间");
+        }
+        
+        if (day != null && (day < 1 || day > 31)) {
+            return ResponseUtil.fail(502, "日期参数必须在1-31之间");
+        }
+        
+        // 检查日期的有效性（防止选择超出月份天数的日期）
+        if (year != null && month != null && day != null) {
+            try {
+                java.time.YearMonth yearMonth = java.time.YearMonth.of(year, month);
+                int maxDay = yearMonth.lengthOfMonth();
+                if (day > maxDay) {
+                    return ResponseUtil.fail(502, String.format("选择的日期%d超出%s年%s月的最大天数%d", 
+                        day, year, month, maxDay));
+                }
+            } catch (Exception e) {
+                return ResponseUtil.fail(502, "日期参数无效");
+            }
+        }
+        
+        // 调用服务层进行统计
+        List<Map> rows = statService.statOrderEnhanced(timeDimension, categoryId, year, quarter, month, day);
         String[] columns = new String[]{"period", "orders", "customers", "amount", "pcr"};
         StatVo statVo = new StatVo();
         statVo.setColumns(columns);

@@ -49,7 +49,8 @@ public class JsonStringArrayTypeHandler extends BaseTypeHandler<String[]> {
             try {
                 return (String[]) mapper.readValue(content, String[].class);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                // 如果不是有效的JSON格式，将其作为单个元素的数组返回
+                return new String[]{content};
             }
         } else {
             return null;
