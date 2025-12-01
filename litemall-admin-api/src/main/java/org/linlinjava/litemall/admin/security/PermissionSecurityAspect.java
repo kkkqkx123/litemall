@@ -6,7 +6,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
 import org.linlinjava.litemall.core.util.ResponseUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -16,9 +15,6 @@ import java.lang.reflect.Method;
 @Aspect
 @Component
 public class PermissionSecurityAspect {
-
-    @Autowired
-    private PermissionMethodSecurityExpressionHandler expressionHandler;
 
     @Around("@annotation(org.linlinjava.litemall.admin.annotation.RequiresPermissions)")
     public Object checkPermission(ProceedingJoinPoint joinPoint) throws Throwable {

@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"org.linlinjava.litemall.db", "org.linlinjava.litemall.core", "org.linlinjava.litemall.admin", "org.linlinjava.litemall.wx", "org.linlinjava.litemall.config"},
+@ComponentScan(basePackages = {"org.linlinjava.litemall"},
         excludeFilters = {
             @ComponentScan.Filter(type = FilterType.REGEX, pattern = "org\\.linlinjava\\.litemall\\.wx\\..*Application")
         })

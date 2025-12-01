@@ -14,11 +14,16 @@ import org.linlinjava.litemall.db.service.LitemallAdminService;
 import org.linlinjava.litemall.db.service.LitemallPermissionService;
 import org.linlinjava.litemall.db.service.LitemallRoleService;
 import org.linlinjava.litemall.admin.security.AdminUserDetails;
-import org.linlinjava.litemall.admin.security.JwtTokenProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -53,7 +58,7 @@ public class AdminAuthController {
     private Producer kaptchaProducer;
 
     @Autowired
-    private JwtTokenProvider jwtTokenProvider;
+    private AuthenticationManager authenticationManager;
 
     @GetMapping("/kaptcha")
     public Object kaptcha(HttpServletRequest request) {
@@ -103,42 +108,63 @@ public class AdminAuthController {
 //            return ResponseUtil.fail(ADMIN_INVALID_KAPTCHA, "验证码不正确", doKaptcha(request));
 //        }
 
-        // Spring Security会自动处理认证，这里只需要检查认证状态
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+        // 手动进行认证
+        try {
+            // 创建用户名密码认证token
+            UsernamePasswordAuthenticationToken authToken = 
+                new UsernamePasswordAuthenticationToken(username, password);
+            
+            // 使用认证管理器进行认证
+            Authentication authentication = authenticationManager.authenticate(authToken);
+            
+            // 将认证信息设置到安全上下文中
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // 获取认证后的用户信息
+            AdminUserDetails userDetails = (AdminUserDetails) authentication.getPrincipal();
+            LitemallAdmin admin = userDetails.getAdmin();
+            admin.setLastLoginIp(IpUtil.getIpAddr(request));
+            admin.setLastLoginTime(LocalDateTime.now());
+            adminService.updateById(admin);
+
+            logHelper.logAuthSucceed("登录");
+
+            // 使用Session进行简单的认证管理
+            HttpSession session = request.getSession(true);
+            session.setAttribute("admin", admin);
+            session.setAttribute("username", username);
+
+            // userInfo
+            Map<String, Object> adminInfo = new HashMap<String, Object>();
+            adminInfo.put("nickName", admin.getUsername());
+            adminInfo.put("avatar", admin.getAvatar());
+
+            Map<Object, Object> result = new HashMap<Object, Object>();
+            result.put("token", session.getId()); // 使用Session ID作为简单的token
+            result.put("adminInfo", adminInfo);
+            return ResponseUtil.ok(result);
+            
+        } catch (BadCredentialsException e) {
             logHelper.logAuthFail("登录", "用户帐号或密码不正确");
             return ResponseUtil.fail(ADMIN_INVALID_ACCOUNT, "用户帐号或密码不正确", doKaptcha(request));
+        } catch (AuthenticationException e) {
+            logHelper.logAuthFail("登录", "认证失败");
+            return ResponseUtil.fail(ADMIN_INVALID_ACCOUNT, "用户帐号或密码不正确", doKaptcha(request));
         }
-
-        // 获取认证后的用户信息
-        AdminUserDetails userDetails = (AdminUserDetails) authentication.getPrincipal();
-        LitemallAdmin admin = userDetails.getAdmin();
-        admin.setLastLoginIp(IpUtil.getIpAddr(request));
-        admin.setLastLoginTime(LocalDateTime.now());
-        adminService.updateById(admin);
-
-        logHelper.logAuthSucceed("登录");
-
-        // 生成JWT令牌
-        String token = jwtTokenProvider.generateToken(authentication);
-
-        // userInfo
-        Map<String, Object> adminInfo = new HashMap<String, Object>();
-        adminInfo.put("nickName", admin.getUsername());
-        adminInfo.put("avatar", admin.getAvatar());
-
-        Map<Object, Object> result = new HashMap<Object, Object>();
-        result.put("token", token);
-        result.put("adminInfo", adminInfo);
-        return ResponseUtil.ok(result);
     }
 
     /*
      *
      */
     @PostMapping("/logout")
-    public Object logout() {
-        // Spring Security会自动处理登出，这里只需要清除认证上下文
+    public Object logout(HttpServletRequest request) {
+        // 清除Session
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        
+        // 清除安全上下文
         SecurityContextHolder.clearContext();
 
         logHelper.logAuthSucceed("退出");
@@ -147,7 +173,28 @@ public class AdminAuthController {
 
 
     @GetMapping("/info")
-    public Object info() {
+    public Object info(HttpServletRequest request) {
+        // 首先尝试从Session获取用户信息
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            LitemallAdmin admin = (LitemallAdmin) session.getAttribute("admin");
+            if (admin != null) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("name", admin.getUsername());
+                data.put("avatar", admin.getAvatar());
+
+                Integer[] roleIds = admin.getRoleIds();
+                Set<String> roles = roleService.queryByIds(roleIds);
+                Set<String> permissions = permissionService.queryByRoleIds(roleIds);
+                data.put("roles", roles);
+                // NOTE
+                // 这里需要转换perms结构，因为对于前端来说API形式的权限更容易理解
+                data.put("perms", toApi(permissions));
+                return ResponseUtil.ok(data);
+            }
+        }
+        
+        // 如果Session中没有，尝试从SecurityContext获取
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
             return ResponseUtil.unlogin();
@@ -165,7 +212,7 @@ public class AdminAuthController {
         Set<String> permissions = permissionService.queryByRoleIds(roleIds);
         data.put("roles", roles);
         // NOTE
-        // 这里需要转换perms结构，因为对于前端而已API形式的权限更容易理解
+        // 这里需要转换perms结构，因为对于前端来说API形式的权限更容易理解
         data.put("perms", toApi(permissions));
         return ResponseUtil.ok(data);
     }

@@ -35,7 +35,7 @@ const user = {
     LoginByUsername({ commit }, userInfo) {
       const username = userInfo.username.trim()
       return new Promise((resolve, reject) => {
-        loginByUsername(username, userInfo.password, userInfo.code).then(response => {
+        loginByUsername(username, userInfo.password).then(response => {
           const token = response.data.data.token
           commit('SET_TOKEN', token)
           setToken(token)
@@ -101,23 +101,27 @@ const user = {
 
     // 动态修改权限
     ChangeRoles({ commit, dispatch }, role) {
-      return new Promise(async resolve => {
+      return new Promise((resolve, reject) => {
         commit('SET_TOKEN', role)
         setToken(role)
 
-        const { roles } = await dispatch('GetUserInfo')
+        dispatch('GetUserInfo').then(({ roles }) => {
+          resetRouter()
 
-        resetRouter()
+          dispatch('permission/generateRoutes', roles, { root: true }).then(accessRoutes => {
+            // dynamically add accessible routes
+            router.addRoutes(accessRoutes)
 
-        const accessRoutes = await dispatch('permission/generateRoutes', roles, { root: true })
+            // reset visited views and cached views
+            dispatch('tagsView/delAllViews', null, { root: true })
 
-        // dynamically add accessible routes
-        router.addRoutes(accessRoutes)
-
-        // reset visited views and cached views
-        dispatch('tagsView/delAllViews', null, { root: true })
-
-        resolve()
+            resolve()
+          }).catch(error => {
+            reject(error)
+          })
+        }).catch(error => {
+          reject(error)
+        })
       })
     }
   }

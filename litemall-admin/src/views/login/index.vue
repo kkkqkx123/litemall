@@ -56,7 +56,6 @@
 </template>
 
 <script>
-import { getKaptcha } from '@/api/login'
 import LocaleChanger from '@/components/LocaleChanger'
 
 export default {
@@ -73,10 +72,8 @@ export default {
     return {
       loginForm: {
         username: 'admin123',
-        password: 'admin123',
-        code: ''
+        password: 'admin123'
       },
-      codeImg: '',
       loginRules: {
         username: [{ required: true, message: '管理员账户不允许为空', trigger: 'blur' }],
         password: [
@@ -98,18 +95,12 @@ export default {
 
   },
   created() {
-    this.getCode()
     // window.addEventListener('hashchange', this.afterQRScan)
   },
   destroyed() {
     // window.removeEventListener('hashchange', this.afterQRScan)
   },
   methods: {
-    getCode() {
-      getKaptcha().then(response => {
-        this.codeImg = response.data.data
-      })
-    },
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
         if (valid && !this.loading) {
@@ -118,9 +109,6 @@ export default {
             this.loading = false
             this.$router.push({ path: this.redirect || '/' })
           }).catch(response => {
-            if (response.data.data) {
-              this.codeImg = response.data.data
-            }
             this.$notify.error({
               title: '失败',
               message: response.data.errmsg
