@@ -112,6 +112,12 @@ litemall:
       secretKey: xxxxxx
       bucketName: litemall
 
+  # JWT认证配置
+  auth:
+    jwt:
+      secret: "litemall-jwt-secret-key-2024-for-admin-system-security-enhancement"  # JWT密钥，长度超过256位以满足安全要求
+      expiration: 86400  # JWT过期时间（秒）
+
   # ModelScope大模型配置
   modelscope:
     api-key: demo-key  # 当前为演示模式，无需真实API密钥
