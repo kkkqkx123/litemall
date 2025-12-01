@@ -77,7 +77,7 @@ public class AdminStatController {
                                   @RequestParam(value = "year", required = false) Integer year,
                                   @RequestParam(value = "quarter", required = false) Integer quarter,
                                   @RequestParam(value = "month", required = false) Integer month,
-                                  @RequestParam(value = "day", required = false) Integer day) {
+                                  @RequestParam(value = "day", required = false) String day) {
         
         // 参数验证
         if (quarter != null && (quarter < 1 || quarter > 4)) {
@@ -88,21 +88,12 @@ public class AdminStatController {
             return ResponseUtil.fail(502, "月份参数必须在1-12之间");
         }
         
-        if (day != null && (day < 1 || day > 31)) {
-            return ResponseUtil.fail(502, "日期参数必须在1-31之间");
-        }
-        
-        // 检查日期的有效性（防止选择超出月份天数的日期）
-        if (year != null && month != null && day != null) {
+        // 检查day是否为有效日期格式
+        if (day != null && !day.isEmpty()) {
             try {
-                java.time.YearMonth yearMonth = java.time.YearMonth.of(year, month);
-                int maxDay = yearMonth.lengthOfMonth();
-                if (day > maxDay) {
-                    return ResponseUtil.fail(502, String.format("选择的日期%d超出%s年%s月的最大天数%d", 
-                        day, year, month, maxDay));
-                }
+                java.time.LocalDate.parse(day);
             } catch (Exception e) {
-                return ResponseUtil.fail(502, "日期参数无效");
+                return ResponseUtil.fail(502, "日期格式无效，应为yyyy-MM-dd格式");
             }
         }
         

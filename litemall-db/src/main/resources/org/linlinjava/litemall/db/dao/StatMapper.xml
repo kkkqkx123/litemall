@@ -64,10 +64,12 @@
         from litemall_order o
         left join litemall_order_goods og on o.id = og.order_id
         left join litemall_goods g on og.goods_id = g.id
+        left join litemall_category c on g.category_id = c.id
+        left join litemall_category parent_c on c.pid = parent_c.id
         where o.order_status in(201,301,401,402)  -- 包含已付款、已发货、已完成的订单状态
         and o.add_time between #{startTime} and #{endTime}
         <if test="categoryId != null">
-            and g.category_id = #{categoryId}
+            and (g.category_id = #{categoryId} or parent_c.id = #{categoryId})
         </if>
         group by period
         order by period

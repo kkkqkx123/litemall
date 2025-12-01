@@ -58,6 +58,7 @@
 
 <script>
 import { statOrderEnhanced } from '@/api/stat'
+import { listCatL1 } from '@/api/category'
 import VeLine from 'v-charts/lib/line'
 export default {
   components: { VeLine },
@@ -68,36 +69,98 @@ export default {
       chartExtend: {},
       filterForm: {
         categoryId: null,
-        year: new Date().getFullYear(),
+        year: new Date().getFullYear(), // 使用当前年份
         quarter: '',
         month: '',
         day: null
       },
-      categoryOptions: [
-        { value: 1005000, label: '新鲜水果' },
-        { value: 1005001, label: '海鲜水产' },
-        { value: 1005002, label: '精选肉类' },
-        { value: 1005003, label: '蛋类' },
-        { value: 1005004, label: '新鲜蔬菜' },
-        { value: 1005005, label: '速冻食品' },
-        { value: 1005006, label: '饮品' },
-        { value: 1005007, label: '休闲零食' },
-        { value: 1005008, label: '粮油调味' },
-        { value: 1005009, label: '方便速食' }
-      ]
+      categoryOptions: []
     }
   },
   created() {
+    // 动态获取分类列表，移除硬编码
+    this.loadCategories()
     this.loadData()
   },
   methods: {
+    loadCategories() {
+      // 首先尝试从商品分类API获取数据
+      listCatL1().then(response => {
+        // 后端返回格式: {errno: 0, errmsg: "", data: data}
+        if (response.data.errno === 0) {
+          // API调用成功，添加"全部类别"选项
+          this.categoryOptions = [{ value: null, label: '全部类别' }, ...response.data.data]
+        } else if (response.data.errno === 501) {
+          // 未登录错误，由request.js的拦截器处理登录跳转
+          console.warn('未登录，请先登录系统')
+          // 不显示错误消息，由全局拦截器处理登录提示
+          this.categoryOptions = [{ value: null, label: '全部类别' }]
+        } else {
+          this.$message.error('加载商品分类失败: ' + (response.data.errmsg || '未知错误'))
+          this.categoryOptions = [{ value: null, label: '全部类别' }]
+        }
+      }).catch(error => {
+        console.error('加载商品分类失败:', error)
+        // 如果商品分类API失败，尝试使用统计接口获取分类
+        this.loadCategoriesFromStat()
+      })
+    },
+
+    // 确保分类选项包含"全部类别"
+    ensureAllCategoryOption(categories = []) {
+      // 如果还没有"全部类别"选项，添加它
+      const hasAllCategory = categories.some(item => item.value === null)
+      if (!hasAllCategory) {
+        return [{ value: null, label: '全部类别' }, ...categories]
+      }
+      return categories
+    },
+
+    // 从统计接口获取分类列表（备选方案）
+    loadCategoriesFromStat() {
+      import('@/api/stat').then(({ statGoodsCategories }) => {
+        statGoodsCategories().then(response => {
+          if (response.data.errno === 0) {
+            // 转换数据格式以匹配前端期望
+            const categories = response.data.data.map(item => ({
+              value: item.id,
+              label: item.name
+            }))
+            this.categoryOptions = [{ value: null, label: '全部类别' }, ...categories]
+          } else {
+            this.$message.error('从统计接口加载商品分类失败: ' + (response.data.errmsg || '未知错误'))
+            this.categoryOptions = [{ value: null, label: '全部类别' }]
+          }
+        }).catch(error => {
+          console.error('从统计接口加载商品分类失败:', error)
+          this.categoryOptions = [{ value: null, label: '全部类别' }]
+        })
+      }).catch(error => {
+        console.error('导入统计API失败:', error)
+        this.categoryOptions = [{ value: null, label: '全部类别' }]
+      })
+    },
     loadData() {
+      // 时间优先级逻辑：日>月>季度，月优先于季度
       const query = {
-        categoryId: this.filterForm.categoryId,
-        year: this.filterForm.year,
-        quarter: this.filterForm.quarter,
-        month: this.filterForm.month,
-        day: this.filterForm.day
+        categoryId: this.filterForm.categoryId
+      }
+
+      // 如果设置了日期，使用日期查询（最高优先级）
+      if (this.filterForm.day) {
+        query.day = this.filterForm.day
+      }
+      // 如果设置了月份，使用月份查询（次优先级）
+      else if (this.filterForm.month) {
+        query.month = this.filterForm.month
+      }
+      // 如果设置了季度，使用季度查询（最低优先级）
+      else if (this.filterForm.quarter) {
+        query.quarter = this.filterForm.quarter
+      }
+      // 最后才使用年份
+      else {
+        query.year = this.filterForm.year
       }
 
       statOrderEnhanced(query).then(response => {
@@ -123,10 +186,9 @@ export default {
       this.loadData()
     },
     handleReset() {
-      const currentDate = new Date()
       this.filterForm = {
         categoryId: null,
-        year: currentDate.getFullYear(),
+        year: new Date().getFullYear(), // 重置时使用当前年份
         quarter: '',
         month: '',
         day: null
