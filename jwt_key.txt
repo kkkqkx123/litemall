@@ -1,1 +1,0 @@
-ThisIsASecureSecretKeyForJWTThatIsLongEnoughToMeetHS256RequirementsOf32Bytes!!

@@ -78,10 +78,7 @@
             <version>32.0.0-jre</version>
         </dependency>
 
-        <dependency>
-		    <groupId>com.auth0</groupId>
-		    <artifactId>java-jwt</artifactId>
-		</dependency>
+
 
     </dependencies>
 
