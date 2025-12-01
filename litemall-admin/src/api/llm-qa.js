@@ -15,7 +15,7 @@ import request from '@/utils/request'
  */
 export function askQuestion(data) {
   return request({
-    url: '/admin/llm/qa',
+    url: '/llm/qa',
     method: 'post',
     data
   })
@@ -28,7 +28,7 @@ export function askQuestion(data) {
  */
 export function getSessionHistory(sessionId) {
   return request({
-    url: `/admin/llm/qa/${sessionId}/history`,
+    url: `/llm/qa/${sessionId}/history`,
     method: 'get'
   })
 }
@@ -39,7 +39,7 @@ export function getSessionHistory(sessionId) {
  */
 export function getSessionStatistics() {
   return request({
-    url: '/admin/llm/qa/session/statistics',
+    url: '/llm/qa/session/statistics',
     method: 'get'
   })
 }
@@ -51,7 +51,7 @@ export function getSessionStatistics() {
  */
 export function clearSession(sessionId) {
   return request({
-    url: `/admin/llm/qa/${sessionId}/clear`,
+    url: `/llm/qa/${sessionId}/clear`,
     method: 'delete'
   })
 }
@@ -62,7 +62,7 @@ export function clearSession(sessionId) {
  */
 export function getLLMServiceStatus() {
   return request({
-    url: '/admin/llm/qa/service/status',
+    url: '/llm/qa/service/status',
     method: 'get'
   })
 }
@@ -73,7 +73,7 @@ export function getLLMServiceStatus() {
  */
 export function getHotQuestions() {
   return request({
-    url: '/admin/llm/qa/hot-questions',
+    url: '/llm/qa/hot-questions',
     method: 'get'
   })
 }
