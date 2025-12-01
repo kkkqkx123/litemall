@@ -101,8 +101,8 @@ export default {
             }
           },
           data: this.data.slice(0, this.maxWords).map(item => ({
-            name: item.word,
-            value: item.frequency
+            name: item.name,
+            value: item.value
           }))
         }]
       }

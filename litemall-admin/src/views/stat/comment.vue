@@ -8,9 +8,7 @@
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
       </el-button>
-      <el-button v-waves class="filter-item" type="success" icon="el-icon-refresh" @click="handleRefreshWordCloud">
-        刷新词云
-      </el-button>
+
     </div>
 
     <!-- 全局词云展示 -->
@@ -100,7 +98,7 @@ export default {
   created() {
     this.fetchData()
     this.getCategories()
-    this.getGlobalWordCloud()
+    this.generateGlobalWordCloud()
   },
   methods: {
     fetchData() {
@@ -135,7 +133,7 @@ export default {
       })
     },
     handleRefreshGlobalWordCloud() {
-      this.getGlobalWordCloud()
+      this.generateGlobalWordCloud()
       this.$message({
         message: '词云数据已刷新',
         type: 'success',
