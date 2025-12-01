@@ -84,4 +84,24 @@ public interface StatMapper {
      * @return 评论内容列表
      */
     List<Map> getGoodsComments(@Param("goodsId") Integer goodsId);
+    
+    /**
+     * 获取商品评论内容（用于词云）- 支持批量商品ID
+     * @param goodsIds 商品ID列表
+     * @return 评论内容列表
+     */
+    List<Map> getGoodsComments(@Param("goodsIds") List<Integer> goodsIds);
+    
+    /**
+     * 获取分类下所有商品的评论内容（用于全局词云）
+     * @param categoryId 商品分类ID，可为null
+     * @return 评论内容列表
+     */
+    List<Map> getCommentsByCategory(@Param("categoryId") Integer categoryId);
+    
+    /**
+     * 获取全站所有评论内容（用于全局词云）
+     * @return 评论内容列表
+     */
+    List<Map> getAllComments();
 }

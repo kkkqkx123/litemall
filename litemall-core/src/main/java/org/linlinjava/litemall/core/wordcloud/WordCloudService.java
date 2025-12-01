@@ -15,12 +15,12 @@ public class WordCloudService {
     
     // 常见停用词列表
     private static final Set<String> STOP_WORDS = new HashSet<>(Arrays.asList(
-        "的", "了", "在", "是", "我", "有", "和", "就", "不", "人", "都", "一", "一个", "上", "也", "很", "到", "说", "要", "去", "你", "会", "着", "没有", "看", "好", "自己", "这", "那", "他", "她", "它", "们", "与", "或", "但", "而", "因为", "所以", "如果", "虽然", "然而", "不过", "只是", "还是", "就是", "真是", "觉得", "感觉", "使用", "购买", "商品", "产品", "质量", "服务", "物流", "快递", "包装", "收到", "发货", "速度", "态度", "客服", "售后", "体验", "整体", "总体", "方面", "比较", "相对", "一般", "普通", "正常", "还行", "可以", "不错", "挺好", "满意", "喜欢", "推荐", "值得", "下次", "还会", "继续", "支持", "好评", "差评", "中评"
+        "的", "了", "在", "是", "我", "有", "和", "就", "不", "人", "都", "一", "一个", "上", "也", "很", "到", "说", "要", "去", "你", "会", "着", "没有", "看", "好", "自己", "这", "那", "他", "她", "它", "们", "与", "或", "但", "而", "因为", "所以", "如果", "虽然", "然而", "不过", "只是", "还是", "就是", "真是", "觉得", "感觉", "使用", "购买", "商品", "产品", "质量", "服务", "物流", "快递", "包装", "收到", "发货", "速度", "态度", "客服", "售后", "体验", "整体", "总体", "方面", "比较", "相对", "一般", "普通", "正常", "还行", "可以", "不错", "挺好", "满意", "喜欢", "推荐", "值得", "下次", "还会", "继续", "支持", "好评", "差评", "中评", "非常", "特别", "有点", "比较", "很", "太", "真", "实在", "确实", "真的", "特别", "尤其", "主要", "基本", "根本", "完全", "绝对", "相当", "挺", "蛮", "满", "蛮", "蛮", "蛮"
     ));
     
     // 中文分词简单实现（基于字符长度和常见词）
     private static final Set<String> COMMON_WORDS = new HashSet<>(Arrays.asList(
-        "喜欢", "满意", "质量", "不错", "很好", "非常好", "太差", "不好", "一般", "还行", "可以", "推荐", "值得购买", "物美价廉", "性价比高", "包装", "物流", "快递", "发货", "速度", "客服", "服务", "态度", "售后", "体验", "效果", "外观", "颜色", "尺寸", "大小", "重量", "材质", "做工", "精致", "粗糙", "漂亮", "美观", "时尚", "实用", "方便", "简单", "复杂", "容易", "困难", "便宜", "贵", "值得", "划算", "超值", "失望", "惊喜", "意外", "满意", "开心", "高兴", "生气", "愤怒", "抱怨", "投诉", "退货", "换货", "退款", "赔偿", "五星", "好评", "差评", "中评"
+        "喜欢", "满意", "质量", "不错", "很好", "非常好", "太差", "不好", "一般", "还行", "可以", "推荐", "值得购买", "物美价廉", "性价比高", "包装", "物流", "快递", "发货", "速度", "客服", "服务", "态度", "售后", "体验", "效果", "外观", "颜色", "尺寸", "大小", "重量", "材质", "做工", "精致", "粗糙", "漂亮", "美观", "时尚", "实用", "方便", "简单", "复杂", "容易", "困难", "便宜", "贵", "值得", "划算", "超值", "失望", "惊喜", "意外", "满意", "开心", "高兴", "生气", "愤怒", "抱怨", "投诉", "退货", "换货", "退款", "赔偿", "五星", "好评", "差评", "中评", "正品", "假货", "山寨", "高仿", "原装", "正品", "行货", "水货", "二手", "全新", "未拆封", "已拆封", "使用过", "试用", "试穿", "试吃", "闻", "摸", "看", "观察", "对比", "比较", "选择", "挑选", "筛选", "决定", "考虑", "犹豫", "纠结", "后悔", "庆幸", "幸运", "倒霉", "郁闷", "烦躁", "生气", "愤怒", "开心", "高兴", "激动", "感动", "感谢", "谢谢", "多谢", "辛苦", "麻烦", "打扰", "抱歉", "对不起", "不好意思", "请", "您好", "你好", "嗨", "嘿", "哇", "啊", "呀", "呢", "吧", "吗", "嘛", "咯", "喽", "咧", "哒", "么么哒", "棒棒哒", "美美哒", "萌萌哒", "酷酷哒"
     ));
     
     private static final Pattern CHINESE_PATTERN = Pattern.compile("[\u4e00-\u9fa5]+");
@@ -61,6 +61,7 @@ public class WordCloudService {
         
         // 3. 过滤和排序
         List<Map.Entry<String, Integer>> sortedWords = wordFrequency.entrySet().stream()
+            .filter(entry -> entry.getValue() > 1) // 只保留出现次数大于1的词
             .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
             .limit(maxWords)
             .collect(Collectors.toList());
@@ -90,44 +91,70 @@ public class WordCloudService {
     }
     
     /**
+     * 判断字符是否为中文
+     */
+    private boolean isChinese(char c) {
+        return c >= 0x4E00 && c <= 0x9FA5;
+    }
+    
+    /**
      * 简单的中文分词
      */
     private List<String> segmentWords(String text) {
         List<String> words = new ArrayList<>();
-        
-        // 首先尝试匹配常见词
-        String remainingText = text;
-        for (String commonWord : COMMON_WORDS) {
-            if (remainingText.contains(commonWord)) {
-                words.add(commonWord);
-                remainingText = remainingText.replace(commonWord, " ");
-            }
-        }
-        
-        // 然后按字符分割，提取连续的中文、英文、数字
-        String[] segments = remainingText.split("\\s+");
-        for (String segment : segments) {
-            if (segment.length() >= 2) {
-                // 提取连续的中文
-                java.util.regex.Matcher chineseMatcher = CHINESE_PATTERN.matcher(segment);
-                while (chineseMatcher.find()) {
-                    String chineseWord = chineseMatcher.group();
-                    if (chineseWord.length() >= 2) {
-                        words.add(chineseWord);
+        int length = text.length();
+
+        for (int i = 0; i < length; i++) {
+            char c = text.charAt(i);
+            if (Character.isLetterOrDigit(c)) {
+                // 处理英文和数字
+                StringBuilder word = new StringBuilder();
+                while (i < length && Character.isLetterOrDigit(text.charAt(i))) {
+                    word.append(text.charAt(i));
+                    i++;
+                }
+                if (word.length() > 1) { // 英文单词至少2个字符
+                    words.add(word.toString().toLowerCase());
+                }
+                i--; // 回退一位
+            } else if (isChinese(c)) {
+                // 处理中文 - 尝试匹配常见词
+                boolean matched = false;
+
+                // 优先尝试匹配2-4个字符的常见词
+                for (int wordLen = 4; wordLen >= 2; wordLen--) {
+                    if (i + wordLen <= length) {
+                        String candidate = text.substring(i, i + wordLen);
+                        if (COMMON_WORDS.contains(candidate)) {
+                            words.add(candidate);
+                            i += wordLen - 1; // 跳过已匹配的字符
+                            matched = true;
+                            break;
+                        }
                     }
                 }
-                
-                // 提取连续的英文
-                java.util.regex.Matcher englishMatcher = ENGLISH_PATTERN.matcher(segment);
-                while (englishMatcher.find()) {
-                    String englishWord = englishMatcher.group();
-                    if (englishWord.length() >= 2) {
-                        words.add(englishWord.toLowerCase());
+
+                // 如果没有匹配到常见词，尝试匹配2个字符的组合
+                if (!matched && i + 1 < length) {
+                    String twoChar = text.substring(i, i + 2);
+                    if (COMMON_WORDS.contains(twoChar)) {
+                        words.add(twoChar);
+                        i += 1; // 跳过已匹配的字符
+                        matched = true;
+                    }
+                }
+
+                // 如果没有匹配到常见词，则按单字符处理（但跳过停用词）
+                if (!matched) {
+                    String singleChar = String.valueOf(c);
+                    if (!STOP_WORDS.contains(singleChar)) {
+                        words.add(singleChar);
                     }
                 }
             }
+            // 其他字符（标点符号等）直接跳过
         }
-        
+
         return words;
     }
     

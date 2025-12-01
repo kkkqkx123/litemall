@@ -61,3 +61,11 @@ export function getGoodsWordCloud(goodsId) {
     method: 'get'
   })
 }
+
+export function getGlobalWordCloud(params) {
+  return request({
+    url: '/stat/goods/wordcloud',
+    method: 'get',
+    params: params
+  })
+}

@@ -170,7 +170,40 @@
     <select id="getGoodsComments" resultType="map">
         SELECT content
         FROM litemall_comment
-        WHERE value_id = #{goodsId} AND type = 0 AND deleted = 0
+        WHERE type = 0 AND deleted = 0
+        <choose>
+            <when test="goodsIds != null and goodsIds.size() > 0">
+                AND value_id IN
+                <foreach collection="goodsIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </when>
+            <otherwise>
+                AND value_id = #{goodsId}
+            </otherwise>
+        </choose>
         ORDER BY add_time DESC
+    </select>
+    
+    <!-- 获取分类下所有商品的评论内容（用于全局词云） -->
+    <select id="getCommentsByCategory" resultType="map">
+        SELECT c.content
+        FROM litemall_comment c
+        INNER JOIN litemall_goods g ON c.value_id = g.id
+        WHERE c.type = 0 AND c.deleted = 0
+        <if test="categoryId != null">
+            AND g.category_id = #{categoryId}
+        </if>
+        ORDER BY c.add_time DESC
+        LIMIT 1000  <!-- 限制查询数量，避免性能问题 -->
+    </select>
+    
+    <!-- 获取全站所有评论内容（用于全局词云） -->
+    <select id="getAllComments" resultType="map">
+        SELECT content
+        FROM litemall_comment
+        WHERE type = 0 AND deleted = 0
+        ORDER BY add_time DESC
+        LIMIT 1000  <!-- 限制查询数量，避免性能问题 -->
     </select>
 </mapper>

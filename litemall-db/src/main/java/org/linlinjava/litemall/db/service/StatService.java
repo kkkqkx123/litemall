@@ -250,4 +250,34 @@ public class StatService {
     public List<Map> getGoodsComments(Integer goodsId) {
         return statMapper.getGoodsComments(goodsId);
     }
+    
+    /**
+     * 获取商品评论内容（用于词云）- 支持批量商品ID
+     * @param goodsIds 商品ID列表
+     * @return 评论内容列表
+     */
+    public List<Map> getGoodsComments(List<Integer> goodsIds) {
+        return statMapper.getGoodsComments(goodsIds);
+    }
+    
+    /**
+     * 获取分类下所有商品的评论内容（用于全局词云）
+     * @param categoryId 商品分类ID，可为null
+     * @return 评论内容列表
+     */
+    public List<Map> getCommentsByCategory(Integer categoryId) {
+        if (categoryId != null && categoryId > 0) {
+            return statMapper.getCommentsByCategory(categoryId);
+        } else {
+            return getAllComments();
+        }
+    }
+    
+    /**
+     * 获取全站所有评论内容（用于全局词云）
+     * @return 评论内容列表
+     */
+    public List<Map> getAllComments() {
+        return statMapper.getAllComments();
+    }
 }

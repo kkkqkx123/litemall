@@ -225,7 +225,7 @@ public class AdminStatController {
     }
     
     /**
-     * 商品评论词云接口
+     * 商品评论词云接口（已废弃）
      * @param goodsId 商品ID
      * @param maxWords 最大词数
      * @return 词云数据
@@ -249,6 +249,65 @@ public class AdminStatController {
         
         // 获取商品评论内容
         List<Map> comments = statService.getGoodsComments(goodsId);
+        if (comments == null || comments.isEmpty()) {
+            return ResponseUtil.ok(new ArrayList<>());
+        }
+        
+        // 提取评论文本
+        List<String> commentTexts = comments.stream()
+            .map(comment -> (String) comment.get("content"))
+            .filter(text -> text != null && !text.trim().isEmpty())
+            .collect(java.util.stream.Collectors.toList());
+        
+        if (commentTexts.isEmpty()) {
+            return ResponseUtil.ok(new ArrayList<>());
+        }
+        
+        // 生成词云
+        List<WordCloudService.WordCloudData> wordCloudData = wordCloudService.generateWordCloud(commentTexts, maxWords);
+        
+        // 转换为前端期望的格式
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (WordCloudService.WordCloudData data : wordCloudData) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("name", data.getText());
+            item.put("value", data.getFrequency());
+            result.add(item);
+        }
+        
+        return ResponseUtil.ok(result);
+    }
+    
+    /**
+     * 全局商品评论词云接口（新增）
+     * @param categoryId 商品分类ID，可为null
+     * @param maxWords 最大词数
+     * @return 词云数据
+     */
+    @RequiresPermissions("admin:stat:goods")
+    @RequiresPermissionsDesc(menu = {"统计管理", "全局评论词云"}, button = "生成词云")
+    @GetMapping("/goods/wordcloud")
+    public Object generateGlobalWordCloud(@RequestParam(value = "categoryId", required = false) Integer categoryId,
+                                        @RequestParam(value = "maxWords", defaultValue = "100") Integer maxWords) {
+        
+        // 参数校验
+        if (maxWords == null || maxWords < 1) {
+            maxWords = 100;
+        }
+        if (maxWords > 200) {
+            maxWords = 200;
+        }
+        
+        // 获取评论内容
+        List<Map> comments;
+        if (categoryId != null && categoryId > 0) {
+            // 按分类获取评论
+            comments = statService.getCommentsByCategory(categoryId);
+        } else {
+            // 获取全站评论
+            comments = statService.getAllComments();
+        }
+        
         if (comments == null || comments.isEmpty()) {
             return ResponseUtil.ok(new ArrayList<>());
         }

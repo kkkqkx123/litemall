@@ -49,7 +49,8 @@ public class JsonIntegerArrayTypeHandler extends BaseTypeHandler<Integer[]> {
             try {
                 return (Integer[]) mapper.readValue(content, Integer[].class);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                // JSON解析失败时，返回空数组
+                return new Integer[0];
             }
         } else {
             return null;
