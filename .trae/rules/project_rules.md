@@ -10,6 +10,15 @@ sql测试数据由js脚本生成
 username:  root
 password:  root
 
+操作数据库：
+docker exec mysql mysql -uroot -proot -e "sql语句"
+
+操作当前项目的litemall数据库：
+docker exec mysql mysql -uroot -proot litemall -e "sql语句"
+
+前端获取jwt token：
+curl -X POST "http://localhost:8080/admin/auth/login" -H "Content-Type: application/json" -d '{"username":"admin123","password":"admin123"}' 
+
 ---
 
 # litemall 项目指南

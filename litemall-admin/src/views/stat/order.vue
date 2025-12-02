@@ -64,7 +64,10 @@ export default {
   components: { VeLine },
   data() {
     return {
-      chartData: {},
+      chartData: {
+        columns: ['period', 'orders', 'customers', 'amount', 'pcr'],
+        rows: []
+      },
       chartSettings: {},
       chartExtend: {},
       filterForm: {
@@ -141,30 +144,70 @@ export default {
       })
     },
     loadData() {
-      // 时间优先级逻辑：日>月>季度，月优先于季度
+      // 构建查询参数，包含时间维度
       const query = {
         categoryId: this.filterForm.categoryId
       }
 
-      // 如果设置了日期，使用日期查询（最高优先级）
+      // 根据筛选条件确定时间维度和相关参数
       if (this.filterForm.day) {
+        // 如果选择了具体日期，使用day维度
+        query.timeDimension = 'day'
         query.day = this.filterForm.day
-      }
-      // 如果设置了月份，使用月份查询（次优先级）
-      else if (this.filterForm.month) {
-        query.month = this.filterForm.month
-      }
-      // 如果设置了季度，使用季度查询（最低优先级）
-      else if (this.filterForm.quarter) {
-        query.quarter = this.filterForm.quarter
-      }
-      // 最后才使用年份
-      else {
+        query.year = this.filterForm.year // 同时传递年份信息
+        query.month = this.filterForm.month ? parseInt(this.filterForm.month) : null // 确保月份是数字
+      } else if (this.filterForm.month) {
+        // 如果选择了月份，使用month维度
+        query.timeDimension = 'month'
+        query.month = parseInt(this.filterForm.month) // 确保月份是数字
+        query.year = this.filterForm.year
+      } else if (this.filterForm.quarter) {
+        // 如果选择了季度，使用quarter维度
+        query.timeDimension = 'quarter'
+        query.quarter = parseInt(this.filterForm.quarter) // 确保季度是数字
+        query.year = this.filterForm.year
+      } else {
+        // 默认使用年份维度
+        query.timeDimension = 'year'
         query.year = this.filterForm.year
       }
 
+      console.log('查询参数:', query)
+
       statOrderEnhanced(query).then(response => {
-        this.chartData = response.data.data
+        console.log('订单统计数据响应:', response)
+        console.log('统计数据详情:', response.data.data)
+        
+        // 验证返回数据格式
+        if (!response.data || !response.data.data) {
+          console.error('返回数据格式错误:', response)
+          this.$message.error('获取统计数据失败：数据格式错误')
+          return
+        }
+        
+        const statData = response.data.data
+        
+        // 检查是否有数据
+        if (!statData.rows || statData.rows.length === 0) {
+          console.warn('没有查询到统计数据，查询参数:', query)
+          this.$message.info('当前筛选条件下没有统计数据')
+          // 设置空数据格式，确保图表能正确显示
+          this.chartData = {
+            columns: ['period', 'orders', 'customers', 'amount', 'pcr'],
+            rows: []
+          }
+          return
+        }
+        
+        // 验证数据格式
+        if (!statData.columns || !Array.isArray(statData.rows)) {
+          console.error('统计数据格式不正确:', statData)
+          this.$message.error('统计数据格式不正确')
+          return
+        }
+        
+        // 设置图表数据
+        this.chartData = statData
         this.chartSettings = {
           labelMap: {
             'orders': '订单量',
@@ -175,6 +218,16 @@ export default {
         }
         this.chartExtend = {
           xAxis: { boundaryGap: true }
+        }
+        
+        console.log('图表数据设置完成:', this.chartData)
+      }).catch(error => {
+        console.error('获取订单统计数据失败:', error)
+        this.$message.error('获取统计数据失败：' + (error.message || '网络错误'))
+        // 设置空数据避免图表报错
+        this.chartData = {
+          columns: ['period', 'orders', 'customers', 'amount', 'pcr'],
+          rows: []
         }
       })
     },
