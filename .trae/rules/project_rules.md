@@ -19,6 +19,8 @@ docker exec mysql mysql -uroot -proot litemall -e "sql语句"
 前端获取jwt token：
 curl -X POST "http://localhost:8080/admin/auth/login" -H "Content-Type: application/json" -d '{"username":"admin123","password":"admin123"}' 
 
+通过jwt访问后端：
+curl -X GET "http://localhost:8080/admin/stat/order/enhanced?month=1" -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjEyMyIsImlhdCI6MTc2NDYzOTEwMywiZXhwIjoxNzY0NzI1NTAzfQ.bDB4uBs62J2uImb315tbTIZPRca1UK4EGPR5g7C8kpM"
 ---
 
 # litemall 项目指南

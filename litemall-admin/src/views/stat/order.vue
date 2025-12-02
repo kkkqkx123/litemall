@@ -144,31 +144,26 @@ export default {
       })
     },
     loadData() {
-      // 构建查询参数，包含时间维度
+      // 构建查询参数，根据实际提供的参数决定时间范围
       const query = {
         categoryId: this.filterForm.categoryId
       }
 
-      // 根据筛选条件确定时间维度和相关参数
+      // 根据优先级设置参数：day > month > quarter > year
       if (this.filterForm.day) {
-        // 如果选择了具体日期，使用day维度
-        query.timeDimension = 'day'
+        // 如果选择了具体日期，查询当天数据
         query.day = this.filterForm.day
-        query.year = this.filterForm.year // 同时传递年份信息
-        query.month = this.filterForm.month ? parseInt(this.filterForm.month) : null // 确保月份是数字
+        query.year = this.filterForm.year // 提供年份作为参考
       } else if (this.filterForm.month) {
-        // 如果选择了月份，使用month维度
-        query.timeDimension = 'month'
+        // 如果选择了月份，查询整月数据
         query.month = parseInt(this.filterForm.month) // 确保月份是数字
         query.year = this.filterForm.year
       } else if (this.filterForm.quarter) {
-        // 如果选择了季度，使用quarter维度
-        query.timeDimension = 'quarter'
+        // 如果选择了季度，查询整季度数据
         query.quarter = parseInt(this.filterForm.quarter) // 确保季度是数字
         query.year = this.filterForm.year
       } else {
-        // 默认使用年份维度
-        query.timeDimension = 'year'
+        // 默认使用年份，查询整年数据
         query.year = this.filterForm.year
       }
 
@@ -177,16 +172,16 @@ export default {
       statOrderEnhanced(query).then(response => {
         console.log('订单统计数据响应:', response)
         console.log('统计数据详情:', response.data.data)
-        
+
         // 验证返回数据格式
         if (!response.data || !response.data.data) {
           console.error('返回数据格式错误:', response)
           this.$message.error('获取统计数据失败：数据格式错误')
           return
         }
-        
+
         const statData = response.data.data
-        
+
         // 检查是否有数据
         if (!statData.rows || statData.rows.length === 0) {
           console.warn('没有查询到统计数据，查询参数:', query)
@@ -198,14 +193,14 @@ export default {
           }
           return
         }
-        
+
         // 验证数据格式
         if (!statData.columns || !Array.isArray(statData.rows)) {
           console.error('统计数据格式不正确:', statData)
           this.$message.error('统计数据格式不正确')
           return
         }
-        
+
         // 设置图表数据
         this.chartData = statData
         this.chartSettings = {
@@ -219,7 +214,7 @@ export default {
         this.chartExtend = {
           xAxis: { boundaryGap: true }
         }
-        
+
         console.log('图表数据设置完成:', this.chartData)
       }).catch(error => {
         console.error('获取订单统计数据失败:', error)

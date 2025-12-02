@@ -24,26 +24,28 @@ public class StatService {
     }
     
     /**
-     * 增强版订单统计查询，支持时间维度和商品类别筛选
-     * 支持按年、季、月、日进行级联筛选
-     * @param timeDimension 时间维度：day/week/month/quarter/year
+     * 增强版订单统计查询，支持时间筛选和商品类别筛选
+     * 根据提供的具体参数构建时间范围，优先级：day > month > quarter > year
      * @param categoryId 商品类别ID，可为null
      * @param year 年份，可为null
      * @param quarter 季度(1-4)，可为null
      * @param month 月份(1-12)，可为null
-     * @param day 日期(1-31)，可为null
+     * @param day 日期(yyyy-MM-dd格式)，可为null
      * @return 订单统计数据
      */
-    public List<Map> statOrderEnhanced(String timeDimension, Integer categoryId, Integer year, Integer quarter, Integer month, String day) {
+    public List<Map> statOrderEnhanced(Integer categoryId, Integer year, Integer quarter, Integer month, String day) {
         // 构建时间范围参数
-        Map<String, Object> timeParams = buildTimeRange(timeDimension, year, quarter, month, day);
+        Map<String, Object> timeParams = buildTimeRange(year, quarter, month, day);
         
         // 调试日志输出
         System.out.println("Debug: statOrderEnhanced called with params:");
-        System.out.println("  timeDimension=" + timeDimension + ", year=" + year + ", quarter=" + quarter + ", month=" + month + ", day=" + day);
+        System.out.println("  year=" + year + ", quarter=" + quarter + ", month=" + month + ", day=" + day);
         System.out.println("  startTime=" + timeParams.get("startTime"));
         System.out.println("  endTime=" + timeParams.get("endTime"));
         System.out.println("  categoryId=" + categoryId);
+        
+        // 根据参数决定时间维度（保持向后兼容）
+        String timeDimension = determineTimeDimension(year, quarter, month, day);
         
         // 调用Mapper进行查询
         List<Map> result = statMapper.statOrderEnhancedWithTimeRange(timeDimension, categoryId, 
@@ -57,125 +59,78 @@ public class StatService {
     }
     
     /**
-     * 构建时间范围参数
-     * @param timeDimension 时间维度
+     * 根据具体参数构建时间范围参数
+     * 优先级：day > month > quarter > year
      * @param year 年份
      * @param quarter 季度
      * @param month 月份
      * @param day 日期字符串
      * @return 包含开始时间和结束时间的Map
      */
-    private Map<String, Object> buildTimeRange(String timeDimension, Integer year, Integer quarter, Integer month, String day) {
+    private Map<String, Object> buildTimeRange(Integer year, Integer quarter, Integer month, String day) {
         Map<String, Object> result = new HashMap<>();
         java.time.LocalDateTime startTime;
         java.time.LocalDateTime endTime;
         
-        java.time.LocalDate now = java.time.LocalDate.now();
-        
-        switch (timeDimension.toLowerCase()) {
-            case "year":
-                if (year != null) {
-                    startTime = java.time.LocalDateTime.of(year, 1, 1, 0, 0, 0);
-                    endTime = java.time.LocalDateTime.of(year, 12, 31, 23, 59, 59);
-                } else {
-                    // 默认当年
-                    startTime = java.time.LocalDateTime.of(now.getYear(), 1, 1, 0, 0, 0);
-                    endTime = java.time.LocalDateTime.of(now.getYear(), 12, 31, 23, 59, 59);
-                }
-                break;
-                
-            case "quarter":
-                if (year != null && quarter != null) {
-                    int startMonth = (quarter - 1) * 3 + 1;
-                    int endMonth = startMonth + 2;
-                    startTime = java.time.LocalDateTime.of(year, startMonth, 1, 0, 0, 0);
-                    
-                    // 计算季度的最后一天
-                    java.time.YearMonth endYearMonth = java.time.YearMonth.of(year, endMonth);
-                    int endDay = endYearMonth.lengthOfMonth();
-                    endTime = java.time.LocalDateTime.of(year, endMonth, endDay, 23, 59, 59);
-                } else {
-                    // 默认当前季度
-                    int currentQuarter = (now.getMonthValue() - 1) / 3 + 1;
-                    int startMonth = (currentQuarter - 1) * 3 + 1;
-                    int endMonth = startMonth + 2;
-                    startTime = java.time.LocalDateTime.of(now.getYear(), startMonth, 1, 0, 0, 0);
-                    
-                    java.time.YearMonth endYearMonth = java.time.YearMonth.of(now.getYear(), endMonth);
-                    int endDay = endYearMonth.lengthOfMonth();
-                    endTime = java.time.LocalDateTime.of(now.getYear(), endMonth, endDay, 23, 59, 59);
-                }
-                break;
-                
-            case "month":
-                if (year != null && month != null) {
-                    startTime = java.time.LocalDateTime.of(year, month, 1, 0, 0, 0);
-                    
-                    java.time.YearMonth yearMonth = java.time.YearMonth.of(year, month);
-                    int endDay = yearMonth.lengthOfMonth();
-                    endTime = java.time.LocalDateTime.of(year, month, endDay, 23, 59, 59);
-                } else if (year != null) {
-                    // 当timeDimension为month但未指定具体月份时，查询全年数据
-                     startTime = java.time.LocalDateTime.of(year, 1, 1, 0, 0, 0);
-                     endTime = java.time.LocalDateTime.of(year, 12, 31, 23, 59, 59);
-                } else if (month != null) {
-                    // 指定月份，如果未提供年份信息，则使用当前年份
-                    // 如果没有提供年份，应该使用当前年份作为默认值
-                    startTime = java.time.LocalDateTime.of(now.getYear(), month, 1, 0, 0, 0);
-                    
-                    java.time.YearMonth yearMonth = java.time.YearMonth.of(now.getYear(), month);
-                    int endDay = yearMonth.lengthOfMonth();
-                    endTime = java.time.LocalDateTime.of(now.getYear(), month, endDay, 23, 59, 59);
-                } else {
-                    // 默认当前月份
-                    startTime = java.time.LocalDateTime.of(now.getYear(), now.getMonthValue(), 1, 0, 0, 0);
-                    
-                    java.time.YearMonth yearMonth = java.time.YearMonth.of(now.getYear(), now.getMonthValue());
-                    int endDay = yearMonth.lengthOfMonth();
-                    endTime = java.time.LocalDateTime.of(now.getYear(), now.getMonthValue(), endDay, 23, 59, 59);
-                }
-                break;
-                
-            case "day":
-                if (day != null && !day.isEmpty()) {
-                    // 解析日期字符串 "yyyy-MM-dd"
-                    java.time.LocalDate date = java.time.LocalDate.parse(day);
-                    startTime = java.time.LocalDateTime.of(date, java.time.LocalTime.of(0, 0, 0));
-                    endTime = java.time.LocalDateTime.of(date, java.time.LocalTime.of(23, 59, 59));
-                } else if (year != null && month != null) {
-                    // 指定年月，默认当月第一天到最后一天
-                    startTime = java.time.LocalDateTime.of(year, month, 1, 0, 0, 0);
-                    
-                    java.time.YearMonth yearMonth = java.time.YearMonth.of(year, month);
-                    int endDay = yearMonth.lengthOfMonth();
-                    endTime = java.time.LocalDateTime.of(year, month, endDay, 23, 59, 59);
-                } else if (year != null) {
-                    // 指定年份，默认当年第一天到最后一天
-                    startTime = java.time.LocalDateTime.of(year, 1, 1, 0, 0, 0);
-                    endTime = java.time.LocalDateTime.of(year, 12, 31, 23, 59, 59);
-                } else if (month != null) {
-                    // 指定月份，默认当前年份，当月第一天到最后一天
-                    startTime = java.time.LocalDateTime.of(now.getYear(), month, 1, 0, 0, 0);
-                    
-                    java.time.YearMonth yearMonth = java.time.YearMonth.of(now.getYear(), month);
-                    int endDay = yearMonth.lengthOfMonth();
-                    endTime = java.time.LocalDateTime.of(now.getYear(), month, endDay, 23, 59, 59);
-                } else {
-                    // 默认最近30天
-                    startTime = java.time.LocalDateTime.now().minusDays(30);
-                    endTime = java.time.LocalDateTime.now();
-                }
-                break;
-                
-            default:
-                // 默认最近30天
-                startTime = java.time.LocalDateTime.now().minusDays(30);
-                endTime = java.time.LocalDateTime.now();
+        // 优先级判断：day > month > quarter > year
+        if (day != null && !day.isEmpty()) {
+            // 如果提供了具体日期，查询当天数据
+            java.time.LocalDate date = java.time.LocalDate.parse(day);
+            startTime = java.time.LocalDateTime.of(date, java.time.LocalTime.of(0, 0, 0));
+            endTime = java.time.LocalDateTime.of(date, java.time.LocalTime.of(23, 59, 59));
+        } else if (month != null) {
+            // 如果提供了月份，使用指定月份（如果没有年份则使用当前年份）
+            int targetYear = year != null ? year : java.time.LocalDate.now().getYear();
+            startTime = java.time.LocalDateTime.of(targetYear, month, 1, 0, 0, 0);
+            java.time.YearMonth yearMonth = java.time.YearMonth.of(targetYear, month);
+            int endDay = yearMonth.lengthOfMonth();
+            endTime = java.time.LocalDateTime.of(targetYear, month, endDay, 23, 59, 59);
+        } else if (quarter != null && year != null) {
+            // 如果提供了季度，查询整季度数据
+            int startMonth = (quarter - 1) * 3 + 1;
+            int endMonth = startMonth + 2;
+            startTime = java.time.LocalDateTime.of(year, startMonth, 1, 0, 0, 0);
+            java.time.YearMonth endYearMonth = java.time.YearMonth.of(year, endMonth);
+            int endDay = endYearMonth.lengthOfMonth();
+            endTime = java.time.LocalDateTime.of(year, endMonth, endDay, 23, 59, 59);
+        } else if (year != null) {
+            // 如果只提供了年份，查询整年数据
+            startTime = java.time.LocalDateTime.of(year, 1, 1, 0, 0, 0);
+            endTime = java.time.LocalDateTime.of(year, 12, 31, 23, 59, 59);
+        } else {
+            // 默认查询当前月份
+            java.time.LocalDate now = java.time.LocalDate.now();
+            startTime = java.time.LocalDateTime.of(now.getYear(), now.getMonthValue(), 1, 0, 0, 0);
+            java.time.YearMonth yearMonth = java.time.YearMonth.of(now.getYear(), now.getMonthValue());
+            int endDay = yearMonth.lengthOfMonth();
+            endTime = java.time.LocalDateTime.of(now.getYear(), now.getMonthValue(), endDay, 23, 59, 59);
         }
         
         result.put("startTime", startTime);
         result.put("endTime", endTime);
         return result;
+    }
+
+    /**
+     * 根据参数决定时间维度（保持SQL兼容性）
+     * @param year 年份
+     * @param quarter 季度
+     * @param month 月份
+     * @param day 日期
+     * @return 时间维度字符串
+     */
+    private String determineTimeDimension(Integer year, Integer quarter, Integer month, String day) {
+        if (day != null && !day.isEmpty()) {
+            return "day";
+        } else if (month != null && year != null) {
+            return "month";
+        } else if (quarter != null && year != null) {
+            return "quarter";
+        } else if (year != null) {
+            return "year";
+        } else {
+            return "month"; // 默认按月
+        }
     }
 
     public List<Map> statGoods() {

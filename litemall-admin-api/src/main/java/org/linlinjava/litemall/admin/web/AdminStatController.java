@@ -97,8 +97,8 @@ public class AdminStatController {
             }
         }
         
-        // 调用服务层进行统计
-        List<Map> rows = statService.statOrderEnhanced(timeDimension, categoryId, year, quarter, month, day);
+        // 调用服务层进行统计（已移除timeDimension参数）
+        List<Map> rows = statService.statOrderEnhanced(categoryId, year, quarter, month, day);
         String[] columns = new String[]{"period", "orders", "customers", "amount", "pcr"};
         StatVo statVo = new StatVo();
         statVo.setColumns(columns);

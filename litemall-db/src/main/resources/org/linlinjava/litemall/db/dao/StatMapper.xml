@@ -22,13 +22,14 @@
         group by substr(add_time,1,10)
     </select>
     
-    <!-- 增强版订单统计查询，支持时间维度和商品类别筛选 -->
+    <!-- 增强版订单统计查询，支持自动确定时间维度 -->
     <select id="statOrderEnhanced" resultType="map">
         select
         <choose>
-            <when test="timeDimension == 'day'">substr(o.add_time,1,10)</when>
-            <when test="timeDimension == 'week'">date_format(o.add_time,'%Y-%u')</when>
-            <when test="timeDimension == 'month'">substr(o.add_time,1,7)</when>
+            <when test="day != null">substr(o.add_time,1,10)</when>
+            <when test="month != null">substr(o.add_time,1,7)</when>
+            <when test="quarter != null">concat(year(o.add_time), '-Q', quarter(o.add_time))</when>
+            <when test="year != null">year(o.add_time)</when>
             <otherwise>substr(o.add_time,1,10)</otherwise>
         </choose> as period,
         count(o.id) as orders,
@@ -44,6 +45,9 @@
         and g.id is not null  -- 确保关联到有效的商品记录
         <if test="categoryId != null">
             and (g.category_id = #{categoryId} or parent_c.id = #{categoryId})
+        </if>
+        <if test="startTime != null and endTime != null">
+            and o.add_time &gt;= #{startTime} and o.add_time &lt;= #{endTime}
         </if>
         group by period
         order by period
