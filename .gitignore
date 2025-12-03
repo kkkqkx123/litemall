@@ -3,6 +3,8 @@ docs/coding-1/前端程序
 docs/coding-2/后端程序
 docs/coding-2/前端程序
 
+litemall-core/src/main/resources/application-core.yml
+
 ### gradle ###
 .gradle
 /build/

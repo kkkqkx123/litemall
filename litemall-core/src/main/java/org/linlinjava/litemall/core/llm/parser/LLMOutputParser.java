@@ -1,8 +1,12 @@
 package org.linlinjava.litemall.core.llm.parser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.linlinjava.litemall.core.llm.exception.JSONParseException;
 import org.linlinjava.litemall.core.llm.exception.LLMOutputParseException;
 import org.linlinjava.litemall.core.llm.model.QueryIntent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,38 +19,101 @@ import java.util.Map;
 @Component
 public class LLMOutputParser {
     
+    private static final Logger logger = LoggerFactory.getLogger(LLMOutputParser.class);
+    
     @Autowired
     private JSONExtractor jsonExtractor;
     
     private final ObjectMapper objectMapper = new ObjectMapper();
     
     /**
-     * 解析LLM输出为查询意图
-     * @param llmOutput LLM输出文本
-     * @return 查询意图对象
-     * @throws LLMOutputParseException 当解析失败时抛出此异常
+     * 解析LLM输出为QueryIntent对象
+     * @param llmOutput LLM输出字符串
+     * @return QueryIntent对象
+     * @throws JSONParseException 当解析失败时抛出异常
      */
-    public QueryIntent parseQueryIntent(String llmOutput) throws LLMOutputParseException {
-        if (llmOutput == null || llmOutput.trim().isEmpty()) {
-            throw new LLMOutputParseException("LLM输出为空");
-        }
-        
+    public QueryIntent parseQueryIntent(String llmOutput) throws JSONParseException {
         try {
-            // 提取JSON部分
-            String jsonStr = jsonExtractor.extractJSON(llmOutput);
+            if (llmOutput == null || llmOutput.trim().isEmpty()) {
+                String errorMsg = "LLM输出为空";
+                logger.warn(errorMsg);
+                throw new JSONParseException(errorMsg);
+            }
             
-            // 转换为QueryIntent对象
-            QueryIntent queryIntent = objectMapper.readValue(jsonStr, QueryIntent.class);
+            // 提取JSON内容
+            String jsonContent = jsonExtractor.extractJSON(llmOutput);
+            if (jsonContent == null) {
+                String errorMsg = "无法从LLM输出中提取有效的JSON格式";
+                logger.warn("{}: {}", errorMsg, llmOutput);
+                throw new JSONParseException(errorMsg, llmOutput, "JSON提取失败");
+            }
             
-            // 增强的验证逻辑
-            validateQueryIntent(queryIntent);
+            // 解析JSON为Map
+            Map<String, Object> jsonMap;
+            try {
+                jsonMap = objectMapper.readValue(jsonContent, Map.class);
+            } catch (Exception e) {
+                String errorMsg = "JSON格式解析失败";
+                logger.error("{}: {}", errorMsg, jsonContent, e);
+                throw new JSONParseException(errorMsg, jsonContent, e.getMessage());
+            }
             
+            // 验证必需字段
+            if (!jsonMap.containsKey("query_type")) {
+                String errorMsg = "缺少必需的query_type字段";
+                logger.warn("{}: {}", errorMsg, jsonContent);
+                throw new JSONParseException(errorMsg, jsonContent, "缺少query_type");
+            }
+            
+            // 创建QueryIntent对象
+            QueryIntent queryIntent = new QueryIntent();
+            
+            // 设置查询类型
+            String queryType = (String) jsonMap.get("query_type");
+            if (queryType != null) {
+                queryIntent.setQueryType(queryType);
+            }
+            
+            // 设置查询条件
+            Map<String, Object> conditions = (Map<String, Object>) jsonMap.get("conditions");
+            if (conditions != null) {
+                queryIntent.setConditions(conditions);
+            }
+            
+            // 设置排序
+            String sort = (String) jsonMap.get("sort");
+            if (sort != null) {
+                queryIntent.setSort(sort);
+            }
+            
+            // 设置限制数量
+            Integer limit = (Integer) jsonMap.get("limit");
+            if (limit != null) {
+                queryIntent.setLimit(limit);
+            }
+            
+            // 设置置信度
+            Double confidence = (Double) jsonMap.get("confidence");
+            if (confidence != null) {
+                queryIntent.setConfidence(confidence);
+            }
+            
+            // 设置解释
+            String explanation = (String) jsonMap.get("explanation");
+            if (explanation != null) {
+                queryIntent.setExplanation(explanation);
+            }
+            
+            logger.debug("成功解析LLM输出为QueryIntent: {}", queryIntent);
             return queryIntent;
             
-        } catch (LLMOutputParseException e) {
-            throw e; // 重新抛出已知的解析异常
+        } catch (JSONParseException e) {
+            // 重新抛出JSON解析异常
+            throw e;
         } catch (Exception e) {
-            throw new LLMOutputParseException("解析LLM输出失败: " + e.getMessage(), e);
+            String errorMsg = "解析LLM输出时发生未知错误";
+            logger.error("{}: {}", errorMsg, e.getMessage(), e);
+            throw new JSONParseException(errorMsg, llmOutput, e.getMessage());
         }
     }
     
@@ -64,6 +131,122 @@ public class LLMOutputParser {
         return llmOutput.replaceAll("```[\\s\\S]*?```", "")
                        .replaceAll("`", "")
                        .trim();
+    }
+
+    /**
+     * 从LLM输出中提取JSON内容
+     * @param output LLM输出字符串
+     * @return 提取的JSON内容
+     */
+    public String extractJSONContent(String output) {
+        if (output == null || output.trim().isEmpty()) {
+            return "";
+        }
+        
+        logger.debug("开始从输出中提取JSON：{}", output);
+        
+        try {
+            // 使用jsonExtractor提取JSON
+            String extractedContent = jsonExtractor.extractJSON(output);
+            logger.debug("提取结果：{}", extractedContent);
+            return extractedContent;
+            
+        } catch (Exception e) {
+            logger.warn("从输出中提取JSON失败，原样返回输出：{}", e.getMessage());
+            return output.trim();
+        }
+    }
+
+    /**
+     * 提取JSON内容（重载方法，支持默认实现）
+     * @param output LLM输出字符串
+     * @param defaultValue 默认值
+     * @return 提取的JSON内容，如果提取失败返回默认值
+     */
+    public String extractJSONContent(String output, String defaultValue) {
+        try {
+            String content = extractJSONContent(output);
+            if (content == null || content.trim().isEmpty()) {
+                return defaultValue;
+            }
+            return content;
+        } catch (Exception e) {
+            logger.warn("提取JSON失败，使用默认值：{}", e.getMessage());
+            return defaultValue;
+        }
+    }
+
+    /**
+     * 从输出中提取第一个有效的JSON对象
+     * @param output LLM输出字符串
+     * @return JSON字符串，如果没有找到返回null
+     */
+    public String extractFirstJSONObject(String output) {
+        if (output == null) {
+            return null;
+        }
+        
+        // 查找第一个{和对应的}
+        int startIndex = output.indexOf('{');
+        if (startIndex == -1) {
+            return null;
+        }
+        
+        int braceCount = 0;
+        int endIndex = -1;
+        
+        for (int i = startIndex; i < output.length(); i++) {
+            if (output.charAt(i) == '{') {
+                braceCount++;
+            } else if (output.charAt(i) == '}') {
+                braceCount--;
+                if (braceCount == 0) {
+                    endIndex = i;
+                    break;
+                }
+            }
+        }
+        
+        if (endIndex != -1) {
+            return output.substring(startIndex, endIndex + 1);
+        }
+        
+        return null;
+    }
+
+    /**
+     * 清理输出文本，移除常见的标记和前缀
+     * @param output 原始输出
+     * @return 清理后的文本
+     */
+    public String cleanOutput(String output) {
+        if (output == null) {
+            return "";
+        }
+        
+        String cleaned = output;
+        
+        // 移除常见的AI回复前缀
+        String[] prefixes = {
+            "根据以上信息，",
+            "根据您的查询，",
+            "以下是查询结果：",
+            "查询结果：",
+            "结果：",
+            "Answer:",
+            "回复：",
+            "回答：",
+            "```json",
+            "```"
+        };
+        
+        for (String prefix : prefixes) {
+            if (cleaned.startsWith(prefix)) {
+                cleaned = cleaned.substring(prefix.length()).trim();
+            }
+        }
+        
+        return cleaned.trim();
     }
     
     /**

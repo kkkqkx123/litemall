@@ -15,6 +15,7 @@ package org.linlinjava.litemall.core.util.bcrypt;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 /**
@@ -507,7 +508,11 @@ public class BCrypt {
      * @return an encoded salt value
      */
     public static String gensalt(int log_rounds) {
-        return gensalt(log_rounds, new SecureRandom());
+        try {
+            return gensalt(log_rounds, SecureRandom.getInstanceStrong());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

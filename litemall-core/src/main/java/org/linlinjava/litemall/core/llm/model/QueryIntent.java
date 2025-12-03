@@ -44,11 +44,88 @@ public class QueryIntent {
     private Integer limit;
     
     /**
+     * 置信度
+     * 范围：0.0 - 1.0
+     */
+    private Double confidence;
+    
+    /**
+     * 解释说明
+     * 对查询意图的自然语言解释
+     */
+    private String explanation;
+    
+    /**
      * 是否有效的查询意图
      * @return true表示有效，false表示无效
      */
     public boolean isValid() {
-        return queryType != null && conditions != null && !conditions.isEmpty();
+        return queryType != null && !queryType.trim().isEmpty();
+    }
+    
+    /**
+     * 创建新的QueryIntent实例
+     * @param queryType 查询类型
+     * @return QueryIntent实例
+     */
+    public static QueryIntent of(String queryType) {
+        QueryIntent intent = new QueryIntent();
+        intent.setQueryType(queryType);
+        return intent;
+    }
+    
+    /**
+     * 添加条件
+     * @param field 字段名
+     * @param value 值
+     * @return this
+     */
+    public QueryIntent withCondition(String field, Object value) {
+        if (this.conditions == null) {
+            this.conditions = new java.util.HashMap<>();
+        }
+        this.conditions.put(field, value);
+        return this;
+    }
+    
+    /**
+     * 设置排序
+     * @param sort 排序字段
+     * @return this
+     */
+    public QueryIntent withSort(String sort) {
+        this.sort = sort;
+        return this;
+    }
+    
+    /**
+     * 设置限制数量
+     * @param limit 限制数量
+     * @return this
+     */
+    public QueryIntent withLimit(Integer limit) {
+        this.limit = limit;
+        return this;
+    }
+    
+    /**
+     * 设置置信度
+     * @param confidence 置信度
+     * @return this
+     */
+    public QueryIntent withConfidence(Double confidence) {
+        this.confidence = confidence;
+        return this;
+    }
+    
+    /**
+     * 设置解释说明
+     * @param explanation 解释说明
+     * @return this
+     */
+    public QueryIntent withExplanation(String explanation) {
+        this.explanation = explanation;
+        return this;
     }
     
     /**
@@ -102,13 +179,31 @@ public class QueryIntent {
         this.limit = limit;
     }
     
+    public Double getConfidence() {
+        return confidence;
+    }
+    
+    public void setConfidence(Double confidence) {
+        this.confidence = confidence;
+    }
+    
+    public String getExplanation() {
+        return explanation;
+    }
+    
+    public void setExplanation(String explanation) {
+        this.explanation = explanation;
+    }
+    
     @Override
     public String toString() {
         return "QueryIntent{" +
                 "queryType='" + queryType + '\'' +
                 ", conditions=" + conditions +
-                ", sort='" + sort + '\'' +
+                ", sort=" + sort +
                 ", limit=" + limit +
+                ", confidence=" + confidence +
+                ", explanation='" + explanation + '\'' +
                 '}';
     }
 }
