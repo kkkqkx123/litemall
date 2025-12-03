@@ -19,20 +19,20 @@ public class LitemallNoticeAdminService {
         LitemallNoticeAdminExample example = new LitemallNoticeAdminExample();
         LitemallNoticeAdminExample.Criteria criteria = example.createCriteria();
 
-        if(!StringUtils.isEmpty(title)){
+        if(title != null && !title.isEmpty()){
             criteria.andNoticeTitleLike("%" + title + "%");
         }
 
-        if(type.equals("read")){
+        if(type != null && type.equals("read")){
          criteria.andReadTimeIsNotNull();
         }
-        else if(type.equals("unread")){
+        else if(type != null && type.equals("unread")){
             criteria.andReadTimeIsNull();
         }
         criteria.andAdminIdEqualTo(adminId);
         criteria.andDeletedEqualTo(false);
 
-        if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {
+        if (sort != null && !sort.isEmpty() && order != null && !order.isEmpty()) {
             example.setOrderByClause(sort + " " + order);
         }
 

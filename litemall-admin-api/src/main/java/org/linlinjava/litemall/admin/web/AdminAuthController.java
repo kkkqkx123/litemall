@@ -92,7 +92,7 @@ public class AdminAuthController {
         String password = JacksonUtil.parseString(body, "password");
 //        String code = JacksonUtil.parseString(body, "code");
 
-        if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password)) {
+        if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
             return ResponseUtil.badArgument();
         }
 //        if (StringUtils.isEmpty(code)) {

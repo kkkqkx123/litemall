@@ -1,12 +1,10 @@
 package org.linlinjava.litemall.admin.security;
 
 import org.aopalliance.intercept.MethodInvocation;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
 
-import java.util.Arrays;
 
 public class PermissionMethodSecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
 

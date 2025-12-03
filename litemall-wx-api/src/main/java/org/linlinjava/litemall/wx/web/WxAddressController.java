@@ -70,13 +70,13 @@ public class WxAddressController extends GetRegionService {
 
 	private Object validate(LitemallAddress address) {
 		String name = address.getName();
-		if (StringUtils.isEmpty(name)) {
+		if (name == null || name.isEmpty()) {
 			return ResponseUtil.badArgument();
 		}
 
 		// 测试收货手机号码是否正确
 		String mobile = address.getTel();
-		if (StringUtils.isEmpty(mobile)) {
+		if (mobile == null || mobile.isEmpty()) {
 			return ResponseUtil.badArgument();
 		}
 		if (!RegexUtil.isMobileSimple(mobile)) {
@@ -84,28 +84,28 @@ public class WxAddressController extends GetRegionService {
 		}
 
 		String province = address.getProvince();
-		if (StringUtils.isEmpty(province)) {
+		if (province == null || province.isEmpty()) {
 			return ResponseUtil.badArgument();
 		}
 
 		String city = address.getCity();
-		if (StringUtils.isEmpty(city)) {
+		if (city == null || city.isEmpty()) {
 			return ResponseUtil.badArgument();
 		}
 
 		String county = address.getCounty();
-		if (StringUtils.isEmpty(county)) {
+		if (county == null || county.isEmpty()) {
 			return ResponseUtil.badArgument();
 		}
 
 
 		String areaCode = address.getAreaCode();
-		if (StringUtils.isEmpty(areaCode)) {
+		if (areaCode == null || areaCode.isEmpty()) {
 			return ResponseUtil.badArgument();
 		}
 
 		String detailedAddress = address.getAddressDetail();
-		if (StringUtils.isEmpty(detailedAddress)) {
+		if (detailedAddress == null || detailedAddress.isEmpty()) {
 			return ResponseUtil.badArgument();
 		}
 

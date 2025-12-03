@@ -54,7 +54,7 @@ public class AdminNoticeController {
 
     private Object validate(LitemallNotice notice) {
         String title = notice.getTitle();
-        if (StringUtils.isEmpty(title)) {
+        if (title == null || title.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         return null;

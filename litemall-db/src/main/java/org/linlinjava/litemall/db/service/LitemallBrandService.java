@@ -21,7 +21,7 @@ public class LitemallBrandService {
     public List<LitemallBrand> query(Integer page, Integer limit, String sort, String order) {
         LitemallBrandExample example = new LitemallBrandExample();
         example.or().andDeletedEqualTo(false);
-        if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {
+        if (sort != null && !sort.isEmpty() && order != null && !order.isEmpty()) {
             example.setOrderByClause(sort + " " + order);
         }
         PageHelper.startPage(page, limit);
@@ -40,15 +40,15 @@ public class LitemallBrandService {
         LitemallBrandExample example = new LitemallBrandExample();
         LitemallBrandExample.Criteria criteria = example.createCriteria();
 
-        if (!StringUtils.isEmpty(id)) {
+        if (id != null && !id.isEmpty()) {
             criteria.andIdEqualTo(Integer.valueOf(id));
         }
-        if (!StringUtils.isEmpty(name)) {
+        if (name != null && !name.isEmpty()) {
             criteria.andNameLike("%" + name + "%");
         }
         criteria.andDeletedEqualTo(false);
 
-        if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {
+        if (sort != null && !sort.isEmpty() && order != null && !order.isEmpty()) {
             example.setOrderByClause(sort + " " + order);
         }
 

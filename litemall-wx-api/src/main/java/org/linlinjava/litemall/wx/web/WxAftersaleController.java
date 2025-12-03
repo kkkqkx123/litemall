@@ -216,7 +216,7 @@ public class WxAftersaleController {
             return ResponseUtil.badArgument();
         }
         String reason = aftersale.getReason();
-        if (StringUtils.isEmpty(reason)) {
+        if (reason == null || reason.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         return null;

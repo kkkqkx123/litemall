@@ -36,7 +36,7 @@ public class AdminKeywordController {
 
     private Object validate(LitemallKeyword keywords) {
         String keyword = keywords.getKeyword();
-        if (StringUtils.isEmpty(keyword)) {
+        if (keyword == null || keyword.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         return null;

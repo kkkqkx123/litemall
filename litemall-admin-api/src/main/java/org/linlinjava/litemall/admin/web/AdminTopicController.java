@@ -45,11 +45,11 @@ public class AdminTopicController {
 
     private Object validate(LitemallTopic topic) {
         String title = topic.getTitle();
-        if (StringUtils.isEmpty(title)) {
+        if (title == null || title.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         String content = topic.getContent();
-        if (StringUtils.isEmpty(content)) {
+        if (content == null || content.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         BigDecimal price = topic.getPrice();

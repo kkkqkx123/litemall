@@ -48,7 +48,10 @@ public class AdminOrderController {
                        @RequestParam(defaultValue = "10") Integer limit,
                        @Sort @RequestParam(defaultValue = "add_time") String sort,
                        @Order @RequestParam(defaultValue = "desc") String order) {
-         return adminOrderService.list(nickname, consignee, orderSn, start, end, orderStatusArray, page, limit, sort, order);
+        if (consignee == null || consignee.isEmpty()) {
+            return ResponseUtil.badArgument();
+        }
+        return adminOrderService.list(nickname, consignee, orderSn, start, end, orderStatusArray, page, limit, sort, order);
     }
 
     /**

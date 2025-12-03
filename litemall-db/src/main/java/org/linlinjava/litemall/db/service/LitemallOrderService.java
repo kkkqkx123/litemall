@@ -83,7 +83,7 @@ public class LitemallOrderService {
             criteria.andOrderStatusIn(orderStatus);
         }
         criteria.andDeletedEqualTo(false);
-        if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {
+        if (sort != null && !sort.isEmpty() && order != null && !order.isEmpty()) {
             example.setOrderByClause(sort + " " + order);
         }
 
@@ -98,7 +98,7 @@ public class LitemallOrderService {
         if (userId != null) {
             criteria.andUserIdEqualTo(userId);
         }
-        if (!StringUtils.isEmpty(orderSn)) {
+        if (orderSn != null && !orderSn.isEmpty()) {
             criteria.andOrderSnEqualTo(orderSn);
         }
         if(start != null){
@@ -112,7 +112,7 @@ public class LitemallOrderService {
         }
         criteria.andDeletedEqualTo(false);
 
-        if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {
+        if (sort != null && !sort.isEmpty() && order != null && !order.isEmpty()) {
             example.setOrderByClause(sort + " " + order);
         }
 
@@ -212,13 +212,13 @@ public class LitemallOrderService {
 
     public Map<String, Object> queryVoSelective(String nickname, String consignee, String orderSn, LocalDateTime start, LocalDateTime end, List<Short> orderStatusArray, Integer page, Integer limit, String sort, String order) {
         List<String> querys = new ArrayList<>(4);
-        if (!StringUtils.isEmpty(nickname)) {
+        if (nickname != null && !nickname.isEmpty()) {
             querys.add(" u.nickname like '%" + nickname + "%' ");
         }
-        if (!StringUtils.isEmpty(consignee)) {
+        if (consignee != null && !consignee.isEmpty()) {
             querys.add(" o.consignee like '%" + consignee + "%' ");
         }
-        if (!StringUtils.isEmpty(orderSn)) {
+        if (orderSn != null && !orderSn.isEmpty()) {
             querys.add(" o.order_sn = '" + orderSn + "' ");
         }
         DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -234,7 +234,7 @@ public class LitemallOrderService {
         querys.add(" o.deleted = 0 and og.deleted = 0 ");
         String query = StringUtils.collectionToDelimitedString(querys, "and");
         String orderByClause = null;
-        if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {
+        if (sort != null && !sort.isEmpty() && order != null && !order.isEmpty()) {
             orderByClause = "o." + sort + " " + order +", o.id desc ";
         }
 

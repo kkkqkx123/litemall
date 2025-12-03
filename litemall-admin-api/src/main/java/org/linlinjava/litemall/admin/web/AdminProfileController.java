@@ -50,10 +50,10 @@ public class AdminProfileController {
     public Object create(@RequestBody String body) {
         String oldPassword = JacksonUtil.parseString(body, "oldPassword");
         String newPassword = JacksonUtil.parseString(body, "newPassword");
-        if (StringUtils.isEmpty(oldPassword)) {
+        if (oldPassword == null || oldPassword.isEmpty()) {
             return ResponseUtil.badArgument();
         }
-        if (StringUtils.isEmpty(newPassword)) {
+        if (newPassword == null || newPassword.isEmpty()) {
             return ResponseUtil.badArgument();
         }
 

@@ -47,15 +47,15 @@ public class LitemallStorageService {
         LitemallStorageExample example = new LitemallStorageExample();
         LitemallStorageExample.Criteria criteria = example.createCriteria();
 
-        if (!StringUtils.isEmpty(key)) {
+        if (key != null && !key.isEmpty()) {
             criteria.andKeyEqualTo(key);
         }
-        if (!StringUtils.isEmpty(name)) {
+        if (name != null && !name.isEmpty()) {
             criteria.andNameLike("%" + name + "%");
         }
         criteria.andDeletedEqualTo(false);
 
-        if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {
+        if (sort != null && !sort.isEmpty() && order != null && !order.isEmpty()) {
             example.setOrderByClause(sort + " " + order);
         }
 

@@ -187,11 +187,15 @@ public class WxAuthController {
     @PostMapping("regCaptcha")
     public Object registerCaptcha(@RequestBody String body) {
         String phoneNumber = JacksonUtil.parseString(body, "mobile");
-        if (StringUtils.isEmpty(phoneNumber)) {
+        String captchaType = JacksonUtil.parseString(body, "type");
+        if (phoneNumber == null || phoneNumber.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         if (!RegexUtil.isMobileSimple(phoneNumber)) {
             return ResponseUtil.badArgumentValue();
+        }
+        if (captchaType == null || captchaType.isEmpty()) {
+            return ResponseUtil.badArgument();
         }
 
         if (!notifyService.isSmsEnable()) {
@@ -243,8 +247,8 @@ public class WxAuthController {
         // 其他情况，可以为空
         String wxCode = JacksonUtil.parseString(body, "wxCode");
 
-        if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password) || StringUtils.isEmpty(mobile)
-                || StringUtils.isEmpty(code)) {
+        if (username == null || username.isEmpty() || password == null || password.isEmpty() || mobile == null || mobile.isEmpty()
+                || code == null || code.isEmpty()) {
             return ResponseUtil.badArgument();
         }
 
@@ -269,7 +273,7 @@ public class WxAuthController {
         String openId = "";
         // 非空，则是小程序注册
         // 继续验证openid
-        if(!StringUtils.isEmpty(wxCode)) {
+        if(wxCode != null && !wxCode.isEmpty()) {
             try {
                 WxMaJscode2SessionResult result = this.wxService.getUserService().getSessionInfo(wxCode);
                 openId = result.getOpenid();
@@ -340,13 +344,13 @@ public class WxAuthController {
         }
         String phoneNumber = JacksonUtil.parseString(body, "mobile");
         String captchaType = JacksonUtil.parseString(body, "type");
-        if (StringUtils.isEmpty(phoneNumber)) {
+        if (phoneNumber == null || phoneNumber.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         if (!RegexUtil.isMobileSimple(phoneNumber)) {
             return ResponseUtil.badArgumentValue();
         }
-        if (StringUtils.isEmpty(captchaType)) {
+        if (captchaType == null || captchaType.isEmpty()) {
             return ResponseUtil.badArgument();
         }
 
@@ -490,13 +494,13 @@ public class WxAuthController {
         String nickname = JacksonUtil.parseString(body, "nickname");
 
         LitemallUser user = userService.findById(userId);
-        if(!StringUtils.isEmpty(avatar)){
+        if(avatar != null && !avatar.isEmpty()){
             user.setAvatar(avatar);
         }
         if(gender != null){
             user.setGender(gender);
         }
-        if(!StringUtils.isEmpty(nickname)){
+        if(nickname != null && !nickname.isEmpty()){
             user.setNickname(nickname);
         }
 

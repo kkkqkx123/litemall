@@ -36,12 +36,12 @@ public class WxFeedbackController {
 
     private Object validate(LitemallFeedback feedback) {
         String content = feedback.getContent();
-        if (StringUtils.isEmpty(content)) {
+        if (content == null || content.isEmpty()) {
             return ResponseUtil.badArgument();
         }
 
         String type = feedback.getFeedType();
-        if (StringUtils.isEmpty(type)) {
+        if (type == null || type.isEmpty()) {
             return ResponseUtil.badArgument();
         }
 
@@ -52,7 +52,7 @@ public class WxFeedbackController {
 
         // 测试手机号码是否正确
         String mobile = feedback.getMobile();
-        if (StringUtils.isEmpty(mobile)) {
+        if (mobile == null || mobile.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         if (!RegexUtil.isMobileSimple(mobile)) {

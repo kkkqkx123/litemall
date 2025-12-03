@@ -57,7 +57,7 @@ public class AdminOrderService {
 
     public Object list(String nickname, String consignee, String orderSn, LocalDateTime start, LocalDateTime end, List<Short> orderStatusArray,
                        Integer page, Integer limit, String sort, String order) {
-        Map<String, Object> data = (Map)orderService.queryVoSelective(nickname, consignee, orderSn, start, end, orderStatusArray, page, limit, sort, order);
+        Map<String, Object> data = orderService.queryVoSelective(nickname, consignee, orderSn, start, end, orderStatusArray, page, limit, sort, order);
         return ResponseUtil.ok(data);
     }
 
@@ -96,7 +96,7 @@ public class AdminOrderService {
         if (orderId == null) {
             return ResponseUtil.badArgument();
         }
-        if (StringUtils.isEmpty(refundMoney)) {
+        if (refundMoney == null || refundMoney.isEmpty()) {
             return ResponseUtil.badArgument();
         }
 

@@ -44,7 +44,7 @@ public class WxCommentController {
 
     private Object validate(LitemallComment comment) {
         String content = comment.getContent();
-        if (StringUtils.isEmpty(content)) {
+        if (content == null || content.isEmpty()) {
             return ResponseUtil.badArgument();
         }
 

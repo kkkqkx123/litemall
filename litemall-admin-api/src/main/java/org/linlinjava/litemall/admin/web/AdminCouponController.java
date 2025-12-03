@@ -58,7 +58,7 @@ public class AdminCouponController {
 
     private Object validate(LitemallCoupon coupon) {
         String name = coupon.getName();
-        if (StringUtils.isEmpty(name)) {
+        if (name == null || name.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         return null;

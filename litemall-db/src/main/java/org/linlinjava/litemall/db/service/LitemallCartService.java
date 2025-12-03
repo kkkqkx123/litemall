@@ -84,15 +84,15 @@ public class LitemallCartService {
         LitemallCartExample example = new LitemallCartExample();
         LitemallCartExample.Criteria criteria = example.createCriteria();
 
-        if (!StringUtils.isEmpty(userId)) {
+        if (userId != null) {
             criteria.andUserIdEqualTo(userId);
         }
-        if (!StringUtils.isEmpty(goodsId)) {
+        if (goodsId != null) {
             criteria.andGoodsIdEqualTo(goodsId);
         }
         criteria.andDeletedEqualTo(false);
 
-        if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {
+        if (sort != null && !sort.isEmpty() && order != null && !order.isEmpty()) {
             example.setOrderByClause(sort + " " + order);
         }
 

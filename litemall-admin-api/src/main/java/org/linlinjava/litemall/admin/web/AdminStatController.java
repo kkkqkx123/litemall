@@ -37,7 +37,7 @@ public class AdminStatController {
     @RequiresPermissionsDesc(menu = {"统计管理", "用户统计"}, button = "查询")
     @GetMapping("/user")
     public Object statUser() {
-        List<Map> rows = statService.statUser();
+        List<Map<String, Object>> rows = statService.statUser();
         String[] columns = new String[]{"day", "users"};
         StatVo statVo = new StatVo();
         statVo.setColumns(columns);
@@ -49,7 +49,7 @@ public class AdminStatController {
     @RequiresPermissionsDesc(menu = {"统计管理", "订单统计"}, button = "查询")
     @GetMapping("/order")
     public Object statOrder() {
-        List<Map> rows = statService.statOrder();
+        List<Map<String, Object>> rows = statService.statOrder();
         String[] columns = new String[]{"day", "orders", "customers", "amount", "pcr"};
         StatVo statVo = new StatVo();
         statVo.setColumns(columns);
@@ -98,7 +98,7 @@ public class AdminStatController {
         }
         
         // 调用服务层进行统计（已移除timeDimension参数）
-        List<Map> rows = statService.statOrderEnhanced(categoryId, year, quarter, month, day);
+        List<Map<String, Object>> rows = statService.statOrderEnhanced(categoryId, year, quarter, month, day);
         String[] columns = new String[]{"period", "orders", "customers", "amount", "pcr"};
         StatVo statVo = new StatVo();
         statVo.setColumns(columns);
@@ -111,7 +111,7 @@ public class AdminStatController {
     @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
     @GetMapping("/goods")
     public Object statGoods() {
-        List<Map> rows = statService.statGoods();
+        List<Map<String, Object>> rows = statService.statGoods();
         String[] columns = new String[]{"day", "orders", "products", "amount"};
         StatVo statVo = new StatVo();
         statVo.setColumns(columns);
@@ -149,7 +149,7 @@ public class AdminStatController {
         }
         
         // 查询数据
-        List<Map> rows = statService.statGoodsRating(categoryId, sort, order, page, limit);
+        List<Map<String, Object>> rows = statService.statGoodsRating(categoryId, sort, order, page, limit);
         int total = statService.countGoodsRating(categoryId);
         
         // 构建返回结果
@@ -171,7 +171,7 @@ public class AdminStatController {
     @RequiresPermissionsDesc(menu = {"统计管理", "商品评分统计"}, button = "获取分类")
     @GetMapping("/goods/categories")
     public Object statGoodsCategories() {
-        List<Map> categories = statService.statGoodsCategories();
+        List<Map<String, Object>> categories = statService.statGoodsCategories();
         return ResponseUtil.ok(categories);
     }
 
@@ -201,7 +201,7 @@ public class AdminStatController {
         }
         
         // 查询数据
-        List<Map> rows = statService.statGoodsComment(categoryId, page, limit);
+        List<Map<String, Object>> rows = statService.statGoodsComment(categoryId, page, limit);
         int total = statService.countGoodsComment(categoryId);
         
         // 构建返回结果
@@ -239,7 +239,7 @@ public class AdminStatController {
         }
         
         // 获取商品评论内容
-        List<Map> comments = statService.getGoodsComments(goodsId);
+        List<Map<String, Object>> comments = statService.getGoodsComments(goodsId);
         if (comments == null || comments.isEmpty()) {
             return ResponseUtil.ok(new ArrayList<>());
         }
@@ -290,7 +290,7 @@ public class AdminStatController {
         }
         
         // 获取评论内容
-        List<Map> comments;
+        List<Map<String, Object>> comments;
         if (categoryId != null && categoryId > 0) {
             // 按分类获取评论
             comments = statService.getCommentsByCategory(categoryId);

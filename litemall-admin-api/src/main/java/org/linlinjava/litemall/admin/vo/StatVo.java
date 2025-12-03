@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class StatVo {
     private String[] columns = new String[0];
-    private List<Map> rows = new ArrayList<>();
+    private List<Map<String, Object>> rows = new ArrayList<>();
 
     public String[] getColumns() {
         return columns;
@@ -17,15 +17,16 @@ public class StatVo {
         this.columns = columns;
     }
 
-    public List<Map> getRows() {
+    public List<Map<String, Object>> getRows() {
         return rows;
     }
 
-    public void setRows(List<Map> rows) {
+    public void setRows(List<Map<String, Object>> rows) {
         this.rows = rows;
     }
 
-    public void add(Map... r) {
+    @SafeVarargs
+    public final void add(Map<String, Object>... r) {
         rows.addAll(Arrays.asList(r));
     }
 }

@@ -51,11 +51,11 @@ public class AdminGoodsService {
     private Object validate(GoodsAllinone goodsAllinone) {
         LitemallGoods goods = goodsAllinone.getGoods();
         String name = goods.getName();
-        if (StringUtils.isEmpty(name)) {
+        if (name == null || name.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         String goodsSn = goods.getGoodsSn();
-        if (StringUtils.isEmpty(goodsSn)) {
+        if (goodsSn == null || goodsSn.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         // 品牌商可以不设置，如果设置则需要验证品牌商存在
@@ -76,11 +76,11 @@ public class AdminGoodsService {
         LitemallGoodsAttribute[] attributes = goodsAllinone.getAttributes();
         for (LitemallGoodsAttribute attribute : attributes) {
             String attr = attribute.getAttribute();
-            if (StringUtils.isEmpty(attr)) {
+            if (attr == null || attr.isEmpty()) {
                 return ResponseUtil.badArgument();
             }
             String value = attribute.getValue();
-            if (StringUtils.isEmpty(value)) {
+            if (value == null || value.isEmpty()) {
                 return ResponseUtil.badArgument();
             }
         }
@@ -88,11 +88,11 @@ public class AdminGoodsService {
         LitemallGoodsSpecification[] specifications = goodsAllinone.getSpecifications();
         for (LitemallGoodsSpecification specification : specifications) {
             String spec = specification.getSpecification();
-            if (StringUtils.isEmpty(spec)) {
+            if (spec == null || spec.isEmpty()) {
                 return ResponseUtil.badArgument();
             }
             String value = specification.getValue();
-            if (StringUtils.isEmpty(value)) {
+            if (value == null || value.isEmpty()) {
                 return ResponseUtil.badArgument();
             }
         }
@@ -260,7 +260,7 @@ public class AdminGoodsService {
 
         //将生成的分享图片地址写入数据库
         String url = qCodeService.createGoodShareImage(goods.getId().toString(), goods.getPicUrl(), goods.getName());
-        if (!StringUtils.isEmpty(url)) {
+        if (url != null && !url.isEmpty()) {
             goods.setShareUrl(url);
             if (goodsService.updateById(goods) == 0) {
                 throw new RuntimeException("更新数据失败");

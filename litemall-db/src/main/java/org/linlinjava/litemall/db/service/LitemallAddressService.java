@@ -65,12 +65,12 @@ public class LitemallAddressService {
         if (userId != null) {
             criteria.andUserIdEqualTo(userId);
         }
-        if (!StringUtils.isEmpty(name)) {
+        if (name != null && !name.isEmpty()) {
             criteria.andNameLike("%" + name + "%");
         }
         criteria.andDeletedEqualTo(false);
 
-        if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {
+        if (sort != null && !sort.isEmpty() && order != null && !order.isEmpty()) {
             example.setOrderByClause(sort + " " + order);
         }
 

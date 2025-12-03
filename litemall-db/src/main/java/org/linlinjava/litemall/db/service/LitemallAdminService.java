@@ -32,12 +32,12 @@ public class LitemallAdminService {
         LitemallAdminExample example = new LitemallAdminExample();
         LitemallAdminExample.Criteria criteria = example.createCriteria();
 
-        if (!StringUtils.isEmpty(username)) {
+        if (username != null && !username.isEmpty()) {
             criteria.andUsernameLike("%" + username + "%");
         }
         criteria.andDeletedEqualTo(false);
 
-        if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {
+        if (sort != null && !sort.isEmpty() && order != null && !order.isEmpty()) {
             example.setOrderByClause(sort + " " + order);
         }
 

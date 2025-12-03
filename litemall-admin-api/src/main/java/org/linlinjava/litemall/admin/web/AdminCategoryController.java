@@ -70,12 +70,12 @@ public class AdminCategoryController {
 
     private Object validate(LitemallCategory category) {
         String name = category.getName();
-        if (StringUtils.isEmpty(name)) {
+        if (name == null || name.isEmpty()) {
             return ResponseUtil.badArgument();
         }
 
         String level = category.getLevel();
-        if (StringUtils.isEmpty(level)) {
+        if (level == null || level.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         if (!level.equals("L1") && !level.equals("L2")) {

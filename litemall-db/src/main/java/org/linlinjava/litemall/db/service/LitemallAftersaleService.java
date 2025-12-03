@@ -37,7 +37,7 @@ public class LitemallAftersaleService {
             criteria.andStatusEqualTo(status);
         }
         criteria.andDeletedEqualTo(false);
-        if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {
+        if (sort != null && !sort.isEmpty() && order != null && !order.isEmpty()) {
             example.setOrderByClause(sort + " " + order);
         }
         else{
@@ -54,7 +54,7 @@ public class LitemallAftersaleService {
         if (orderId != null) {
             criteria.andOrderIdEqualTo(orderId);
         }
-        if (!StringUtils.isEmpty(aftersaleSn)) {
+        if (aftersaleSn != null && !aftersaleSn.isEmpty()) {
             criteria.andAftersaleSnEqualTo(aftersaleSn);
         }
         if (status != null) {

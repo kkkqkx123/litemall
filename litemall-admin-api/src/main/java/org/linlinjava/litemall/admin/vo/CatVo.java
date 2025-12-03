@@ -5,7 +5,7 @@ import java.util.List;
 public class CatVo {
     private Integer value = null;
     private String label = null;
-    private List children = null;
+    private List<CatVo> children = null;
 
     public Integer getValue() {
         return value;
@@ -23,11 +23,11 @@ public class CatVo {
         this.label = label;
     }
 
-    public List getChildren() {
+    public List<CatVo> getChildren() {
         return children;
     }
 
-    public void setChildren(List children) {
+    public void setChildren(List<CatVo> children) {
         this.children = children;
     }
 }

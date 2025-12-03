@@ -67,15 +67,15 @@ public class LitemallTopicService {
         LitemallTopicExample example = new LitemallTopicExample();
         LitemallTopicExample.Criteria criteria = example.createCriteria();
 
-        if (!StringUtils.isEmpty(title)) {
+        if (title != null && !title.isEmpty()) {
             criteria.andTitleLike("%" + title + "%");
         }
-        if (!StringUtils.isEmpty(subtitle)) {
+        if (subtitle != null && !subtitle.isEmpty()) {
             criteria.andSubtitleLike("%" + subtitle + "%");
         }
         criteria.andDeletedEqualTo(false);
 
-        if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {
+        if (sort != null && !sort.isEmpty() && order != null && !order.isEmpty()) {
             example.setOrderByClause(sort + " " + order);
         }
 

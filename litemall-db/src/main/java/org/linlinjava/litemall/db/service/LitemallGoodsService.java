@@ -93,23 +93,23 @@ public class LitemallGoodsService {
         LitemallGoodsExample.Criteria criteria1 = example.or();
         LitemallGoodsExample.Criteria criteria2 = example.or();
 
-        if (!StringUtils.isEmpty(catId) && catId != 0) {
+        if (catId != null && catId != 0) {
             criteria1.andCategoryIdEqualTo(catId);
             criteria2.andCategoryIdEqualTo(catId);
         }
-        if (!StringUtils.isEmpty(brandId)) {
+        if (brandId != null) {
             criteria1.andBrandIdEqualTo(brandId);
             criteria2.andBrandIdEqualTo(brandId);
         }
-        if (!StringUtils.isEmpty(isNew)) {
+        if (isNew != null) {
             criteria1.andIsNewEqualTo(isNew);
             criteria2.andIsNewEqualTo(isNew);
         }
-        if (!StringUtils.isEmpty(isHot)) {
+        if (isHot != null) {
             criteria1.andIsHotEqualTo(isHot);
             criteria2.andIsHotEqualTo(isHot);
         }
-        if (!StringUtils.isEmpty(keywords)) {
+        if (keywords != null && !keywords.isEmpty()) {
             criteria1.andKeywordsLike("%" + keywords + "%");
             criteria2.andNameLike("%" + keywords + "%");
         }
@@ -118,7 +118,7 @@ public class LitemallGoodsService {
         criteria1.andDeletedEqualTo(false);
         criteria2.andDeletedEqualTo(false);
 
-        if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {
+        if (sort != null && !sort.isEmpty() && order != null && !order.isEmpty()) {
             example.setOrderByClause(sort + " " + order);
         }
 
@@ -134,15 +134,15 @@ public class LitemallGoodsService {
         if (goodsId != null) {
             criteria.andIdEqualTo(goodsId);
         }
-        if (!StringUtils.isEmpty(goodsSn)) {
+        if (goodsSn != null && !goodsSn.isEmpty()) {
             criteria.andGoodsSnEqualTo(goodsSn);
         }
-        if (!StringUtils.isEmpty(name)) {
+        if (name != null && !name.isEmpty()) {
             criteria.andNameLike("%" + name + "%");
         }
         criteria.andDeletedEqualTo(false);
 
-        if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {
+        if (sort != null && !sort.isEmpty() && order != null && !order.isEmpty()) {
             example.setOrderByClause(sort + " " + order);
         }
 
@@ -217,19 +217,19 @@ public class LitemallGoodsService {
         LitemallGoodsExample.Criteria criteria1 = example.or();
         LitemallGoodsExample.Criteria criteria2 = example.or();
 
-        if (!StringUtils.isEmpty(brandId)) {
+        if (brandId != null) {
             criteria1.andBrandIdEqualTo(brandId);
             criteria2.andBrandIdEqualTo(brandId);
         }
-        if (!StringUtils.isEmpty(isNew)) {
+        if (isNew != null) {
             criteria1.andIsNewEqualTo(isNew);
             criteria2.andIsNewEqualTo(isNew);
         }
-        if (!StringUtils.isEmpty(isHot)) {
+        if (isHot != null) {
             criteria1.andIsHotEqualTo(isHot);
             criteria2.andIsHotEqualTo(isHot);
         }
-        if (!StringUtils.isEmpty(keywords)) {
+        if (keywords != null && !keywords.isEmpty()) {
             criteria1.andKeywordsLike("%" + keywords + "%");
             criteria2.andNameLike("%" + keywords + "%");
         }

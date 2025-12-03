@@ -40,11 +40,11 @@ public class AdminAdController {
 
     private Object validate(LitemallAd ad) {
         String name = ad.getName();
-        if (StringUtils.isEmpty(name)) {
+        if (name == null || name.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         String content = ad.getContent();
-        if (StringUtils.isEmpty(content)) {
+        if (content == null || content.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         return null;

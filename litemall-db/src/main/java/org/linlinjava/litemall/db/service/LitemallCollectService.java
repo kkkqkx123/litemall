@@ -32,7 +32,7 @@ public class LitemallCollectService {
         criteria.andUserIdEqualTo(userId);
         criteria.andDeletedEqualTo(false);
 
-        if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {
+        if (sort != null && !sort.isEmpty() && order != null && !order.isEmpty()) {
             example.setOrderByClause(sort + " " + order);
         }
 
@@ -66,15 +66,15 @@ public class LitemallCollectService {
         LitemallCollectExample example = new LitemallCollectExample();
         LitemallCollectExample.Criteria criteria = example.createCriteria();
 
-        if (!StringUtils.isEmpty(userId)) {
+        if (userId != null && !userId.isEmpty()) {
             criteria.andUserIdEqualTo(Integer.valueOf(userId));
         }
-        if (!StringUtils.isEmpty(valueId)) {
+        if (valueId != null && !valueId.isEmpty()) {
             criteria.andValueIdEqualTo(Integer.valueOf(valueId));
         }
         criteria.andDeletedEqualTo(false);
 
-        if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {
+        if (sort != null && !sort.isEmpty() && order != null && !order.isEmpty()) {
             example.setOrderByClause(sort + " " + order);
         }
 

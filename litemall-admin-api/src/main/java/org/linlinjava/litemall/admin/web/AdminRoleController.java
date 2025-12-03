@@ -84,7 +84,7 @@ public class AdminRoleController {
 
     private Object validate(LitemallRole role) {
         String name = role.getName();
-        if (StringUtils.isEmpty(name)) {
+        if (name == null || name.isEmpty()) {
             return ResponseUtil.badArgument();
         }
 

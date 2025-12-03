@@ -15,11 +15,11 @@ public class StatService {
     private StatMapper statMapper;
 
 
-    public List<Map> statUser() {
+    public List<Map<String, Object>> statUser() {
         return statMapper.statUser();
     }
 
-    public List<Map> statOrder() {
+    public List<Map<String, Object>> statOrder() {
         return statMapper.statOrder();
     }
     
@@ -33,7 +33,7 @@ public class StatService {
      * @param day 日期(yyyy-MM-dd格式)，可为null
      * @return 订单统计数据
      */
-    public List<Map> statOrderEnhanced(Integer categoryId, Integer year, Integer quarter, Integer month, String day) {
+    public List<Map<String, Object>> statOrderEnhanced(Integer categoryId, Integer year, Integer quarter, Integer month, String day) {
         // 构建时间范围参数
         Map<String, Object> timeParams = buildTimeRange(year, quarter, month, day);
         
@@ -48,7 +48,7 @@ public class StatService {
         String timeDimension = determineTimeDimension(year, quarter, month, day);
         
         // 调用Mapper进行查询
-        List<Map> result = statMapper.statOrderEnhancedWithTimeRange(timeDimension, categoryId, 
+        List<Map<String, Object>> result = statMapper.statOrderEnhancedWithTimeRange(timeDimension, categoryId, 
             (java.time.LocalDateTime) timeParams.get("startTime"), 
             (java.time.LocalDateTime) timeParams.get("endTime"));
         
@@ -133,7 +133,7 @@ public class StatService {
         }
     }
 
-    public List<Map> statGoods() {
+    public List<Map<String, Object>> statGoods() {
         return statMapper.statGoods();
     }
     
@@ -146,7 +146,7 @@ public class StatService {
      * @param limit 每页条数
      * @return 商品评分统计数据
      */
-    public List<Map> statGoodsRating(Integer categoryId, String sort, String order, Integer page, Integer limit) {
+    public List<Map<String, Object>> statGoodsRating(Integer categoryId, String sort, String order, Integer page, Integer limit) {
         // 参数校验
         if (page == null || page < 1) {
             page = 1;
@@ -177,7 +177,7 @@ public class StatService {
      * 获取商品分类列表（用于筛选）
      * @return 商品分类列表
      */
-    public List<Map> statGoodsCategories() {
+    public List<Map<String, Object>> statGoodsCategories() {
         return statMapper.statGoodsCategories();
     }
     
@@ -188,7 +188,7 @@ public class StatService {
      * @param limit 每页条数
      * @return 商品评论统计数据
      */
-    public List<Map> statGoodsComment(Integer categoryId, Integer page, Integer limit) {
+    public List<Map<String, Object>> statGoodsComment(Integer categoryId, Integer page, Integer limit) {
         // 参数校验
         if (page == null || page < 1) {
             page = 1;
@@ -220,7 +220,7 @@ public class StatService {
      * @param goodsId 商品ID
      * @return 评论内容列表
      */
-    public List<Map> getGoodsComments(Integer goodsId) {
+    public List<Map<String, Object>> getGoodsComments(Integer goodsId) {
         return statMapper.getGoodsComments(goodsId);
     }
     
@@ -229,7 +229,7 @@ public class StatService {
      * @param goodsIds 商品ID列表
      * @return 评论内容列表
      */
-    public List<Map> getGoodsComments(List<Integer> goodsIds) {
+    public List<Map<String, Object>> getGoodsComments(List<Integer> goodsIds) {
         return statMapper.getGoodsComments(goodsIds);
     }
     
@@ -238,7 +238,7 @@ public class StatService {
      * @param categoryId 商品分类ID，可为null
      * @return 评论内容列表
      */
-    public List<Map> getCommentsByCategory(Integer categoryId) {
+    public List<Map<String, Object>> getCommentsByCategory(Integer categoryId) {
         if (categoryId != null && categoryId > 0) {
             return statMapper.getCommentsByCategory(categoryId);
         } else {
@@ -250,7 +250,7 @@ public class StatService {
      * 获取全站所有评论内容（用于全局词云）
      * @return 评论内容列表
      */
-    public List<Map> getAllComments() {
+    public List<Map<String, Object>> getAllComments() {
         return statMapper.getAllComments();
     }
 }
