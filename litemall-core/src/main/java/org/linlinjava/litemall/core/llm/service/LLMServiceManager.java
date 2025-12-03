@@ -60,8 +60,7 @@ public class LLMServiceManager {
             logger.info("[{}] 开始处理用户查询 - userId: {}, sessionId: {}, query: {}", 
                        requestId, userId, sessionId, userQuery);
             
-            // 1. 获取或创建会话
-            ConversationSession session = conversationManager.getOrCreateSession(sessionId, userId);
+            // 1. 获取或创建会话（通过sessionId直接操作）
             
             // 2. 构建会话上下文
             String sessionContext = conversationManager.buildSessionContext(sessionId);
@@ -255,7 +254,7 @@ public class LLMServiceManager {
      * 生成请求ID
      */
     private String generateRequestId() {
-        return "REQ_" + System.currentTimeMillis() + "_" + Thread.currentThread().getId();
+        return "REQ_" + System.currentTimeMillis() + "_" + Thread.currentThread().threadId();
     }
     
     /**
@@ -268,8 +267,39 @@ public class LLMServiceManager {
         status.put("totalRequests", requestStats.values().stream().mapToLong(s -> s.totalRequests).sum());
         status.put("successfulRequests", requestStats.values().stream().mapToLong(s -> s.successfulRequests).sum());
         status.put("failedRequests", requestStats.values().stream().mapToLong(s -> s.failedRequests).sum());
+        status.put("avgResponseTime", calculateAverageResponseTime());
+        status.put("lastErrorInfo", getLastErrorInfo());
         status.put("timestamp", System.currentTimeMillis());
         return status;
+    }
+    
+    /**
+     * 计算平均响应时间
+     * @return 平均响应时间（毫秒）
+     */
+    private long calculateAverageResponseTime() {
+        return requestStats.values().stream()
+                .filter(s -> s.totalRequests > 0)
+                .mapToLong(s -> s.totalRequests > 0 ? s.totalDuration / s.totalRequests : 0)
+                .sum();
+    }
+    
+    /**
+     * 获取最近的错误信息
+     * @return 最近的错误信息
+     */
+    private Map<String, Object> getLastErrorInfo() {
+        return requestStats.values().stream()
+                .filter(s -> s.lastErrorType != null)
+                .max((s1, s2) -> Long.compare(s1.lastRequestTime, s2.lastRequestTime))
+                .map(s -> {
+                    Map<String, Object> errorInfo = new HashMap<>();
+                    errorInfo.put("errorType", s.lastErrorType);
+                    errorInfo.put("errorMessage", s.lastErrorMessage);
+                    errorInfo.put("errorTime", s.lastRequestTime);
+                    return errorInfo;
+                })
+                .orElse(new HashMap<>());
     }
     
     /**

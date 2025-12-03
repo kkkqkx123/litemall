@@ -1,6 +1,7 @@
 package org.linlinjava.litemall.core.domain;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * 订单统计结果类
@@ -41,7 +42,7 @@ public class StatisticsResult {
         this.orderCount = orderCount;
         this.orderAmount = orderAmount;
         if (orderCount != null && orderCount > 0 && orderAmount != null) {
-            this.avgAmount = orderAmount.divide(BigDecimal.valueOf(orderCount), 2, BigDecimal.ROUND_HALF_UP);
+            this.avgAmount = orderAmount.divide(BigDecimal.valueOf(orderCount), 2, RoundingMode.HALF_UP);
         } else {
             this.avgAmount = BigDecimal.ZERO;
         }

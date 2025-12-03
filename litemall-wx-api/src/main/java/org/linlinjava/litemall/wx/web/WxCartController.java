@@ -146,7 +146,7 @@ public class WxCartController {
             cart.setId(null);
             cart.setGoodsSn(goods.getGoodsSn());
             cart.setGoodsName((goods.getName()));
-            if(StringUtils.isEmpty(product.getUrl())){
+            if(product.getUrl() == null || product.getUrl().isEmpty()){
                 cart.setPicUrl(goods.getPicUrl());
             }
             else{
@@ -220,7 +220,7 @@ public class WxCartController {
             cart.setId(null);
             cart.setGoodsSn(goods.getGoodsSn());
             cart.setGoodsName((goods.getName()));
-            if(StringUtils.isEmpty(product.getUrl())){
+            if(product.getUrl() == null || product.getUrl().isEmpty()){
                 cart.setPicUrl(goods.getPicUrl());
             }
             else{

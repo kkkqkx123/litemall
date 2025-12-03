@@ -1,7 +1,6 @@
 package org.linlinjava.litemall.db.domain;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 
 public class OrderGoodsVo {
     private Integer id;

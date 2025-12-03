@@ -79,7 +79,7 @@ public class AdminStorageController {
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallStorage litemallStorage) {
         String key = litemallStorage.getKey();
-        if (StringUtils.isEmpty(key)) {
+        if (key == null || key.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         litemallStorageService.deleteByKey(key);

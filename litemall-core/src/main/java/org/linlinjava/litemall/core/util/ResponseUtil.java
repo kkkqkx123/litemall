@@ -55,12 +55,12 @@ public class ResponseUtil {
         return obj;
     }
 
-    public static Object okList(List list) {
+    public static Object okList(List<?> list) {
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("list", list);
 
-        if (list instanceof Page) {
-            Page page = (Page) list;
+        if (list instanceof Page<?>) {
+            Page<?> page = (Page<?>) list;
             data.put("total", page.getTotal());
             data.put("page", page.getPageNum());
             data.put("limit", page.getPageSize());
@@ -75,12 +75,12 @@ public class ResponseUtil {
         return ok(data);
     }
 
-    public static Object okList(List list, List pagedList) {
+    public static Object okList(List<?> list, List<?> pagedList) {
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("list", list);
 
-        if (pagedList instanceof Page) {
-            Page page = (Page) pagedList;
+        if (pagedList instanceof Page<?>) {
+            Page<?> page = (Page<?>) pagedList;
             data.put("total", page.getTotal());
             data.put("page", page.getPageNum());
             data.put("limit", page.getPageSize());

@@ -41,12 +41,12 @@ public class AdminBrandController {
 
     private Object validate(LitemallBrand brand) {
         String name = brand.getName();
-        if (StringUtils.isEmpty(name)) {
+        if (name == null || name.isEmpty()) {
             return ResponseUtil.badArgument();
         }
 
         String desc = brand.getDesc();
-        if (StringUtils.isEmpty(desc)) {
+        if (desc == null || desc.isEmpty()) {
             return ResponseUtil.badArgument();
         }
 

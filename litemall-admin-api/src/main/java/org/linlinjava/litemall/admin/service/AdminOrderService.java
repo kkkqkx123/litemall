@@ -276,11 +276,11 @@ public class AdminOrderService {
         if(comment == null){
             return ResponseUtil.badArgument();
         }
-        if (!StringUtils.isEmpty(comment.getAdminContent())) {
+        if (comment.getAdminContent() != null && !comment.getAdminContent().isEmpty()) {
             return ResponseUtil.fail(ORDER_REPLY_EXIST, "订单商品已回复！");
         }
         String content = JacksonUtil.parseString(body, "content");
-        if (StringUtils.isEmpty(content)) {
+        if (content == null || content.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         // 更新评价回复
@@ -294,7 +294,7 @@ public class AdminOrderService {
         Integer orderId = JacksonUtil.parseInteger(body, "orderId");
         String newMoney = JacksonUtil.parseString(body, "newMoney");
 
-        if (orderId == null || StringUtils.isEmpty(newMoney)) {
+        if (orderId == null || newMoney == null || newMoney.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         BigDecimal actualPrice = new BigDecimal(newMoney);

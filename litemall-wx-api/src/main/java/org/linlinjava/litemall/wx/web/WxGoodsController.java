@@ -11,7 +11,6 @@ import org.linlinjava.litemall.db.domain.*;
 import org.linlinjava.litemall.db.service.*;
 import org.linlinjava.litemall.wx.annotation.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -95,16 +94,16 @@ public class WxGoodsController {
 		LitemallGoods info = goodsService.findById(id);
 
 		// 商品属性
-		Callable<List> goodsAttributeListCallable = () -> goodsAttributeService.queryByGid(id);
+		Callable<List<LitemallGoodsAttribute>> goodsAttributeListCallable = () -> goodsAttributeService.queryByGid(id);
 
 		// 商品规格 返回的是定制的GoodsSpecificationVo
 		Callable<Object> objectCallable = () -> goodsSpecificationService.getSpecificationVoList(id);
 
 		// 商品规格对应的数量和价格
-		Callable<List> productListCallable = () -> productService.queryByGid(id);
+		Callable<List<LitemallGoodsProduct>> productListCallable = () -> productService.queryByGid(id);
 
 		// 商品问题，这里是一些通用问题
-		Callable<List> issueCallable = () -> goodsIssueService.querySelective("", 1, 4, "", "");
+		Callable<List<LitemallIssue>> issueCallable = () -> goodsIssueService.querySelective("", 1, 4, "", "");
 
 		// 商品品牌商
 		Callable<LitemallBrand> brandCallable = ()->{
@@ -142,7 +141,7 @@ public class WxGoodsController {
 		};
 
 		//团购信息
-		Callable<List> grouponRulesCallable = () ->rulesService.queryByGoodsId(id);
+		Callable<List<LitemallGrouponRules>> grouponRulesCallable = () ->rulesService.queryByGoodsId(id);
 
 		// 用户收藏
 		int userHasCollect = 0;
@@ -159,13 +158,13 @@ public class WxGoodsController {
 				footprintService.add(footprint);
 			});
 		}
-		FutureTask<List> goodsAttributeListTask = new FutureTask<>(goodsAttributeListCallable);
+		FutureTask<List<LitemallGoodsAttribute>> goodsAttributeListTask = new FutureTask<>(goodsAttributeListCallable);
 		FutureTask<Object> objectCallableTask = new FutureTask<>(objectCallable);
-		FutureTask<List> productListCallableTask = new FutureTask<>(productListCallable);
-		FutureTask<List> issueCallableTask = new FutureTask<>(issueCallable);
+		FutureTask<List<LitemallGoodsProduct>> productListCallableTask = new FutureTask<>(productListCallable);
+		FutureTask<List<LitemallIssue>> issueCallableTask = new FutureTask<>(issueCallable);
 		FutureTask<Map> commentsCallableTsk = new FutureTask<>(commentsCallable);
 		FutureTask<LitemallBrand> brandCallableTask = new FutureTask<>(brandCallable);
-        FutureTask<List> grouponRulesCallableTask = new FutureTask<>(grouponRulesCallable);
+        FutureTask<List<LitemallGrouponRules>> grouponRulesCallableTask = new FutureTask<>(grouponRulesCallable);
 
 		executorService.submit(goodsAttributeListTask);
 		executorService.submit(objectCallableTask);
@@ -259,7 +258,7 @@ public class WxGoodsController {
 		@Order @RequestParam(defaultValue = "desc") String order) {
 
 		//添加到搜索历史
-		if (userId != null && !StringUtils.isEmpty(keyword)) {
+		if (userId != null && keyword != null && !keyword.isEmpty()) {
 			LitemallSearchHistory searchHistoryVo = new LitemallSearchHistory();
 			searchHistoryVo.setKeyword(keyword);
 			searchHistoryVo.setUserId(userId);

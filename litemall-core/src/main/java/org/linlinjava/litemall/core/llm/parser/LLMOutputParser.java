@@ -51,7 +51,14 @@ public class LLMOutputParser {
             // 解析JSON为Map
             Map<String, Object> jsonMap;
             try {
-                jsonMap = objectMapper.readValue(jsonContent, Map.class);
+                Object rawMap = objectMapper.readValue(jsonContent, Object.class);
+                if (rawMap instanceof Map<?, ?>) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> tempMap = (Map<String, Object>) rawMap;
+                    jsonMap = tempMap;
+                } else {
+                    throw new JSONParseException("JSON格式错误，期望Map类型", jsonContent, "类型不匹配");
+                }
             } catch (Exception e) {
                 String errorMsg = "JSON格式解析失败";
                 logger.error("{}: {}", errorMsg, jsonContent, e);
@@ -75,7 +82,13 @@ public class LLMOutputParser {
             }
             
             // 设置查询条件
-            Map<String, Object> conditions = (Map<String, Object>) jsonMap.get("conditions");
+            Object conditionsObj = jsonMap.get("conditions");
+            Map<String, Object> conditions = null;
+            if (conditionsObj instanceof Map<?, ?>) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> tempConditions = (Map<String, Object>) conditionsObj;
+                conditions = tempConditions;
+            }
             if (conditions != null) {
                 queryIntent.setConditions(conditions);
             }
@@ -307,14 +320,19 @@ public class LLMOutputParser {
         // 验证名称模式匹配的条件
         if ("name_pattern".equals(queryType)) {
             Object nameCondition = conditions.get("name");
-            if (!(nameCondition instanceof Map)) {
+            if (!(nameCondition instanceof Map<?, ?>)) {
                 throw new LLMOutputParseException("名称模式匹配查询需要name条件为Map类型");
             }
             
             @SuppressWarnings("unchecked")
             Map<String, Object> nameMap = (Map<String, Object>) nameCondition;
-            String pattern = (String) nameMap.get("pattern");
-            String mode = (String) nameMap.getOrDefault("mode", "contains");
+            Object patternObj = nameMap.get("pattern");
+            String pattern = null;
+            if (patternObj instanceof String) {
+                pattern = (String) patternObj;
+            }
+            Object modeObj = nameMap.get("mode");
+            String mode = modeObj instanceof String ? (String) modeObj : "contains";
             
             if (pattern == null || pattern.trim().isEmpty()) {
                 throw new LLMOutputParseException("名称模式匹配的pattern不能为空");

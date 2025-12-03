@@ -4,8 +4,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.linlinjava.litemall.core.system.SystemConfig;
 import org.linlinjava.litemall.core.util.ResponseUtil;
+import org.linlinjava.litemall.db.domain.LitemallAd;
 import org.linlinjava.litemall.db.domain.LitemallCategory;
+import org.linlinjava.litemall.db.domain.LitemallCoupon;
 import org.linlinjava.litemall.db.domain.LitemallGoods;
+import org.linlinjava.litemall.db.domain.LitemallBrand;
+import org.linlinjava.litemall.db.domain.LitemallTopic;
+import org.linlinjava.litemall.db.domain.LitemallGrouponRules;
+import org.linlinjava.litemall.wx.vo.GrouponRuleVo;
 import org.linlinjava.litemall.db.service.*;
 import org.linlinjava.litemall.wx.annotation.LoginUser;
 import org.linlinjava.litemall.wx.service.HomeCacheManager;
@@ -81,14 +87,13 @@ public class WxHomeController {
         if (HomeCacheManager.hasData(HomeCacheManager.INDEX)) {
             return ResponseUtil.ok(HomeCacheManager.getCacheData(HomeCacheManager.INDEX));
         }
-        //相当于每次都是new的线程池 没意义
-        //ExecutorService executorService = Executors.newFixedThreadPool(10);
 
-        Callable<List> bannerListCallable = () -> adService.queryIndex();
 
-        Callable<List> channelListCallable = () -> categoryService.queryChannel();
+        Callable<List<LitemallAd>> bannerListCallable = () -> adService.queryIndex();
 
-        Callable<List> couponListCallable;
+        Callable<List<LitemallCategory>> channelListCallable = () -> categoryService.queryChannel();
+
+        Callable<List<LitemallCoupon>> couponListCallable;
         if(userId == null){
             couponListCallable = () -> couponService.queryList(0, 3);
         } else {
@@ -96,28 +101,28 @@ public class WxHomeController {
         }
 
 
-        Callable<List> newGoodsListCallable = () -> goodsService.queryByNew(0, SystemConfig.getNewLimit());
+        Callable<List<LitemallGoods>> newGoodsListCallable = () -> goodsService.queryByNew(0, SystemConfig.getNewLimit());
 
-        Callable<List> hotGoodsListCallable = () -> goodsService.queryByHot(0, SystemConfig.getHotLimit());
+        Callable<List<LitemallGoods>> hotGoodsListCallable = () -> goodsService.queryByHot(0, SystemConfig.getHotLimit());
 
-        Callable<List> brandListCallable = () -> brandService.query(0, SystemConfig.getBrandLimit());
+        Callable<List<LitemallBrand>> brandListCallable = () -> brandService.query(0, SystemConfig.getBrandLimit());
 
-        Callable<List> topicListCallable = () -> topicService.queryList(0, SystemConfig.getTopicLimit());
+        Callable<List<LitemallTopic>> topicListCallable = () -> topicService.queryList(0, SystemConfig.getTopicLimit());
 
         //团购专区
-        Callable<List> grouponListCallable = () -> grouponService.queryList(0, 5);
+        Callable<List<GrouponRuleVo>> grouponListCallable = () -> grouponService.queryList(0, 5);
 
-        Callable<List> floorGoodsListCallable = this::getCategoryList;
+        Callable<List<Map<String, Object>>> floorGoodsListCallable = this::getCategoryList;
 
-        FutureTask<List> bannerTask = new FutureTask<>(bannerListCallable);
-        FutureTask<List> channelTask = new FutureTask<>(channelListCallable);
-        FutureTask<List> couponListTask = new FutureTask<>(couponListCallable);
-        FutureTask<List> newGoodsListTask = new FutureTask<>(newGoodsListCallable);
-        FutureTask<List> hotGoodsListTask = new FutureTask<>(hotGoodsListCallable);
-        FutureTask<List> brandListTask = new FutureTask<>(brandListCallable);
-        FutureTask<List> topicListTask = new FutureTask<>(topicListCallable);
-        FutureTask<List> grouponListTask = new FutureTask<>(grouponListCallable);
-        FutureTask<List> floorGoodsListTask = new FutureTask<>(floorGoodsListCallable);
+        FutureTask<List<LitemallAd>> bannerTask = new FutureTask<>(bannerListCallable);
+        FutureTask<List<LitemallCategory>> channelTask = new FutureTask<>(channelListCallable);
+        FutureTask<List<LitemallCoupon>> couponListTask = new FutureTask<>(couponListCallable);
+        FutureTask<List<LitemallGoods>> newGoodsListTask = new FutureTask<>(newGoodsListCallable);
+        FutureTask<List<LitemallGoods>> hotGoodsListTask = new FutureTask<>(hotGoodsListCallable);
+        FutureTask<List<LitemallBrand>> brandListTask = new FutureTask<>(brandListCallable);
+        FutureTask<List<LitemallTopic>> topicListTask = new FutureTask<>(topicListCallable);
+        FutureTask<List<GrouponRuleVo>> grouponListTask = new FutureTask<>(grouponListCallable);
+        FutureTask<List<Map<String, Object>>> floorGoodsListTask = new FutureTask<>(floorGoodsListCallable);
 
         executorService.submit(bannerTask);
         executorService.submit(channelTask);
@@ -152,8 +157,8 @@ public class WxHomeController {
         return ResponseUtil.ok(entity);
     }
 
-    private List<Map> getCategoryList() {
-        List<Map> categoryList = new ArrayList<>();
+    private List<Map<String, Object>> getCategoryList() {
+        List<Map<String, Object>> categoryList = new ArrayList<>();
         List<LitemallCategory> catL1List = categoryService.queryL1WithoutRecommend(0, SystemConfig.getCatlogListLimit());
         for (LitemallCategory catL1 : catL1List) {
             List<LitemallCategory> catL2List = categoryService.queryByPid(catL1.getId());

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.Map;
 
@@ -33,7 +34,7 @@ public class HttpUtil {
         BufferedReader in = null;
         StringBuilder result = new StringBuilder();
         try {
-            URL realUrl = new URL(url);
+            URL realUrl = URI.create(url).toURL();
             HttpURLConnection conn = (HttpURLConnection) realUrl.openConnection();
             // 发送POST请求必须设置如下两行
             conn.setDoOutput(true);

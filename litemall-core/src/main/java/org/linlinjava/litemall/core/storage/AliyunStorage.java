@@ -11,6 +11,7 @@ import org.springframework.core.io.UrlResource;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.stream.Stream;
@@ -106,7 +107,7 @@ public class AliyunStorage implements Storage {
     @Override
     public Resource loadAsResource(String keyName) {
         try {
-            URL url = new URL(getBaseUrl() + keyName);
+            URL url = URI.create(getBaseUrl() + keyName).toURL();
             Resource resource = new UrlResource(url);
             if (resource.exists() || resource.isReadable()) {
                 return resource;

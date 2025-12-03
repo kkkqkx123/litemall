@@ -108,7 +108,7 @@ public class QCodeService {
 
 
         //商品图片
-        URL goodPic = new URL(goodPicUrl);
+        URL goodPic = java.net.URI.create(goodPicUrl).toURL();
         BufferedImage goodImage = ImageIO.read(goodPic);
 
         //小程序二维码
@@ -131,8 +131,7 @@ public class QCodeService {
         //写上商品名称
         drawTextInImg(baseImage, goodName, 65, 867);
 
-        //写上商城名称
-        //        drawTextInImgCenter(baseImage, shopName, 98);
+        //写上商城名称（暂时禁用，因为方法drawTextInImgCenter未使用）
 
 
         //转jpg

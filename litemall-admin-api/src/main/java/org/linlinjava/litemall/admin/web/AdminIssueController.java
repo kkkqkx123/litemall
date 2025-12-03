@@ -36,11 +36,11 @@ public class AdminIssueController {
 
     private Object validate(LitemallIssue issue) {
         String question = issue.getQuestion();
-        if (StringUtils.isEmpty(question)) {
+        if (question == null || question.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         String answer = issue.getAnswer();
-        if (StringUtils.isEmpty(answer)) {
+        if (answer == null || answer.isEmpty()) {
             return ResponseUtil.badArgument();
         }
         return null;

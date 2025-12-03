@@ -273,7 +273,7 @@ public class WxAuthController {
         String openId = "";
         // 非空，则是小程序注册
         // 继续验证openid
-        if(wxCode != null && !wxCode.isEmpty()) {
+        if (StringUtils.hasText(wxCode)) {
             try {
                 WxMaJscode2SessionResult result = this.wxService.getUserService().getSessionInfo(wxCode);
                 openId = result.getOpenid();

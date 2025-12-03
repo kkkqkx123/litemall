@@ -109,7 +109,7 @@ public class LitemallGrouponRulesService {
 
         LitemallGrouponRulesExample.Criteria criteria = example.createCriteria();
 
-        if (!StringUtils.isEmpty(goodsId)) {
+        if (goodsId != null && !goodsId.isEmpty()) {
             criteria.andGoodsIdEqualTo(Integer.parseInt(goodsId));
         }
         criteria.andDeletedEqualTo(false);

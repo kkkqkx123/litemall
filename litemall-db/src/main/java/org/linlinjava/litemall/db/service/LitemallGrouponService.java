@@ -143,7 +143,7 @@ public class LitemallGrouponService {
         LitemallGrouponExample example = new LitemallGrouponExample();
         LitemallGrouponExample.Criteria criteria = example.createCriteria();
 
-        if (!StringUtils.isEmpty(rulesId)) {
+        if (rulesId != null && !rulesId.isEmpty()) {
             criteria.andRulesIdEqualTo(Integer.parseInt(rulesId));
         }
         criteria.andDeletedEqualTo(false);

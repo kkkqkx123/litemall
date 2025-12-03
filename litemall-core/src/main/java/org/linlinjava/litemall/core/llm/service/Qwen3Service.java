@@ -4,6 +4,7 @@ import org.linlinjava.litemall.core.llm.exception.LLMServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -124,7 +125,8 @@ public class Qwen3Service {
         
         logger.debug("调用Qwen3 API，模型：{}，提示词长度：{}", model, prompt.length());
         
-        ResponseEntity<Map> response = restTemplate.postForEntity(apiUrl, request, Map.class);
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(apiUrl, HttpMethod.POST, request,
+                new ParameterizedTypeReference<Map<String, Object>>() {});
         
         if (response.getStatusCode() != HttpStatus.OK) {
             throw new LLMServiceException("API调用失败，状态码：" + response.getStatusCode());
@@ -148,17 +150,25 @@ public class Qwen3Service {
     private String parseResponse(Map<String, Object> responseBody) throws LLMServiceException {
         // 检查错误信息
         if (responseBody.containsKey("error")) {
-            Map<String, Object> error = (Map<String, Object>) responseBody.get("error");
-            String errorCode = (String) error.get("code");
-            String errorMessage = (String) error.get("message");
-            throw new LLMServiceException("API错误：" + errorCode + " - " + errorMessage);
-        }
-        
-        // 获取输出结果
-        Map<String, Object> output = (Map<String, Object>) responseBody.get("output");
-        if (output == null) {
-            throw new LLMServiceException("响应中缺少output字段");
-        }
+            Object errorObj = responseBody.get("error");
+             if (errorObj instanceof Map<?, ?>) {
+                 @SuppressWarnings("unchecked")
+                 Map<String, Object> error = (Map<String, Object>) errorObj;
+                 String errorCode = (String) error.get("code");
+                 String errorMessage = (String) error.get("message");
+                 throw new LLMServiceException("API错误：" + errorCode + " - " + errorMessage);
+             } else {
+                 throw new LLMServiceException("API返回错误格式");
+             }
+         }
+         
+         // 获取输出结果
+         Object outputObj = responseBody.get("output");
+         if (!(outputObj instanceof Map<?, ?>)) {
+             throw new LLMServiceException("输出格式错误");
+         }
+         @SuppressWarnings("unchecked")
+        Map<String, Object> output = (Map<String, Object>) outputObj;
         
         String result = (String) output.get("text");
         if (result == null || result.trim().isEmpty()) {
