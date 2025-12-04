@@ -1,8 +1,6 @@
 package org.linlinjava.litemall.wx.web;
 
 import com.github.pagehelper.PageInfo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.linlinjava.litemall.core.system.SystemConfig;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.core.validator.Order;
@@ -31,7 +29,6 @@ import java.util.concurrent.*;
 @RequestMapping("/wx/goods")
 @Validated
 public class WxGoodsController {
-	private final Log logger = LogFactory.getLog(WxGoodsController.class);
 
 	@Autowired
 	private LitemallGoodsService goodsService;
@@ -118,7 +115,7 @@ public class WxGoodsController {
 		};
 
 		// 评论
-		Callable<Map> commentsCallable = () -> {
+		Callable<Map<String, Object>> commentsCallable = () -> {
 			List<LitemallComment> comments = commentService.queryGoodsByGid(id, 0, 2);
 			List<Map<String, Object>> commentsVo = new ArrayList<>(comments.size());
 			long commentCount = PageInfo.of(comments).getTotal();
@@ -162,7 +159,7 @@ public class WxGoodsController {
 		FutureTask<Object> objectCallableTask = new FutureTask<>(objectCallable);
 		FutureTask<List<LitemallGoodsProduct>> productListCallableTask = new FutureTask<>(productListCallable);
 		FutureTask<List<LitemallIssue>> issueCallableTask = new FutureTask<>(issueCallable);
-		FutureTask<Map> commentsCallableTsk = new FutureTask<>(commentsCallable);
+		FutureTask<Map<String, Object>> commentsCallableTsk = new FutureTask<>(commentsCallable);
 		FutureTask<LitemallBrand> brandCallableTask = new FutureTask<>(brandCallable);
         FutureTask<List<LitemallGrouponRules>> grouponRulesCallableTask = new FutureTask<>(grouponRulesCallable);
 
