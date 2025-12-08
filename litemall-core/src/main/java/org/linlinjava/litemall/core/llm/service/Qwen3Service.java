@@ -70,29 +70,38 @@ public class Qwen3Service {
             return generateMockResponse(prompt);
         }
         
-        int retryCount = 0;
-        Exception lastException = null;
+        // 临时注释掉重试逻辑，避免浪费API调用次数
+        // int retryCount = 0;
+        // Exception lastException = null;
+        // 
+        // while (retryCount < maxRetries) {
+        //     try {
+        //         return callLLMApi(fullPrompt);
+        //     } catch (Exception e) {
+        //         lastException = e;
+        //         retryCount++;
+        //         logger.warn("第{}次调用Qwen3 API失败：{}", retryCount, e.getMessage());
+        //         
+        //         if (retryCount < maxRetries) {
+        //             try {
+        //                 Thread.sleep(1000 * retryCount); // 指数退避
+        //             } catch (InterruptedException ie) {
+        //                 Thread.currentThread().interrupt();
+        //                 throw new LLMServiceException("调用被中断", ie);
+        //             }
+        //         }
+        //     }
+        // }
+        // 
+        // throw new LLMServiceException("调用Qwen3 API失败，重试" + maxRetries + "次后仍失败：" + lastException.getMessage(), lastException);
         
-        while (retryCount < maxRetries) {
-            try {
-                return callLLMApi(fullPrompt);
-            } catch (Exception e) {
-                lastException = e;
-                retryCount++;
-                logger.warn("第{}次调用Qwen3 API失败：{}", retryCount, e.getMessage());
-                
-                if (retryCount < maxRetries) {
-                    try {
-                        Thread.sleep(1000 * retryCount); // 指数退避
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        throw new LLMServiceException("调用被中断", ie);
-                    }
-                }
-            }
+        // 只调用一次，不 retry
+        try {
+            return callLLMApi(fullPrompt);
+        } catch (Exception e) {
+            logger.warn("调用Qwen3 API失败：{}", e.getMessage());
+            throw new LLMServiceException("调用Qwen3 API失败：" + e.getMessage(), e);
         }
-        
-        throw new LLMServiceException("调用Qwen3 API失败，重试" + maxRetries + "次后仍失败：" + lastException.getMessage(), lastException);
     }
     
     /**
@@ -107,31 +116,38 @@ public class Qwen3Service {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Bearer " + apiKey);
         
-        // 构建请求体 - 使用OpenAI兼容的Chat Completions格式
+        // 构建请求体 - 使用ModelScope Chat Completions API格式
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", model);
         
-        // 构建消息数组
-        List<Map<String, String>> messages = new ArrayList<>();
-        Map<String, String> userMessage = new HashMap<>();
+        // 构建消息列表 - ModelScope Chat Completions API使用messages数组
+        List<Map<String, Object>> messages = new ArrayList<>();
+        Map<String, Object> userMessage = new HashMap<>();
         userMessage.put("role", "user");
         userMessage.put("content", prompt);
         messages.add(userMessage);
-        requestBody.put("messages", messages);
+        requestBody.put("messages", messages);  // 使用messages数组参数
         
-        // 构建参数
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("temperature", 0.1); // 降低随机性，提高稳定性
-        parameters.put("top_p", 0.8);
-        parameters.put("max_tokens", 2000);
-        parameters.put("enable_thinking", false); // 非流式调用必须设置为false
-        requestBody.put("parameters", parameters);
+        // 直接设置参数，而不是嵌套在parameters对象中
+        requestBody.put("temperature", 0.1); // 降低随机性，提高稳定性
+        requestBody.put("top_p", 0.8);
+        requestBody.put("max_tokens", 2000);
+        requestBody.put("enable_thinking", false); // 非流式调用必须设置为false
         
         // 发送请求
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
         
         logger.info("调用Qwen3 API，模型：{}，提示词长度：{}，API端点：{}", model, prompt.length(), apiUrl);
-        logger.debug("请求体：{}", requestBody);
+        
+        // 将请求体序列化为JSON字符串，便于调试
+        try {
+            String requestBodyJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(requestBody);
+            logger.info("实际发送的请求体JSON：{}", requestBodyJson);
+            // 同时输出到控制台，确保能看到
+            System.out.println("实际发送的请求体JSON：" + requestBodyJson);
+        } catch (Exception e) {
+            logger.warn("无法序列化请求体为JSON", e);
+        }
         
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(apiUrl, HttpMethod.POST, request,
                 new ParameterizedTypeReference<Map<String, Object>>() {});

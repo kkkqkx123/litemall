@@ -65,8 +65,8 @@ public class LLMServiceManager {
             // 2. 构建会话上下文
             String sessionContext = conversationManager.buildSessionContext(sessionId);
             
-            // 3. 调用LLM服务
-            String llmResponse = callLLMServiceWithRetry(userQuery, sessionContext, requestId);
+            // 3. 调用LLM服务（移除重试逻辑，直接调用一次）
+            String llmResponse = qwen3Service.callLLM(userQuery, sessionContext);
             
             // 4. 解析LLM输出
             QueryIntent queryIntent = parseLLMOutput(llmResponse, requestId);
@@ -93,11 +93,6 @@ public class LLMServiceManager {
             recordFailure(userId, requestId, "LLM_SERVICE_ERROR", e.getMessage());
             return buildErrorResult("LLM服务异常，请稍后重试", e);
             
-        } catch (TimeoutException e) {
-            logger.error("[{}] 请求超时 - userId: {}, error: {}", requestId, userId, e.getMessage());
-            recordFailure(userId, requestId, "TIMEOUT_ERROR", e.getMessage());
-            return buildErrorResult("请求超时，请稍后重试", e);
-            
         } catch (Exception e) {
             logger.error("[{}] 未知异常 - userId: {}, error: {}", requestId, userId, e.getMessage(), e);
             recordFailure(userId, requestId, "UNKNOWN_ERROR", e.getMessage());
@@ -105,58 +100,7 @@ public class LLMServiceManager {
         }
     }
     
-    /**
-     * 带重试机制的LLM服务调用
-     */
-    private String callLLMServiceWithRetry(String userQuery, String sessionContext, String requestId) 
-            throws LLMServiceException, TimeoutException {
-        
-        int maxRetries = 3;
-        long timeoutMs = 30000; // 30秒超时
-        
-        for (int attempt = 1; attempt <= maxRetries; attempt++) {
-            try {
-                logger.debug("[{}] LLM服务调用尝试 {} - query: {}", requestId, attempt, userQuery);
-                
-                // 异步调用LLM服务
-                CompletableFuture<String> future = CompletableFuture.supplyAsync(() ->
-                    qwen3Service.callLLM(userQuery, sessionContext)
-                );
-                
-                // 等待结果，带超时控制
-                String response = future.get(timeoutMs, TimeUnit.MILLISECONDS);
-                
-                if (response == null || response.trim().isEmpty()) {
-                    throw new LLMServiceException("LLM服务返回空响应");
-                }
-                
-                logger.debug("[{}] LLM服务调用成功 - attempt: {}", requestId, attempt);
-                return response;
-                
-            } catch (TimeoutException e) {
-                logger.warn("[{}] LLM服务调用超时 - attempt: {}, timeout: {}ms", requestId, attempt, timeoutMs);
-                if (attempt == maxRetries) {
-                    throw e;
-                }
-                
-            } catch (Exception e) {
-                logger.warn("[{}] LLM服务调用失败 - attempt: {}, error: {}", requestId, attempt, e.getMessage());
-                if (attempt == maxRetries) {
-                    throw new LLMServiceException("LLM服务调用失败: " + e.getMessage(), e);
-                }
-            }
-            
-            // 指数退避重试
-            try {
-                Thread.sleep(1000 * attempt); // 1秒、2秒、3秒
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new LLMServiceException("重试被中断", e);
-            }
-        }
-        
-        throw new LLMServiceException("LLM服务调用重试次数耗尽");
-    }
+
     
     /**
      * 解析LLM输出
