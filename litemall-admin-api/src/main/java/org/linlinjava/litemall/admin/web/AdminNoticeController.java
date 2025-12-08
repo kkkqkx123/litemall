@@ -16,6 +16,7 @@ import org.linlinjava.litemall.db.service.LitemallAdminService;
 import org.linlinjava.litemall.db.service.LitemallNoticeAdminService;
 import org.linlinjava.litemall.db.service.LitemallNoticeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -40,6 +41,7 @@ public class AdminNoticeController {
     @Autowired
     private LitemallNoticeAdminService noticeAdminService;
 
+    @PreAuthorize("hasAuthority('admin:notice:list')")
     @RequiresPermissions("admin:notice:list")
     @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "查询")
     @GetMapping("/list")
@@ -69,6 +71,7 @@ public class AdminNoticeController {
         return adminUserDetails.getAdmin().getId();
     }
 
+    @PreAuthorize("hasAuthority('admin:notice:create')")
     @RequiresPermissions("admin:notice:create")
     @RequiresPermissionsDesc(menu = {"推广管理", "通知管理"}, button = "添加")
     @PostMapping("/create")
@@ -92,6 +95,7 @@ public class AdminNoticeController {
         return ResponseUtil.ok(notice);
     }
 
+    @PreAuthorize("hasAuthority('admin:notice:read')")
     @RequiresPermissions("admin:notice:read")
     @RequiresPermissionsDesc(menu = {"推广管理", "通知管理"}, button = "详情")
     @GetMapping("/read")
@@ -104,6 +108,7 @@ public class AdminNoticeController {
         return ResponseUtil.ok(data);
     }
 
+    @PreAuthorize("hasAuthority('admin:notice:update')")
     @RequiresPermissions("admin:notice:update")
     @RequiresPermissionsDesc(menu = {"推广管理", "通知管理"}, button = "编辑")
     @PostMapping("/update")
@@ -132,6 +137,7 @@ public class AdminNoticeController {
         return ResponseUtil.ok(notice);
     }
 
+    @PreAuthorize("hasAuthority('admin:notice:delete')")
     @RequiresPermissions("admin:notice:delete")
     @RequiresPermissionsDesc(menu = {"推广管理", "通知管理"}, button = "删除")
     @PostMapping("/delete")
@@ -143,6 +149,7 @@ public class AdminNoticeController {
         return ResponseUtil.ok();
     }
 
+    @PreAuthorize("hasAuthority('admin:notice:batch-delete')")
     @RequiresPermissions("admin:notice:batch-delete")
     @RequiresPermissionsDesc(menu = {"推广管理", "通知管理"}, button = "批量删除")
     @PostMapping("/batch-delete")

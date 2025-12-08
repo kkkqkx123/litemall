@@ -111,6 +111,7 @@ public class AdminCouponController {
         return ResponseUtil.ok(coupon);
     }
 
+    @PreAuthorize("hasAuthority('admin:coupon:delete')")
     @RequiresPermissions("admin:coupon:delete")
     @RequiresPermissionsDesc(menu = {"推广管理", "优惠券管理"}, button = "删除")
     @PostMapping("/delete")

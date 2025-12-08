@@ -10,6 +10,7 @@ import org.linlinjava.litemall.core.validator.Order;
 import org.linlinjava.litemall.core.validator.Sort;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +40,7 @@ public class AdminOrderController {
      * @param order
      * @return
      */
+    @PreAuthorize("hasAuthority('admin:order:list')")
     @GetMapping("/list")
     public Object list(String nickname, String consignee, String orderSn,
                        @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
@@ -59,6 +61,7 @@ public class AdminOrderController {
      *
      * @return
      */
+    @PreAuthorize("hasAuthority('admin:order:channel')")
     @GetMapping("/channel")
     public Object channel() {
         return ResponseUtil.ok(expressService.getVendors());
@@ -70,6 +73,7 @@ public class AdminOrderController {
      * @param id
      * @return
      */
+    @PreAuthorize("hasAuthority('admin:order:read')")
     @GetMapping("/detail")
     public Object detail(@NotNull Integer id) {
         return adminOrderService.detail(id);
@@ -81,6 +85,7 @@ public class AdminOrderController {
      * @param body 订单信息，{ orderId：xxx }
      * @return 订单退款操作结果
      */
+    @PreAuthorize("hasAuthority('admin:order:refund')")
     @PostMapping("/refund")
     public Object refund(@RequestBody String body) {
         return adminOrderService.refund(body);
@@ -92,11 +97,13 @@ public class AdminOrderController {
      * @param body 订单信息，{ orderId：xxx, shipSn: xxx, shipChannel: xxx }
      * @return 订单操作结果
      */
+    @PreAuthorize("hasAuthority('admin:order:ship')")
     @PostMapping("/ship")
     public Object ship(@RequestBody String body) {
         return adminOrderService.ship(body);
     }
 
+    @PreAuthorize("hasAuthority('admin:order:pay')")
     @PostMapping("/pay")
     public Object pay(@RequestBody String body) {
         return adminOrderService.pay(body);
@@ -108,6 +115,7 @@ public class AdminOrderController {
      * @param body 订单信息，{ orderId：xxx }
      * @return 订单操作结果
      */
+    @PreAuthorize("hasAuthority('admin:order:delete')")
     @PostMapping("/delete")
     public Object delete(@RequestBody String body) {
         return adminOrderService.delete(body);
@@ -119,6 +127,7 @@ public class AdminOrderController {
      * @param body 订单信息，{ orderId：xxx }
      * @return 订单操作结果
      */
+    @PreAuthorize("hasAuthority('admin:order:reply')")
     @PostMapping("/reply")
     public Object reply(@RequestBody String body) {
         return adminOrderService.reply(body);

@@ -10,6 +10,7 @@ import org.linlinjava.litemall.core.validator.Sort;
 import org.linlinjava.litemall.db.domain.LitemallAd;
 import org.linlinjava.litemall.db.service.LitemallAdService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,7 @@ public class AdminAdController {
     @Autowired
     private LitemallAdService adService;
 
+    @PreAuthorize("hasAuthority('admin:ad:list')")
     @RequiresPermissions("admin:ad:list")
     @RequiresPermissionsDesc(menu = {"推广管理", "广告管理"}, button = "查询")
     @GetMapping("/list")
@@ -50,6 +52,7 @@ public class AdminAdController {
         return null;
     }
 
+    @PreAuthorize("hasAuthority('admin:ad:create')")
     @RequiresPermissions("admin:ad:create")
     @RequiresPermissionsDesc(menu = {"推广管理", "广告管理"}, button = "添加")
     @PostMapping("/create")
@@ -62,6 +65,7 @@ public class AdminAdController {
         return ResponseUtil.ok(ad);
     }
 
+    @PreAuthorize("hasAuthority('admin:ad:read')")
     @RequiresPermissions("admin:ad:read")
     @RequiresPermissionsDesc(menu = {"推广管理", "广告管理"}, button = "详情")
     @GetMapping("/read")
@@ -70,6 +74,7 @@ public class AdminAdController {
         return ResponseUtil.ok(ad);
     }
 
+    @PreAuthorize("hasAuthority('admin:ad:update')")
     @RequiresPermissions("admin:ad:update")
     @RequiresPermissionsDesc(menu = {"推广管理", "广告管理"}, button = "编辑")
     @PostMapping("/update")
@@ -85,6 +90,7 @@ public class AdminAdController {
         return ResponseUtil.ok(ad);
     }
 
+    @PreAuthorize("hasAuthority('admin:ad:delete')")
     @RequiresPermissions("admin:ad:delete")
     @RequiresPermissionsDesc(menu = {"推广管理", "广告管理"}, button = "删除")
     @PostMapping("/delete")

@@ -11,6 +11,7 @@ import org.linlinjava.litemall.core.validator.Sort;
 import org.linlinjava.litemall.db.domain.LitemallStorage;
 import org.linlinjava.litemall.db.service.LitemallStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,7 @@ public class AdminStorageController {
     @Autowired
     private LitemallStorageService litemallStorageService;
 
+    @PreAuthorize("hasAuthority('admin:storage:list')")
     @RequiresPermissions("admin:storage:list")
     @RequiresPermissionsDesc(menu = {"系统管理", "对象存储"}, button = "查询")
     @GetMapping("/list")
@@ -43,6 +45,7 @@ public class AdminStorageController {
         return ResponseUtil.okList(storageList);
     }
 
+    @PreAuthorize("hasAuthority('admin:storage:create')")
     @RequiresPermissions("admin:storage:create")
     @RequiresPermissionsDesc(menu = {"系统管理", "对象存储"}, button = "上传")
     @PostMapping("/create")
@@ -53,6 +56,7 @@ public class AdminStorageController {
         return ResponseUtil.ok(litemallStorage);
     }
 
+    @PreAuthorize("hasAuthority('admin:storage:read')")
     @RequiresPermissions("admin:storage:read")
     @RequiresPermissionsDesc(menu = {"系统管理", "对象存储"}, button = "详情")
     @PostMapping("/read")
@@ -64,6 +68,7 @@ public class AdminStorageController {
         return ResponseUtil.ok(storageInfo);
     }
 
+    @PreAuthorize("hasAuthority('admin:storage:update')")
     @RequiresPermissions("admin:storage:update")
     @RequiresPermissionsDesc(menu = {"系统管理", "对象存储"}, button = "编辑")
     @PostMapping("/update")
@@ -74,6 +79,7 @@ public class AdminStorageController {
         return ResponseUtil.ok(litemallStorage);
     }
 
+    @PreAuthorize("hasAuthority('admin:storage:delete')")
     @RequiresPermissions("admin:storage:delete")
     @RequiresPermissionsDesc(menu = {"系统管理", "对象存储"}, button = "删除")
     @PostMapping("/delete")

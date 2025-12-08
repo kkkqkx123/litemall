@@ -9,6 +9,7 @@ import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.db.service.StatService;
 import org.linlinjava.litemall.core.wordcloud.WordCloudService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +34,7 @@ public class AdminStatController {
     @Autowired
     private WordCloudService wordCloudService;
 
+    @PreAuthorize("hasAuthority('admin:stat:user')")
     @RequiresPermissions("admin:stat:user")
     @RequiresPermissionsDesc(menu = {"统计管理", "用户统计"}, button = "查询")
     @GetMapping("/user")
@@ -45,6 +47,7 @@ public class AdminStatController {
         return ResponseUtil.ok(statVo);
     }
 
+    @PreAuthorize("hasAuthority('admin:stat:order')")
     @RequiresPermissions("admin:stat:order")
     @RequiresPermissionsDesc(menu = {"统计管理", "订单统计"}, button = "查询")
     @GetMapping("/order")
@@ -69,8 +72,9 @@ public class AdminStatController {
      * @param day 日期(1-31)，可为null
      * @return 订单统计数据
      */
+    @PreAuthorize("hasAuthority('admin:stat:order')")
     @RequiresPermissions("admin:stat:order")
-    @RequiresPermissionsDesc(menu = {"统计管理", "订单统计"}, button = "增强查询")
+    @RequiresPermissionsDesc(menu = {"统计管理", "订单统计"}, button = "查询")
     @GetMapping("/order/enhanced")
     public Object statOrderEnhanced(@RequestParam(value = "timeDimension", defaultValue = "day") String timeDimension,
                                   @RequestParam(value = "categoryId", required = false) Integer categoryId,
@@ -107,6 +111,7 @@ public class AdminStatController {
         return ResponseUtil.ok(statVo);
     }
 
+    @PreAuthorize("hasAuthority('admin:stat:goods')")
     @RequiresPermissions("admin:stat:goods")
     @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
     @GetMapping("/goods")
@@ -128,8 +133,9 @@ public class AdminStatController {
      * @param limit 每页条数
      * @return 商品评分统计数据
      */
+    @PreAuthorize("hasAuthority('admin:stat:goods')")
     @RequiresPermissions("admin:stat:goods")
-    @RequiresPermissionsDesc(menu = {"统计管理", "商品评分统计"}, button = "查询")
+    @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
     @GetMapping("/goods/rating")
     public Object statGoodsRating(@RequestParam(value = "categoryId", required = false) Integer categoryId,
                                 @RequestParam(value = "sort", defaultValue = "avg_rating") String sort,
@@ -167,8 +173,9 @@ public class AdminStatController {
      * 商品分类列表接口（用于筛选）
      * @return 商品分类列表
      */
+    @PreAuthorize("hasAuthority('admin:stat:goods')")
     @RequiresPermissions("admin:stat:goods")
-    @RequiresPermissionsDesc(menu = {"统计管理", "商品评分统计"}, button = "获取分类")
+    @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
     @GetMapping("/goods/categories")
     public Object statGoodsCategories() {
         List<Map<String, Object>> categories = statService.statGoodsCategories();
@@ -182,8 +189,9 @@ public class AdminStatController {
      * @param limit 每页条数
      * @return 商品评论统计数据
      */
+    @PreAuthorize("hasAuthority('admin:stat:goods')")
     @RequiresPermissions("admin:stat:goods")
-    @RequiresPermissionsDesc(menu = {"统计管理", "商品评论统计"}, button = "查询")
+    @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
     @GetMapping("/goods/comment")
     public Object statGoodsComment(@RequestParam(value = "categoryId", required = false) Integer categoryId,
                                  @RequestParam(value = "page", defaultValue = "1") Integer page,

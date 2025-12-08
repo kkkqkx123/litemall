@@ -10,6 +10,7 @@ import org.linlinjava.litemall.core.validator.Sort;
 import org.linlinjava.litemall.db.domain.LitemallFeedback;
 import org.linlinjava.litemall.db.service.LitemallFeedbackService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +32,7 @@ public class AdminFeedbackController {
     @Autowired
     private LitemallFeedbackService feedbackService;
 
+    @PreAuthorize("hasAuthority('admin:feedback:list')")
     @RequiresPermissions("admin:feedback:list")
     @RequiresPermissionsDesc(menu = {"用户管理", "意见反馈"}, button = "查询")
     @GetMapping("/list")

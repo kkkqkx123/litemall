@@ -18,6 +18,7 @@ import org.linlinjava.litemall.db.service.LitemallGrouponRulesService;
 import org.linlinjava.litemall.db.service.LitemallGrouponService;
 import org.linlinjava.litemall.db.util.GrouponConstant;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,6 +46,7 @@ public class AdminGrouponController {
     @Autowired
     private TaskService taskService;
 
+    @PreAuthorize("hasAuthority('admin:groupon:read')")
     @RequiresPermissions("admin:groupon:read")
     @RequiresPermissionsDesc(menu = {"推广管理", "团购管理"}, button = "详情")
     @GetMapping("/listRecord")
@@ -77,6 +79,7 @@ public class AdminGrouponController {
         return ResponseUtil.okList(groupons, grouponList);
     }
 
+    @PreAuthorize("hasAuthority('admin:groupon:list')")
     @RequiresPermissions("admin:groupon:list")
     @RequiresPermissionsDesc(menu = {"推广管理", "团购管理"}, button = "查询")
     @GetMapping("/list")
@@ -110,6 +113,7 @@ public class AdminGrouponController {
         return null;
     }
 
+    @PreAuthorize("hasAuthority('admin:groupon:update')")
     @RequiresPermissions("admin:groupon:update")
     @RequiresPermissionsDesc(menu = {"推广管理", "团购管理"}, button = "编辑")
     @PostMapping("/update")
@@ -143,6 +147,7 @@ public class AdminGrouponController {
         return ResponseUtil.ok();
     }
 
+    @PreAuthorize("hasAuthority('admin:groupon:create')")
     @RequiresPermissions("admin:groupon:create")
     @RequiresPermissionsDesc(menu = {"推广管理", "团购管理"}, button = "添加")
     @PostMapping("/create")
@@ -175,6 +180,7 @@ public class AdminGrouponController {
         return ResponseUtil.ok(grouponRules);
     }
 
+    @PreAuthorize("hasAuthority('admin:groupon:delete')")
     @RequiresPermissions("admin:groupon:delete")
     @RequiresPermissionsDesc(menu = {"推广管理", "团购管理"}, button = "删除")
     @PostMapping("/delete")

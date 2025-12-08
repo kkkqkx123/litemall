@@ -9,6 +9,7 @@ import org.linlinjava.litemall.core.llm.model.GoodsQAResponse;
 import org.linlinjava.litemall.core.llm.service.LLMQAService;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -34,6 +35,7 @@ public class AdminLLMQAController {
      * @return 问答响应
      */
     @PostMapping("")
+    @PreAuthorize("hasAuthority('admin:llm:qa:ask')")
     @RequiresPermissions("admin:llm:qa:ask")
     @RequiresPermissionsDesc(menu = {"智能问答", "商品问答"}, button = "提问")
     public Object askQuestion(@Valid @RequestBody GoodsQARequest request) {
@@ -60,6 +62,7 @@ public class AdminLLMQAController {
      * @return 会话ID
      */
     @PostMapping("/session")
+    @PreAuthorize("hasAuthority('admin:llm:qa:createSession')")
     @RequiresPermissions("admin:llm:qa:createSession")
     @RequiresPermissionsDesc(menu = {"智能问答", "商品问答"}, button = "创建会话")
     public Object createSession(@RequestParam(value = "userId", required = false) Integer userId) {
@@ -80,6 +83,7 @@ public class AdminLLMQAController {
      * @return 会话历史
      */
     @GetMapping("/session/{sessionId}/history")
+    @PreAuthorize("hasAuthority('admin:llm:qa:history')")
     @RequiresPermissions("admin:llm:qa:history")
     @RequiresPermissionsDesc(menu = {"智能问答", "商品问答"}, button = "查看历史")
     public Object getSessionHistory(@PathVariable String sessionId) {
@@ -100,6 +104,7 @@ public class AdminLLMQAController {
      * @return 操作结果
      */
     @DeleteMapping("/session/{sessionId}")
+    @PreAuthorize("hasAuthority('admin:llm:qa:destroySession')")
     @RequiresPermissions("admin:llm:qa:destroySession")
     @RequiresPermissionsDesc(menu = {"智能问答", "商品问答"}, button = "销毁会话")
     public Object destroySession(@PathVariable String sessionId) {
@@ -119,6 +124,7 @@ public class AdminLLMQAController {
      * @return 服务状态
      */
     @GetMapping("/status")
+    @PreAuthorize("hasAuthority('admin:llm:qa:status')")
     @RequiresPermissions("admin:llm:qa:status")
     @RequiresPermissionsDesc(menu = {"智能问答", "商品问答"}, button = "查看状态")
     public Object getServiceStatus() {
@@ -138,6 +144,7 @@ public class AdminLLMQAController {
      * @return 会话统计
      */
     @GetMapping("/statistics")
+    @PreAuthorize("hasAuthority('admin:llm:qa:statistics')")
     @RequiresPermissions("admin:llm:qa:statistics")
     @RequiresPermissionsDesc(menu = {"智能问答", "商品问答"}, button = "查看统计")
     public Object getSessionStatistics() {

@@ -10,6 +10,7 @@ import org.linlinjava.litemall.core.validator.Sort;
 import org.linlinjava.litemall.db.domain.LitemallLog;
 import org.linlinjava.litemall.db.service.LitemallLogService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +28,7 @@ public class AdminLogController {
     @Autowired
     private LitemallLogService logService;
 
+    @PreAuthorize("hasAuthority('admin:log:list')")
     @RequiresPermissions("admin:log:list")
     @RequiresPermissionsDesc(menu = {"系统管理", "操作日志"}, button = "查询")
     @GetMapping("/list")
