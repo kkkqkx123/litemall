@@ -145,6 +145,25 @@ public class Qwen3Service {
             logger.info("实际发送的请求体JSON：{}", requestBodyJson);
             // 同时输出到控制台，确保能看到
             System.out.println("实际发送的请求体JSON：" + requestBodyJson);
+            
+            // 详细检查messages参数
+            Object messagesObj = requestBody.get("messages");
+            if (messagesObj != null) {
+                logger.info("messages参数类型：{}", messagesObj.getClass().getName());
+                logger.info("messages参数内容：{}", messagesObj);
+                if (messagesObj instanceof List) {
+                    List<?> messagesList = (List<?>) messagesObj;
+                    logger.info("messages数组长度：{}", messagesList.size());
+                    if (!messagesList.isEmpty()) {
+                        Object firstMessage = messagesList.get(0);
+                        logger.info("第一个消息类型：{}", firstMessage.getClass().getName());
+                        logger.info("第一个消息内容：{}", firstMessage);
+                    }
+                }
+            } else {
+                logger.error("messages参数为空！");
+            }
+            
         } catch (Exception e) {
             logger.warn("无法序列化请求体为JSON", e);
         }

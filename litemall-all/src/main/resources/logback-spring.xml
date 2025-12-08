@@ -58,7 +58,7 @@
     </root>
     <logger name="org.mybatis" level="ERROR" />
     <logger name="org.springframework" level="INFO" />
-    <logger name="org.linlinjava.litemall.core" level="INFO" />
+    <logger name="org.linlinjava.litemall.core" level="DEBUG" />
     <logger name="org.linlinjava.litemall.db" level="INFO" />
     <logger name="org.linlinjava.litemall.admin" level="DEBUG" />
     <logger name="org.linlinjava.litemall.wx" level="DEBUG" />

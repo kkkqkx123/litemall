@@ -211,12 +211,12 @@
 
     <dependencies>
 
-        <!-- 热部署模块 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <optional>true</optional>
-        </dependency>
+        <!-- 热部署模块 - 已禁用，避免类加载缓存问题 -->
+        <!-- <dependency> -->
+        <!--     <groupId>org.springframework.boot</groupId> -->
+        <!--     <artifactId>spring-boot-devtools</artifactId> -->
+        <!--     <optional>true</optional> -->
+        <!-- </dependency> -->
 
         <!-- 测试模块 -->
         <dependency>
