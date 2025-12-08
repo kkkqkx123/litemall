@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.linlinjava.litemall.db.dao.StatMapper">
+    <select id="statUser" resultType="map">
+        select
+        substr(add_time,1,10) as day,
+        count(distinct id) as users
+        from litemall_user
+        group by substr(add_time,1,10)
+    </select>
+    
+    <!-- 原始订单统计查询 -->
+    <select id="statOrder" resultType="map">
+        select
+        substr(add_time,1,10) as day,
+        count(id) as orders,
+        count(distinct user_id) as customers,
+        sum(actual_price) as amount,
+        round(sum(actual_price)/count(distinct user_id),2) as pcr
+        from litemall_order
+        where order_status in(401,402)
+        group by substr(add_time,1,10)
+    </select>
+    
+    <!-- 增强版订单统计查询，支持自动确定时间维度 -->
+    <select id="statOrderEnhanced" resultType="map">
+        select
+        <choose>
+            <when test="day != null">substr(o.add_time,1,10)</when>
+            <when test="month != null">substr(o.add_time,1,7)</when>
+            <when test="quarter != null">concat(year(o.add_time), '-Q', quarter(o.add_time))</when>
+            <when test="year != null">year(o.add_time)</when>
+            <otherwise>substr(o.add_time,1,10)</otherwise>
+        </choose> as period,
+        count(o.id) as orders,
+        count(distinct o.user_id) as customers,
+        sum(o.actual_price) as amount,
+        round(sum(o.actual_price)/count(distinct o.user_id),2) as pcr
+        from litemall_order o
+        left join litemall_order_goods og on o.id = og.order_id
+        left join litemall_goods g on og.goods_id = g.id
+        left join litemall_category c on g.category_id = c.id
+        left join litemall_category parent_c on c.pid = parent_c.id
+        where o.order_status in(201,301,401,402)  -- 包含已付款、已发货、已完成的订单状态
+        and g.id is not null  -- 确保关联到有效的商品记录
+        <if test="categoryId != null">
+            and (g.category_id = #{categoryId} or parent_c.id = #{categoryId})
+        </if>
+        <if test="startTime != null and endTime != null">
+            and o.add_time &gt;= #{startTime} and o.add_time &lt;= #{endTime}
+        </if>
+        group by period
+        order by period
+    </select>
+    
+    <!-- 增强版订单统计查询，支持时间范围和商品类别筛选 -->
+    <select id="statOrderEnhancedWithTimeRange" resultType="map">
+        select
+        <choose>
+            <when test="timeDimension == 'day'">substr(o.add_time,1,10)</when>
+            <when test="timeDimension == 'week'">date_format(o.add_time,'%Y-%u')</when>
+            <when test="timeDimension == 'month'">substr(o.add_time,1,7)</when>
+            <when test="timeDimension == 'quarter'">concat(year(o.add_time), '-Q', quarter(o.add_time))</when>
+            <when test="timeDimension == 'year'">year(o.add_time)</when>
+            <otherwise>substr(o.add_time,1,10)</otherwise>
+        </choose> as period,
+        count(distinct o.id) as orders,
+        count(distinct o.user_id) as customers,
+        sum(o.actual_price) as amount,
+        round(sum(o.actual_price)/count(distinct o.user_id),2) as pcr
+        from litemall_order o
+        left join litemall_order_goods og on o.id = og.order_id
+        left join litemall_goods g on og.goods_id = g.id and g.deleted = 0
+        left join litemall_category c on g.category_id = c.id
+        left join litemall_category parent_c on c.pid = parent_c.id
+        where o.order_status in(201,301,401,402)  -- 包含已付款、已发货、已完成的订单状态
+        and o.add_time &gt;= #{startTime} and o.add_time &lt; #{endTime}
+        and g.id is not null  -- 确保关联到有效的商品记录
+        <if test="categoryId != null">
+            and (g.category_id = #{categoryId} or parent_c.id = #{categoryId})
+        </if>
+        group by period
+        order by period
+    </select>
+    
+    <select id="statGoods" resultType="map">
+        select
+        substr(add_time,1, 10) as day,
+        count(distinct order_id) as orders,
+        sum(number) as products,
+        sum(number*price) as amount
+        from litemall_order_goods
+        group by substr(add_time,1, 10)
+    </select>
+    
+    <!-- 商品评分统计 -->
+    <select id="statGoodsRating" resultType="map">
+        SELECT 
+            g.id AS goods_id,
+            g.name AS goods_name,
+            c.name AS category_name,
+            COALESCE(AVG(cmt.star), 0) AS avg_rating,
+            COALESCE(COUNT(cmt.id), 0) AS rating_count
+        FROM litemall_goods g
+        LEFT JOIN litemall_category c ON g.category_id = c.id
+        LEFT JOIN litemall_comment cmt ON g.id = cmt.value_id AND cmt.type = 0 AND cmt.deleted = 0
+        WHERE g.deleted = 0
+        <if test="categoryId != null">
+            AND g.category_id = #{categoryId}
+        </if>
+        GROUP BY g.id, g.name, c.name
+        <choose>
+            <when test="sort == 'avg_rating' and order == 'asc'">
+                ORDER BY avg_rating ASC, rating_count DESC
+            </when>
+            <when test="sort == 'avg_rating' and order == 'desc'">
+                ORDER BY avg_rating DESC, rating_count DESC
+            </when>
+            <otherwise>
+                ORDER BY g.add_time DESC
+            </otherwise>
+        </choose>
+    </select>
+    
+    <!-- 商品评分统计总数（用于分页） -->
+    <select id="countGoodsRating" resultType="int">
+        SELECT COUNT(DISTINCT g.id)
+        FROM litemall_goods g
+        LEFT JOIN litemall_category c ON g.category_id = c.id
+        WHERE g.deleted = 0
+        <if test="categoryId != null">
+            AND g.category_id = #{categoryId}
+        </if>
+    </select>
+    
+    <!-- 商品分类列表（用于筛选） -->
+    <select id="statGoodsCategories" resultType="map">
+        SELECT DISTINCT
+            c.id,
+            c.name,
+            c.sort_order
+        FROM litemall_category c
+        INNER JOIN litemall_goods g ON c.id = g.category_id
+        WHERE c.deleted = 0 AND g.deleted = 0
+        ORDER BY c.sort_order, c.name
+    </select>
+    
+    <!-- 商品评论统计列表 -->
+    <select id="statGoodsComment" resultType="map">
+        SELECT 
+            g.id AS goods_id,
+            g.name AS goods_name,
+            c.name AS category_name,
+            COUNT(cmt.id) AS comment_count
+        FROM litemall_goods g
+        LEFT JOIN litemall_category c ON g.category_id = c.id
+        LEFT JOIN litemall_comment cmt ON g.id = cmt.value_id AND cmt.type = 0 AND cmt.deleted = 0
+        WHERE g.deleted = 0
+        <if test="categoryId != null">
+            AND g.category_id = #{categoryId}
+        </if>
+        GROUP BY g.id, g.name, c.name
+        HAVING COUNT(cmt.id) > 0
+        ORDER BY comment_count DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <!-- 商品评论总数统计（用于分页） -->
+    <select id="countGoodsComment" resultType="int">
+        SELECT COUNT(DISTINCT g.id)
+        FROM litemall_goods g
+        LEFT JOIN litemall_comment cmt ON g.id = cmt.value_id AND cmt.type = 0 AND cmt.deleted = 0
+        WHERE g.deleted = 0 AND cmt.id IS NOT NULL
+        <if test="categoryId != null">
+            AND g.category_id = #{categoryId}
+        </if>
+    </select>
+    
+    <!-- 获取商品评论内容（用于词云） -->
+    <select id="getGoodsComments" resultType="map">
+        SELECT content
+        FROM litemall_comment
+        WHERE type = 0 AND deleted = 0
+        <choose>
+            <when test="goodsIds != null and goodsIds.size() > 0">
+                AND value_id IN
+                <foreach collection="goodsIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </when>
+            <otherwise>
+                AND value_id = #{goodsId}
+            </otherwise>
+        </choose>
+        ORDER BY add_time DESC
+    </select>
+    
+    <!-- 获取分类下所有商品的评论内容（用于全局词云） -->
+    <select id="getCommentsByCategory" resultType="map">
+        SELECT c.content
+        FROM litemall_comment c
+        INNER JOIN litemall_goods g ON c.value_id = g.id
+        WHERE c.type = 0 AND c.deleted = 0
+        <if test="categoryId != null">
+            AND g.category_id = #{categoryId}
+        </if>
+        ORDER BY c.add_time DESC
+        LIMIT 1000  <!-- 限制查询数量，避免性能问题 -->
+    </select>
+    
+    <!-- 获取全站所有评论内容（用于全局词云） -->
+    <select id="getAllComments" resultType="map">
+        SELECT content
+        FROM litemall_comment
+        WHERE type = 0 AND deleted = 0
+        ORDER BY add_time DESC
+        LIMIT 1000  <!-- 限制查询数量，避免性能问题 -->
+    </select>
+</mapper>
