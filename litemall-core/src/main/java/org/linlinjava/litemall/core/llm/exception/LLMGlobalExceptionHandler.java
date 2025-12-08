@@ -17,10 +17,10 @@ import java.util.Map;
  * 全局异常处理器
  * 统一处理LLM服务相关的异常
  */
-@ControllerAdvice(basePackages = "org.linlinjava.litemall.core.llm")
-public class GlobalExceptionHandler {
+@ControllerAdvice("org.linlinjava.litemall.core.llm")
+public class LLMGlobalExceptionHandler {
     
-    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(LLMGlobalExceptionHandler.class);
     
     /**
      * 处理LLM服务异常

@@ -22,24 +22,24 @@ public class StatMapperTest {
 
     @Test
     public void testUser() {
-        List<Map> result = statMapper.statUser();
-        for (Map m : result) {
+        List<Map<String, Object>> result = statMapper.statUser();
+        for (Map<String, Object> m : result) {
             m.forEach((k, v) -> System.out.println("key:value = " + k + ":" + v));
         }
     }
 
     @Test
     public void testOrder() {
-        List<Map> result = statMapper.statOrder();
-        for (Map m : result) {
+        List<Map<String, Object>> result = statMapper.statOrder();
+        for (Map<String, Object> m : result) {
             m.forEach((k, v) -> System.out.println("key:value = " + k + ":" + v));
         }
     }
 
     @Test
     public void testGoods() {
-        List<Map> result = statMapper.statGoods();
-        for (Map m : result) {
+        List<Map<String, Object>> result = statMapper.statGoods();
+        for (Map<String, Object> m : result) {
             m.forEach((k, v) -> System.out.println("key:value = " + k + ":" + v));
         }
     }

@@ -9,7 +9,9 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -105,37 +107,49 @@ public class Qwen3Service {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Bearer " + apiKey);
         
-        // 构建请求体
+        // 构建请求体 - 使用OpenAI兼容的Chat Completions格式
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", model);
         
-        Map<String, Object> input = new HashMap<>();
-        input.put("prompt", prompt);
-        requestBody.put("input", input);
+        // 构建消息数组
+        List<Map<String, String>> messages = new ArrayList<>();
+        Map<String, String> userMessage = new HashMap<>();
+        userMessage.put("role", "user");
+        userMessage.put("content", prompt);
+        messages.add(userMessage);
+        requestBody.put("messages", messages);
         
+        // 构建参数
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("result_format", "text");
         parameters.put("temperature", 0.1); // 降低随机性，提高稳定性
         parameters.put("top_p", 0.8);
         parameters.put("max_tokens", 2000);
+        parameters.put("enable_thinking", false); // 非流式调用必须设置为false
         requestBody.put("parameters", parameters);
         
         // 发送请求
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
         
-        logger.debug("调用Qwen3 API，模型：{}，提示词长度：{}", model, prompt.length());
+        logger.info("调用Qwen3 API，模型：{}，提示词长度：{}，API端点：{}", model, prompt.length(), apiUrl);
+        logger.debug("请求体：{}", requestBody);
         
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(apiUrl, HttpMethod.POST, request,
                 new ParameterizedTypeReference<Map<String, Object>>() {});
         
+        logger.info("Qwen3 API响应状态码：{}", response.getStatusCode());
+        
         if (response.getStatusCode() != HttpStatus.OK) {
+            logger.error("API调用失败，状态码：{}，响应体：{}", response.getStatusCode(), response.getBody());
             throw new LLMServiceException("API调用失败，状态码：" + response.getStatusCode());
         }
         
         Map<String, Object> responseBody = response.getBody();
         if (responseBody == null) {
+            logger.error("API响应为空");
             throw new LLMServiceException("API响应为空");
         }
+        
+        logger.debug("API响应体：{}", responseBody);
         
         // 解析响应
         return parseResponse(responseBody);
@@ -162,21 +176,37 @@ public class Qwen3Service {
              }
          }
          
-         // 获取输出结果
-         Object outputObj = responseBody.get("output");
-         if (!(outputObj instanceof Map<?, ?>)) {
-             throw new LLMServiceException("输出格式错误");
+         // 解析OpenAI兼容的Chat Completions格式响应
+         Object choicesObj = responseBody.get("choices");
+         if (!(choicesObj instanceof List<?>)) {
+             throw new LLMServiceException("响应格式错误，缺少choices字段");
          }
+         
          @SuppressWarnings("unchecked")
-        Map<String, Object> output = (Map<String, Object>) outputObj;
-        
-        String result = (String) output.get("text");
-        if (result == null || result.trim().isEmpty()) {
-            throw new LLMServiceException("模型未生成任何文本");
-        }
-        
-        logger.debug("Qwen3 API响应成功，生成文本长度：{}", result.length());
-        return result.trim();
+         List<Map<String, Object>> choices = (List<Map<String, Object>>) choicesObj;
+         
+         if (choices.isEmpty()) {
+             throw new LLMServiceException("模型未生成任何响应");
+         }
+         
+         // 获取第一个选择
+         Map<String, Object> firstChoice = choices.get(0);
+         Object messageObj = firstChoice.get("message");
+         
+         if (!(messageObj instanceof Map<?, ?>)) {
+             throw new LLMServiceException("消息格式错误");
+         }
+         
+         @SuppressWarnings("unchecked")
+         Map<String, Object> message = (Map<String, Object>) messageObj;
+         
+         String result = (String) message.get("content");
+         if (result == null || result.trim().isEmpty()) {
+             throw new LLMServiceException("模型未生成任何文本");
+         }
+         
+         logger.debug("Qwen3 API响应成功，生成文本长度：{}", result.length());
+         return result.trim();
     }
     
     /**
