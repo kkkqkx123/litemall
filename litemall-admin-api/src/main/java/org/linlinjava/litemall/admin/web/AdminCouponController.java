@@ -13,6 +13,7 @@ import org.linlinjava.litemall.db.service.LitemallCouponService;
 import org.linlinjava.litemall.db.service.LitemallCouponUserService;
 import org.linlinjava.litemall.db.util.CouponConstant;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,7 @@ public class AdminCouponController {
     @Autowired
     private LitemallCouponUserService couponUserService;
 
+    @PreAuthorize("hasAuthority('admin:coupon:list')")
     @RequiresPermissions("admin:coupon:list")
     @RequiresPermissionsDesc(menu = {"推广管理", "优惠券管理"}, button = "查询")
     @GetMapping("/list")
@@ -43,6 +45,7 @@ public class AdminCouponController {
         return ResponseUtil.okList(couponList);
     }
 
+    @PreAuthorize("hasAuthority('admin:coupon:listuser')")
     @RequiresPermissions("admin:coupon:listuser")
     @RequiresPermissionsDesc(menu = {"推广管理", "优惠券管理"}, button = "查询用户")
     @GetMapping("/listuser")
@@ -64,6 +67,7 @@ public class AdminCouponController {
         return null;
     }
 
+    @PreAuthorize("hasAuthority('admin:coupon:create')")
     @RequiresPermissions("admin:coupon:create")
     @RequiresPermissionsDesc(menu = {"推广管理", "优惠券管理"}, button = "添加")
     @PostMapping("/create")
@@ -83,6 +87,7 @@ public class AdminCouponController {
         return ResponseUtil.ok(coupon);
     }
 
+    @PreAuthorize("hasAuthority('admin:coupon:read')")
     @RequiresPermissions("admin:coupon:read")
     @RequiresPermissionsDesc(menu = {"推广管理", "优惠券管理"}, button = "详情")
     @GetMapping("/read")
@@ -91,6 +96,7 @@ public class AdminCouponController {
         return ResponseUtil.ok(coupon);
     }
 
+    @PreAuthorize("hasAuthority('admin:coupon:update')")
     @RequiresPermissions("admin:coupon:update")
     @RequiresPermissionsDesc(menu = {"推广管理", "优惠券管理"}, button = "编辑")
     @PostMapping("/update")

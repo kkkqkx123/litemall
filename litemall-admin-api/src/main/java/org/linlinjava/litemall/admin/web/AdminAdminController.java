@@ -16,6 +16,7 @@ import org.linlinjava.litemall.admin.security.AdminUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +39,7 @@ public class AdminAdminController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @PreAuthorize("hasAuthority('admin:admin:list')")
     @RequiresPermissions("admin:admin:list")
     @RequiresPermissionsDesc(menu = {"系统管理", "管理员管理"}, button = "查询")
     @GetMapping("/list")
@@ -65,6 +67,7 @@ public class AdminAdminController {
         return null;
     }
 
+    @PreAuthorize("hasAuthority('admin:admin:create')")
     @RequiresPermissions("admin:admin:create")
     @RequiresPermissionsDesc(menu = {"系统管理", "管理员管理"}, button = "添加")
     @PostMapping("/create")
@@ -88,6 +91,7 @@ public class AdminAdminController {
         return ResponseUtil.ok(admin);
     }
 
+    @PreAuthorize("hasAuthority('admin:admin:read')")
     @RequiresPermissions("admin:admin:read")
     @RequiresPermissionsDesc(menu = {"系统管理", "管理员管理"}, button = "详情")
     @GetMapping("/read")
@@ -96,6 +100,7 @@ public class AdminAdminController {
         return ResponseUtil.ok(admin);
     }
 
+    @PreAuthorize("hasAuthority('admin:admin:update')")
     @RequiresPermissions("admin:admin:update")
     @RequiresPermissionsDesc(menu = {"系统管理", "管理员管理"}, button = "编辑")
     @PostMapping("/update")
@@ -121,6 +126,7 @@ public class AdminAdminController {
         return ResponseUtil.ok(admin);
     }
 
+    @PreAuthorize("hasAuthority('admin:admin:delete')")
     @RequiresPermissions("admin:admin:delete")
     @RequiresPermissionsDesc(menu = {"系统管理", "管理员管理"}, button = "删除")
     @PostMapping("/delete")

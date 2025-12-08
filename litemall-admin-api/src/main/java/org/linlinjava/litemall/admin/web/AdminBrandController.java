@@ -10,6 +10,7 @@ import org.linlinjava.litemall.core.validator.Sort;
 import org.linlinjava.litemall.db.domain.LitemallBrand;
 import org.linlinjava.litemall.db.service.LitemallBrandService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,7 @@ public class AdminBrandController {
     @Autowired
     private LitemallBrandService brandService;
 
+    @PreAuthorize("hasAuthority('admin:brand:list')")
     @RequiresPermissions("admin:brand:list")
     @RequiresPermissionsDesc(menu = {"商场管理", "品牌管理"}, button = "查询")
     @GetMapping("/list")
@@ -57,6 +59,7 @@ public class AdminBrandController {
         return null;
     }
 
+    @PreAuthorize("hasAuthority('admin:brand:create')")
     @RequiresPermissions("admin:brand:create")
     @RequiresPermissionsDesc(menu = {"商场管理", "品牌管理"}, button = "添加")
     @PostMapping("/create")
@@ -69,6 +72,7 @@ public class AdminBrandController {
         return ResponseUtil.ok(brand);
     }
 
+    @PreAuthorize("hasAuthority('admin:brand:read')")
     @RequiresPermissions("admin:brand:read")
     @RequiresPermissionsDesc(menu = {"商场管理", "品牌管理"}, button = "详情")
     @GetMapping("/read")
@@ -77,6 +81,7 @@ public class AdminBrandController {
         return ResponseUtil.ok(brand);
     }
 
+    @PreAuthorize("hasAuthority('admin:brand:update')")
     @RequiresPermissions("admin:brand:update")
     @RequiresPermissionsDesc(menu = {"商场管理", "品牌管理"}, button = "编辑")
     @PostMapping("/update")
@@ -91,6 +96,7 @@ public class AdminBrandController {
         return ResponseUtil.ok(brand);
     }
 
+    @PreAuthorize("hasAuthority('admin:brand:delete')")
     @RequiresPermissions("admin:brand:delete")
     @RequiresPermissionsDesc(menu = {"商场管理", "品牌管理"}, button = "删除")
     @PostMapping("/delete")

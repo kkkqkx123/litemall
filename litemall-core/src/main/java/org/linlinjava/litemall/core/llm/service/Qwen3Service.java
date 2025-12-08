@@ -111,10 +111,17 @@ public class Qwen3Service {
      * @throws Exception 当调用失败时抛出
      */
     private String callLLMApi(String prompt) throws Exception {
+        logger.info("=== Qwen3Service 开始调用API ===");
+        logger.info("提示词：{}", prompt);
+        logger.info("提示词长度：{}", prompt.length());
+        
         // 构建请求头
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Bearer " + apiKey);
+        
+        logger.info("API Key：{}", apiKey != null ? "已配置" : "未配置");
+        logger.info("API端点：{}", apiUrl);
         
         // 构建请求体 - 使用ModelScope Chat Completions API格式
         Map<String, Object> requestBody = new HashMap<>();
@@ -143,8 +150,6 @@ public class Qwen3Service {
         try {
             String requestBodyJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(requestBody);
             logger.info("实际发送的请求体JSON：{}", requestBodyJson);
-            // 同时输出到控制台，确保能看到
-            System.out.println("实际发送的请求体JSON：" + requestBodyJson);
             
             // 详细检查messages参数
             Object messagesObj = requestBody.get("messages");
@@ -171,19 +176,23 @@ public class Qwen3Service {
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(apiUrl, HttpMethod.POST, request,
                 new ParameterizedTypeReference<Map<String, Object>>() {});
         
+        System.out.println("Qwen3 API响应状态码：" + response.getStatusCode());
         logger.info("Qwen3 API响应状态码：{}", response.getStatusCode());
         
         if (response.getStatusCode() != HttpStatus.OK) {
+            System.out.println("API调用失败，状态码：" + response.getStatusCode() + "，响应体：" + response.getBody());
             logger.error("API调用失败，状态码：{}，响应体：{}", response.getStatusCode(), response.getBody());
             throw new LLMServiceException("API调用失败，状态码：" + response.getStatusCode());
         }
         
         Map<String, Object> responseBody = response.getBody();
         if (responseBody == null) {
+            System.out.println("API响应为空");
             logger.error("API响应为空");
             throw new LLMServiceException("API响应为空");
         }
         
+        System.out.println("API响应体：" + responseBody);
         logger.debug("API响应体：{}", responseBody);
         
         // 解析响应

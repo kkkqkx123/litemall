@@ -36,14 +36,11 @@ logging:
     org.mybatis: ERROR
     org.linlinjava.litemall: DEBUG
     org.linlinjava.litemall.core.llm: DEBUG    # LLM模块日志
+    org.linlinjava.litemall.core.llm.service: DEBUG  # Qwen3Service日志
     org.linlinjava.litemall.admin.security.JwtAuthenticationFilter: TRACE
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-  file:
-    name: logs/litemall-llm.log
-    max-size: 10MB
-    max-history: 30
 
 # 监控配置
 management:

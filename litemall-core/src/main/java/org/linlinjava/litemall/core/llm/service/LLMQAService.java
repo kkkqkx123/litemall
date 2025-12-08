@@ -48,34 +48,50 @@ public class LLMQAService {
      * @return 问答响应
      */
     public GoodsQAResponse processQuestion(GoodsQARequest request) {
+        System.out.println("=== LLMQAService 开始处理商品问答请求 ===");
+        System.out.println("问题：" + request.getQuestion());
+        System.out.println("会话ID：" + request.getSessionId());
+        
         logger.info("开始处理商品问答请求，问题：{}，会话ID：{}", request.getQuestion(), request.getSessionId());
         
         try {
             // 1. 验证请求
             validateRequest(request);
+            System.out.println("请求验证通过");
             
             // 2. 构建提示词
             String prompt = buildPrompt(request);
+            System.out.println("构建的提示词：" + prompt);
             
             // 3. 调用大模型
+            System.out.println("准备调用Qwen3Service...");
             String llmResponse = qwen3Service.callLLM(prompt);
+            System.out.println("Qwen3Service返回结果：" + llmResponse);
             logger.debug("LLM响应：{}", llmResponse);
             
             // 4. 解析LLM输出
             QueryIntent queryIntent = llmOutputParser.parseQueryIntent(llmResponse);
+            System.out.println("解析后的查询意图：" + queryIntent);
             logger.debug("解析后的查询意图：{}", queryIntent);
             
             // 5. 验证查询意图
             if (!queryIntentBuilder.validateQueryIntent(queryIntent)) {
+                System.err.println("查询意图验证失败：" + queryIntent);
                 logger.error("查询意图验证失败：{}", queryIntent);
                 return GoodsQAResponse.serverError("查询意图验证失败");
             }
             
+            System.out.println("查询意图验证通过");
+            
             // 6. 执行查询
+            System.out.println("开始执行查询...");
             List<Map<String, Object>> results = executeQuery(queryIntent);
+            System.out.println("查询完成，结果数量：" + results.size());
             
             // 7. 生成回答
+            System.out.println("生成回答...");
             String answer = generateAnswer(queryIntent, results);
+            System.out.println("生成的回答：" + answer);
             
             // 8. 构建响应
             List<LitemallGoods> goodsList = convertToGoodsList(results);
@@ -93,16 +109,21 @@ public class LLMQAService {
                 sessionManager.updateSessionContext(request.getSessionId(), context);
             }
             
+            System.out.println("=== LLMQAService 处理完成 ===");
             logger.info("商品问答请求处理完成，问题：{}，结果数量：{}", request.getQuestion(), results.size());
             return response;
             
         } catch (LLMOutputParseException e) {
+            System.err.println("LLM输出解析失败：" + e.getMessage());
             logger.error("LLM输出解析失败：{}", e.getMessage());
             return GoodsQAResponse.serverError("无法解析您的查询意图，请重新表述");
         } catch (LLMServiceException e) {
+            System.err.println("LLM服务调用失败：" + e.getMessage());
             logger.error("LLM服务调用失败：{}", e.getMessage());
             return GoodsQAResponse.serverError("AI服务暂时不可用，请稍后再试");
         } catch (Exception e) {
+            System.err.println("处理商品问答请求时发生异常：" + e.getMessage());
+            e.printStackTrace();
             logger.error("处理商品问答请求时发生异常", e);
             return GoodsQAResponse.serverError("处理请求时发生错误");
         }

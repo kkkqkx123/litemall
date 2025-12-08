@@ -10,6 +10,7 @@ import org.linlinjava.litemall.core.validator.Sort;
 import org.linlinjava.litemall.db.domain.LitemallUser;
 import org.linlinjava.litemall.db.service.LitemallUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +32,7 @@ public class AdminUserController {
     @Autowired
     private LitemallUserService userService;
 
+    @PreAuthorize("hasAuthority('admin:user:list')")
     @RequiresPermissions("admin:user:list")
     @RequiresPermissionsDesc(menu = {"用户管理", "会员管理"}, button = "查询")
     @GetMapping("/list")
@@ -42,6 +44,7 @@ public class AdminUserController {
         List<LitemallUser> userList = userService.querySelective(username, mobile, page, limit, sort, order);
         return ResponseUtil.okList(userList);
     }
+    @PreAuthorize("hasAuthority('admin:user:list')")
     @RequiresPermissions("admin:user:list")
     @RequiresPermissionsDesc(menu = {"用户管理", "会员管理"}, button = "详情")
     @GetMapping("/detail")
@@ -49,6 +52,7 @@ public class AdminUserController {
     	LitemallUser user=userService.findById(id);
         return ResponseUtil.ok(user);
     }
+    @PreAuthorize("hasAuthority('admin:user:list')")
     @RequiresPermissions("admin:user:list")
     @RequiresPermissionsDesc(menu = {"用户管理", "会员管理"}, button = "编辑")
     @PostMapping("/update")

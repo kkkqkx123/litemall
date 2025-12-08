@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
 import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.admin.vo.CategoryVo;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.db.domain.LitemallCategory;
 import org.linlinjava.litemall.db.service.LitemallCategoryService;
@@ -28,6 +29,7 @@ public class AdminCategoryController {
     @Autowired
     private LitemallCategoryService categoryService;
 
+    @PreAuthorize("hasAuthority('admin:category:list')")
     @RequiresPermissions("admin:category:list")
     @RequiresPermissionsDesc(menu = {"商场管理", "类目管理"}, button = "查询")
     @GetMapping("/list")
@@ -90,6 +92,7 @@ public class AdminCategoryController {
         return null;
     }
 
+    @PreAuthorize("hasAuthority('admin:category:create')")
     @RequiresPermissions("admin:category:create")
     @RequiresPermissionsDesc(menu = {"商场管理", "类目管理"}, button = "添加")
     @PostMapping("/create")
@@ -102,6 +105,7 @@ public class AdminCategoryController {
         return ResponseUtil.ok(category);
     }
 
+    @PreAuthorize("hasAuthority('admin:category:read')")
     @RequiresPermissions("admin:category:read")
     @RequiresPermissionsDesc(menu = {"商场管理", "类目管理"}, button = "详情")
     @GetMapping("/read")
@@ -110,6 +114,7 @@ public class AdminCategoryController {
         return ResponseUtil.ok(category);
     }
 
+    @PreAuthorize("hasAuthority('admin:category:update')")
     @RequiresPermissions("admin:category:update")
     @RequiresPermissionsDesc(menu = {"商场管理", "类目管理"}, button = "编辑")
     @PostMapping("/update")
@@ -125,6 +130,7 @@ public class AdminCategoryController {
         return ResponseUtil.ok();
     }
 
+    @PreAuthorize("hasAuthority('admin:category:delete')")
     @RequiresPermissions("admin:category:delete")
     @RequiresPermissionsDesc(menu = {"商场管理", "类目管理"}, button = "删除")
     @PostMapping("/delete")
@@ -137,6 +143,7 @@ public class AdminCategoryController {
         return ResponseUtil.ok();
     }
 
+    @PreAuthorize("hasAuthority('admin:category:list')")
     @RequiresPermissions("admin:category:list")
     @GetMapping("/l1")
     public Object catL1() {
