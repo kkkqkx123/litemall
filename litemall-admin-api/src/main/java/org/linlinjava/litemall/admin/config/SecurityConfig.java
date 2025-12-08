@@ -2,10 +2,10 @@ package org.linlinjava.litemall.admin.config;
 
 import org.linlinjava.litemall.admin.security.JwtAuthenticationFilter;
 import org.linlinjava.litemall.admin.security.AdminUserDetailsService;
-import org.linlinjava.litemall.admin.security.PermissionMethodSecurityExpressionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Role;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -13,13 +13,20 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.expression.EvaluationContext;
+import java.util.function.Supplier;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -45,9 +52,32 @@ public class SecurityConfig {
         return new ProviderManager(authenticationProvider);
     }
 
+    /**
+     * 自定义方法安全表达式处理器
+     */
     @Bean
-    public PermissionMethodSecurityExpressionHandler permissionMethodSecurityExpressionHandler() {
-        return new PermissionMethodSecurityExpressionHandler();
+    @Role(org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRASTRUCTURE)
+    public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
+        return new DefaultMethodSecurityExpressionHandler() {
+            @Override
+            protected MethodSecurityExpressionOperations createSecurityExpressionRoot(
+                    Authentication authentication, MethodInvocation invocation) {
+                // 创建自定义权限表达式根
+                org.linlinjava.litemall.admin.security.PermissionMethodSecurityExpressionRoot root = 
+                    new org.linlinjava.litemall.admin.security.PermissionMethodSecurityExpressionRoot(authentication);
+                root.setTrustResolver(getTrustResolver());
+                root.setPermissionEvaluator(getPermissionEvaluator());
+                root.setRoleHierarchy(getRoleHierarchy());
+                root.setDefaultRolePrefix(getDefaultRolePrefix());
+                return root;
+            }
+
+            @Override
+            public EvaluationContext createEvaluationContext(Supplier<Authentication> authentication,
+                                                           MethodInvocation mi) {
+                return super.createEvaluationContext(authentication, mi);
+            }
+        };
     }
 
     @Autowired

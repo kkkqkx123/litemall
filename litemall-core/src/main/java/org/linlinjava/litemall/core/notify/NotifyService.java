@@ -19,8 +19,6 @@ public class NotifyService {
     private SmsSender smsSender;
     private List<Map<String, String>> smsTemplate = new ArrayList<>();
 
-    private List<Map<String, String>> wxTemplate = new ArrayList<>();
-
     public boolean isMailEnable() {
         return mailSender != null;
     }
@@ -130,6 +128,5 @@ public class NotifyService {
     }
 
     public void setWxTemplate(List<Map<String, String>> wxTemplate) {
-        this.wxTemplate = wxTemplate;
     }
 }

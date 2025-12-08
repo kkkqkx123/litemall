@@ -176,7 +176,14 @@ public class ConversationManager {
                     context.setLastQueryType((String) contextValue);
                     break;
                 case "lastConditions":
-                    context.setLastConditions((Map<String, Object>) contextValue);
+                    if (contextValue instanceof Map) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> conditionsMap = (Map<String, Object>) contextValue;
+                        context.setLastConditions(conditionsMap);
+                    } else {
+                        logger.warn("上下文值类型不匹配，期望Map类型，实际类型：{}", contextValue.getClass().getName());
+                        return false;
+                    }
                     break;
                 case "lastSort":
                     context.setLastSort((String) contextValue);

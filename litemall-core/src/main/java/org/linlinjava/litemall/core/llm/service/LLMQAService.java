@@ -34,12 +34,6 @@ public class LLMQAService {
     private QueryIntentBuilder queryIntentBuilder;
     
     @Autowired
-    private SQLBuilder sqlBuilder;
-    
-    @Autowired
-    private ParameterBinder parameterBinder;
-    
-    @Autowired
     private Qwen3Service qwen3Service;
     
     @Autowired
