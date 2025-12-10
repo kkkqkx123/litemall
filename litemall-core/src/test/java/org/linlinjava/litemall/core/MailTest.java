@@ -1,7 +1,6 @@
 package org.linlinjava.litemall.core;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.linlinjava.litemall.core.notify.NotifyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,9 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.task.SyncTaskExecutor;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.util.concurrent.Executor;
 
@@ -26,10 +22,8 @@ import java.util.concurrent.Executor;
  * 1. 在相应的邮件服务器设置正确notify.properties已经设置正确
  * 2. 在相应的邮件服务器设置正确
  */
-@WebAppConfiguration
-@RunWith(SpringRunner.class)
 @SpringBootTest
-public class MailTest {
+class MailTest {
 
     @Autowired
     private NotifyService notifyService;

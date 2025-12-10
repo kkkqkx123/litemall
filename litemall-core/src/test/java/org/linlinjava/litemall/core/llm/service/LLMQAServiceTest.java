@@ -1,10 +1,9 @@
 package org.linlinjava.litemall.core.llm.service;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+
 
 import java.util.*;
 
@@ -12,9 +11,8 @@ import java.util.*;
  * LLM问答服务测试类
  * 测试LLM问答服务的核心功能
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest
-public class LLMQAServiceTest {
+class LLMQAServiceTest {
 
     @Autowired
     private LLMQAService llmqaService;

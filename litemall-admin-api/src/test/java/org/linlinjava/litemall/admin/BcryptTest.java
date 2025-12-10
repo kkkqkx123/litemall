@@ -1,15 +1,12 @@
 package org.linlinjava.litemall.admin;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest
-public class BcryptTest {
+class BcryptTest {
 
     @Test
     public void test() {
@@ -20,6 +17,6 @@ public class BcryptTest {
 
         System.out.println("rawPassword=" + rawPassword + " encodedPassword=" + encodedPassword);
 
-        Assert.assertTrue(bCryptPasswordEncoder.matches(rawPassword, encodedPassword));
+        assertTrue(bCryptPasswordEncoder.matches(rawPassword, encodedPassword));
     }
 }

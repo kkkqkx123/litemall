@@ -1,11 +1,11 @@
 package org.linlinjava.litemall.db;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.linlinjava.litemall.db.util.DbUtil;
 
 import java.io.File;
 
-public class DbUtilTest {
+class DbUtilTest {
     @Test
     public void testBackup() {
         File file = new File("test.sql");
