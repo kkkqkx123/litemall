@@ -118,7 +118,7 @@ litemall:
     api-url: https://api-inference.modelscope.cn/v1/chat/completions  # ModelScope API地址
     model-name: Qwen/Qwen3-32B  # 模型名称，默认为Qwen/Qwen3-32B
     enabled: true  # 启用问答功能
-    max-context-length: 3  # 重试次数
+    max-retries: 3  # 重试次数
     session-timeout: 30000  # 会话超时时间（毫秒）
     
     # 安全与限流配置

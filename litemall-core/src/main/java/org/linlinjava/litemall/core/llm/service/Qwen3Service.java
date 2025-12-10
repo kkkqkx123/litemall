@@ -35,7 +35,7 @@ public class Qwen3Service {
     @Value("${litemall.modelscope.session-timeout:30000}")
     private int timeout;
     
-    @Value("${litemall.modelscope.max-context-length:3}")
+    @Value("${litemall.modelscope.max-retries:3}")
     private int maxRetries;
     
     private final RestTemplate restTemplate = new RestTemplate();
@@ -135,10 +135,9 @@ public class Qwen3Service {
         messages.add(userMessage);
         requestBody.put("messages", messages);  // 使用messages数组参数
         
-        // 直接设置参数，而不是嵌套在parameters对象中
-        requestBody.put("temperature", 0.1); // 降低随机性，提高稳定性
-        requestBody.put("top_p", 0.8);
-        requestBody.put("max_tokens", 2000);
+        // 只设置必要的参数，参考成功的curl请求
+        requestBody.put("max_tokens", 100);
+        requestBody.put("temperature", 0.7);
         requestBody.put("enable_thinking", false); // 非流式调用必须设置为false
         
         // 发送请求

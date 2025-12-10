@@ -1,0 +1,10 @@
+{
+  "model": "qwen/Qwen3-32B",
+  "messages": [
+    {
+      "role": "user",
+      "content": "你好，请介绍一下你自己"
+    }
+  ],
+  "max_tokens": 100
+}

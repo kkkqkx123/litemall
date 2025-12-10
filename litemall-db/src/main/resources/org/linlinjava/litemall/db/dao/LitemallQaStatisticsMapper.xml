@@ -402,7 +402,7 @@
   </select>
   
   <!-- 获取热门意图类型统计 -->
-  <select id="selectPopularIntentTypes" parameterType="map" resultType="map">
+  <select id="selectPopularIntentTypes" parameterType="map" resultType="java.util.HashMap">
     SELECT 
       intent_type,
       COUNT(*) as count,
@@ -426,7 +426,7 @@
   </select>
   
   <!-- 获取用户活跃度统计 -->
-  <select id="selectUserActivityStats" parameterType="map" resultType="map">
+  <select id="selectUserActivityStats" parameterType="map" resultType="java.util.HashMap">
     SELECT 
       user_id,
       COUNT(DISTINCT session_id) as session_count,
@@ -451,7 +451,7 @@
   </select>
   
   <!-- 获取系统整体统计 -->
-  <select id="selectSystemStats" parameterType="map" resultType="map">
+  <select id="selectSystemStats" parameterType="map" resultType="java.util.HashMap">
     SELECT 
       COUNT(DISTINCT session_id) as total_sessions,
       COUNT(DISTINCT user_id) as total_users,

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.linlinjava.litemall.db.dao.StatMapper">
-    <select id="statUser" resultType="map">
+    <select id="statUser" resultType="java.util.HashMap">
         select
         substr(add_time,1,10) as day,
         count(distinct id) as users
@@ -10,7 +10,7 @@
     </select>
     
     <!-- 原始订单统计查询 -->
-    <select id="statOrder" resultType="map">
+    <select id="statOrder" resultType="java.util.HashMap">
         select
         substr(add_time,1,10) as day,
         count(id) as orders,
@@ -23,7 +23,7 @@
     </select>
     
     <!-- 增强版订单统计查询，支持自动确定时间维度 -->
-    <select id="statOrderEnhanced" resultType="map">
+    <select id="statOrderEnhanced" resultType="java.util.HashMap">
         select
         <choose>
             <when test="day != null">substr(o.add_time,1,10)</when>
@@ -54,7 +54,7 @@
     </select>
     
     <!-- 增强版订单统计查询，支持时间范围和商品类别筛选 -->
-    <select id="statOrderEnhancedWithTimeRange" resultType="map">
+    <select id="statOrderEnhancedWithTimeRange" resultType="java.util.HashMap">
         select
         <choose>
             <when test="timeDimension == 'day'">substr(o.add_time,1,10)</when>
@@ -83,7 +83,7 @@
         order by period
     </select>
     
-    <select id="statGoods" resultType="map">
+    <select id="statGoods" resultType="java.util.HashMap">
         select
         substr(add_time,1, 10) as day,
         count(distinct order_id) as orders,
@@ -94,7 +94,7 @@
     </select>
     
     <!-- 商品评分统计 -->
-    <select id="statGoodsRating" resultType="map">
+    <select id="statGoodsRating" resultType="java.util.HashMap">
         SELECT 
             g.id AS goods_id,
             g.name AS goods_name,
@@ -134,7 +134,7 @@
     </select>
     
     <!-- 商品分类列表（用于筛选） -->
-    <select id="statGoodsCategories" resultType="map">
+    <select id="statGoodsCategories" resultType="java.util.HashMap">
         SELECT DISTINCT
             c.id,
             c.name,
@@ -146,7 +146,7 @@
     </select>
     
     <!-- 商品评论统计列表 -->
-    <select id="statGoodsComment" resultType="map">
+    <select id="statGoodsComment" resultType="java.util.HashMap">
         SELECT 
             g.id AS goods_id,
             g.name AS goods_name,
@@ -177,7 +177,7 @@
     </select>
     
     <!-- 获取商品评论内容（用于词云） -->
-    <select id="getGoodsComments" resultType="map">
+    <select id="getGoodsComments" resultType="java.util.HashMap">
         SELECT content
         FROM litemall_comment
         WHERE type = 0 AND deleted = 0
@@ -196,7 +196,7 @@
     </select>
     
     <!-- 获取分类下所有商品的评论内容（用于全局词云） -->
-    <select id="getCommentsByCategory" resultType="map">
+    <select id="getCommentsByCategory" resultType="java.util.HashMap">
         SELECT c.content
         FROM litemall_comment c
         INNER JOIN litemall_goods g ON c.value_id = g.id
@@ -209,7 +209,7 @@
     </select>
     
     <!-- 获取全站所有评论内容（用于全局词云） -->
-    <select id="getAllComments" resultType="map">
+    <select id="getAllComments" resultType="java.util.HashMap">
         SELECT content
         FROM litemall_comment
         WHERE type = 0 AND deleted = 0
