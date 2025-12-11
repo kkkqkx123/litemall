@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.task.SyncTaskExecutor;
 
@@ -34,7 +33,6 @@ class MailTest {
     }
 
     @Configuration
-    @Import(Application.class)
     static class ContextConfiguration {
         @Bean
         @Primary

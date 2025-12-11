@@ -2,6 +2,7 @@ package org.linlinjava.litemall.admin.config;
 
 import org.linlinjava.litemall.admin.security.JwtAuthenticationFilter;
 import org.linlinjava.litemall.admin.security.AdminUserDetailsService;
+import org.linlinjava.litemall.admin.security.PermissionMethodSecurityExpressionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,27 +58,8 @@ public class SecurityConfig {
      */
     @Bean
     @Role(org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRASTRUCTURE)
-    public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
-        return new DefaultMethodSecurityExpressionHandler() {
-            @Override
-            protected MethodSecurityExpressionOperations createSecurityExpressionRoot(
-                    Authentication authentication, MethodInvocation invocation) {
-                // 创建自定义权限表达式根
-                org.linlinjava.litemall.admin.security.PermissionMethodSecurityExpressionRoot root = 
-                    new org.linlinjava.litemall.admin.security.PermissionMethodSecurityExpressionRoot(authentication);
-                root.setTrustResolver(getTrustResolver());
-                root.setPermissionEvaluator(getPermissionEvaluator());
-                root.setRoleHierarchy(getRoleHierarchy());
-                root.setDefaultRolePrefix(getDefaultRolePrefix());
-                return root;
-            }
-
-            @Override
-            public EvaluationContext createEvaluationContext(Supplier<Authentication> authentication,
-                                                           MethodInvocation mi) {
-                return super.createEvaluationContext(authentication, mi);
-            }
-        };
+    public PermissionMethodSecurityExpressionHandler methodSecurityExpressionHandler() {
+        return new PermissionMethodSecurityExpressionHandler();
     }
 
     @Autowired

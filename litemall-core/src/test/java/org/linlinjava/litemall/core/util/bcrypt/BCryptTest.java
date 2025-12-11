@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.security.SecureRandom;
+import org.linlinjava.litemall.core.util.bcrypt.BCrypt;
 
 @DisplayName("BCrypt Utility Tests")
 class BCryptTest {
