@@ -1,0 +1,33 @@
+# 数据库模块配置
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 数据库连接配置
+    url: jdbc:mysql://localhost:3306/litemall?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    username: root
+    password: root
+    # HikariCP连接池配置（Spring Boot默认）
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+# MyBatis配置
+mybatis:
+  mapper-locations: classpath*:org/linlinjava/litemall/db/dao/*.xml
+  type-aliases-package: org.linlinjava.litemall.db.domain
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+
+# 数据库模块特定配置
+litemall:
+  db:
+    # 数据库初始化配置
+    initialization:
+      enabled: true
+      mode: always
+      data-locations: classpath:sql/litemall.sql
+      schema-locations: classpath:sql/schema.sql

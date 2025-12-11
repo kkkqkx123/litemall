@@ -1,0 +1,79 @@
+# 微信小程序模块配置
+spring:
+  # 微信小程序服务配置
+  application:
+    name: litemall-wx
+  
+  # 微信小程序安全配置
+  security:
+    # JWT配置（小程序专用）
+    jwt:
+      wx:
+        secret: ${WX_JWT_SECRET:APZvEuDRA9S2j2m9bpBKPPEiCbSRChKayBYEDc4RIK8=}
+        expiration: 7200000 # 2小时
+        issuer: LITEMALL
+        subject: this is litemall token
+        audience: MINIAPP
+
+# 微信小程序模块特定配置
+litemall:
+  wx:
+    # 微信小程序配置
+    app-id: ${WX_APP_ID:wxa5b486c6b918ecfb}
+    app-secret: ${WX_APP_SECRET:e04004829d4c383b4db7769d88dfbca1}
+    mch-id: ${WX_MCH_ID:111111}
+    mch-key: ${WX_MCH_KEY:xxxxxx}
+    notify-url: ${WX_NOTIFY_URL:http://www.example.com/wx/order/pay-notify}
+    # 商户证书文件路径
+    key-path: ${WX_KEY_PATH:xxxxx}
+    # 消息推送配置token
+    token: ${WX_TOKEN:}
+    # 消息推送配置AesKey
+    aes-key: ${WX_AES_KEY:}
+    
+    # 小程序业务配置
+    business:
+      # 商品搜索配置
+      search:
+        # 搜索结果最大数量
+        max-results: 100
+        # 搜索关键词最小长度
+        min-keyword-length: 1
+        # 搜索关键词最大长度
+        max-keyword-length: 20
+        
+      # 购物车配置
+      cart:
+        # 购物车最大商品数量
+        max-items: 100
+        # 商品最大购买数量
+        max-quantity: 999
+        
+      # 订单配置
+      order:
+        # 订单自动取消时间（分钟）
+        auto-cancel-timeout: 30
+        # 订单自动确认收货时间（天）
+        auto-confirm-timeout: 7
+        # 订单自动评价时间（天）
+        auto-comment-timeout: 7
+        
+      # 用户配置
+      user:
+        # 用户会话过期时间（小时）
+        session-timeout: 24
+        # 用户信息缓存时间（分钟）
+        cache-timeout: 30
+
+# 微信小程序模块日志配置
+logging:
+  level:
+    org.linlinjava.litemall.wx: INFO
+    
+# 微信支付配置
+wechat:
+  pay:
+    # 支付回调地址
+    notify-url: ${WX_PAY_NOTIFY_URL:http://localhost:8080/wx/pay/notify}
+    # 支付超时时间（分钟）
+    timeout: 30

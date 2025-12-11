@@ -71,10 +71,29 @@
             <artifactId>mysql-connector-j</artifactId>
         </dependency>
 
+        <!-- Druid 数据源依赖 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-starter</artifactId>
+        </dependency>
+
         <!-- Spring Security 依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- MyBatis Spring Boot Starter 依赖 -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>3.0.4</version>
+        </dependency>
+
+        <!-- Spring Boot Starter JDBC 依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
 
     </dependencies>

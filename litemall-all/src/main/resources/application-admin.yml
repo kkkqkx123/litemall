@@ -1,0 +1,57 @@
+# 管理后台模块配置
+spring:
+  # 管理后台服务配置
+  application:
+    name: litemall-admin
+  
+  # 管理后台安全配置
+  security:
+    # JWT配置
+    jwt:
+      secret: ${JWT_SECRET:APZvEuDRA9S2j2m9bpBKPPEiCbSRChKayBYEDc4RIK8=}
+      expiration: 86400000 # 24小时
+      header: Authorization
+      prefix: Bearer
+
+# 管理后台模块特定配置
+litemall:
+  admin:
+    # 管理员相关配置
+    avatar: https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif
+    
+    # 权限配置
+    permission:
+      # 超级管理员角色
+      super-admin-role: admin
+      # 默认管理员角色
+      default-admin-role: operator
+      
+    # 操作日志配置
+    operation-log:
+      # 是否启用操作日志
+      enabled: true
+      # 日志保留天数
+      retention-days: 90
+      
+    # 数据统计配置
+    statistics:
+      # 统计缓存时间（分钟）
+      cache-timeout: 30
+      # 统计刷新间隔（秒）
+      refresh-interval: 60
+
+# 管理后台模块日志配置
+logging:
+  level:
+    org.linlinjava.litemall.admin: INFO
+    
+# Swagger配置（管理后台API文档）
+swagger:
+  enabled: true
+  title: Litemall Admin API
+  description: 小商城管理后台API接口文档
+  version: 1.0.0
+  contact:
+    name: Litemall Team
+    email: support@litemall.com
+  base-package: org.linlinjava.litemall.admin
