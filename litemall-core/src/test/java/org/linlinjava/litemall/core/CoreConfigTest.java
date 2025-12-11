@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 
-@SpringBootTest
+@SpringBootTest(properties = "spring.profiles.active=test")
 class CoreConfigTest {
     private final Log logger = LogFactory.getLog(CoreConfigTest.class);
     @Autowired

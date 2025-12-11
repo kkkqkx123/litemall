@@ -1,0 +1,75 @@
+# 生产环境配置
+spring:
+  datasource:
+    druid:
+      url: ${DATABASE_URL:jdbc:mysql://localhost:3306/litemall_prod?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC}
+      username: ${DATABASE_USERNAME:root}
+      password: ${DATABASE_PASSWORD:root}
+      # 生产环境连接池配置（较大规模）
+      initial-size: 20
+      max-active: 100
+      min-idle: 20
+      max-wait: 60000
+      # 生产环境启用连接池监控
+      statViewServlet:
+        enabled: true
+        login-username: admin
+        login-password: admin
+      filter:
+        stat:
+          enabled: true
+          log-slow-sql: true
+          slow-sql-millis: 1000
+
+server:
+  port: 8080
+  compression:
+    enabled: true
+    min-response-size: 2048
+    mime-types: application/javascript,text/css,application/json,application/xml,text/html,text/xml,text/plain
+
+logging:
+  level:
+    root: WARN
+    org.linlinjava.litemall: INFO
+    org.springframework.jdbc: WARN  # 生产环境减少SQL日志
+
+# 生产环境监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+      base-path: /actuator
+
+swagger:
+  production: true  # 生产环境禁用Swagger
+
+# 生产环境特定配置
+litemall:
+  # 生产环境使用云存储
+  storage:
+    active: ${STORAGE_ACTIVE:local}  # 通过环境变量配置存储方式
+    # 生产环境需要配置真实的云存储信息
+  
+  # 生产环境启用真实通知服务
+  notify:
+    mail:
+      enable: ${MAIL_ENABLE:false}
+      host: ${MAIL_HOST:}
+      username: ${MAIL_USERNAME:}
+      password: ${MAIL_PASSWORD:}
+    sms:
+      enable: ${SMS_ENABLE:false}
+      active: ${SMS_ACTIVE:tencent}
+  
+  # 生产环境启用物流查询
+  express:
+    enable: ${EXPRESS_ENABLE:false}
+    appId: ${EXPRESS_APP_ID:}
+    appKey: ${EXPRESS_APP_KEY:}
+  
+  # 生产环境启用真实ModelScope服务
+  modelscope:
+    api-key: ${MODELSCOPE_API_KEY:}
+    enabled: ${MODELSCOPE_ENABLED:false}

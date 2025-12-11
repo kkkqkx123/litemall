@@ -1,0 +1,56 @@
+# 测试环境配置
+spring:
+  datasource:
+    druid:
+      url: jdbc:mysql://localhost:3306/litemall_test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+      username: root
+      password: root
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      # 测试环境连接池配置
+      initial-size: 10
+      max-active: 30
+      min-idle: 10
+
+server:
+  port: 8081
+
+logging:
+  level:
+    root: INFO
+    org.linlinjava.litemall: INFO
+    org.springframework.jdbc: WARN  # 测试环境减少SQL日志
+
+# 测试环境监控配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+
+swagger:
+  production: false
+
+# 测试环境特定配置
+litemall:
+  # 测试环境使用本地存储
+  storage:
+    active: local
+    local:
+      storagePath: storage_test
+      address: http://localhost:8081/wx/storage/fetch/
+  
+  # 测试环境禁用真实通知服务
+  notify:
+    mail:
+      enable: false
+    sms:
+      enable: false
+  
+  # 测试环境禁用物流查询
+  express:
+    enable: false
+  
+  # 测试环境启用ModelScope演示模式
+  modelscope:
+    api-key: demo-key
+    enabled: true
