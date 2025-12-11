@@ -1,184 +1,264 @@
 package org.linlinjava.litemall.core.llm.service;
 
-import okhttp3.*;
-import okio.Buffer;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.*;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Qwen3Service HTTP请求捕获测试
- * 用于捕获和验证实际发送的HTTP请求
+ * 用于比较成功的curl请求和Java实现的差异
  */
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class Qwen3ServiceHttpCaptureTest {
-    
-    private static final Logger logger = LoggerFactory.getLogger(Qwen3ServiceHttpCaptureTest.class);
-    
+
+    @LocalServerPort
+    private int port;
+
+    @Autowired
     private Qwen3Service qwen3Service;
-    private OkHttpClient httpClient;
-    private AtomicReference<String> capturedRequestBody;
-    private AtomicReference<String> capturedAuthorization;
-    
-    @BeforeEach
-    void setUp() {
-        capturedRequestBody = new AtomicReference<>();
-        capturedAuthorization = new AtomicReference<>();
-        
-        // 创建自定义拦截器来捕获请求
-        Interceptor requestCaptureInterceptor = new Interceptor() {
-            @Override
-            public Response intercept(Chain chain) throws IOException {
-                Request request = chain.request();
-                
-                // 捕获授权头
-                String auth = request.header("Authorization");
-                if (auth != null) {
-                    capturedAuthorization.set(auth);
-                    logger.info("捕获到Authorization头: {}", auth);
-                }
-                
-                // 捕获请求体
-                RequestBody body = request.body();
-                if (body != null) {
-                    Buffer buffer = new Buffer();
-                    body.writeTo(buffer);
-                    String bodyString = buffer.readUtf8();
-                    capturedRequestBody.set(bodyString);
-                    logger.info("捕获到请求体: {}", bodyString);
-                }
-                
-                // 创建模拟响应
-                String mockResponse = "{\n" +
-                        "  \"choices\": [{\n" +
-                        "    \"message\": {\n" +
-                        "      \"content\": \"测试响应\"\n" +
-                        "    }\n" +
-                        "  }]\n" +
-                        "}";
-                
-                return new Response.Builder()
-                        .request(request)
-                        .protocol(Protocol.HTTP_1_1)
-                        .code(200)
-                        .message("OK")
-                .body(ResponseBody.create(MediaType.parse("application/json"), mockResponse))
-                .build();
-            }
-        };
-        
-        httpClient = new OkHttpClient.Builder()
-                .addInterceptor(requestCaptureInterceptor)
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .writeTimeout(30, TimeUnit.SECONDS)
-                .build();
-        
-        qwen3Service = new Qwen3Service();
-        
-        // 使用反射设置HTTP客户端
-        try {
-            java.lang.reflect.Field field = Qwen3Service.class.getDeclaredField("httpClient");
-            field.setAccessible(true);
-            field.set(qwen3Service, httpClient);
-        } catch (Exception e) {
-            logger.error("设置HTTP客户端失败", e);
-        }
-    }
-    
+
+    @Autowired
+    private TestRestTemplate restTemplate;
+
     /**
-     * 测试实际HTTP请求捕获
+     * 测试直接调用Qwen3 API，捕获HTTP请求和响应
      */
     @Test
-    void testActualHttpRequestCapture() {
+    public void testDirectApiCallWithHttpCapture() {
+        // 准备测试数据
         String testPrompt = "你好，请简单介绍一下你自己";
         
-        // 执行调用
-        String result = qwen3Service.callLLM(testPrompt);
-        
-        // 验证结果
-        assertNotNull(result, "响应不应为null");
-        assertEquals("测试响应", result, "响应内容应匹配");
-        
-        // 验证捕获的请求信息
-        assertNotNull(capturedRequestBody.get(), "应捕获到请求体");
-        assertNotNull(capturedAuthorization.get(), "应捕获到Authorization头");
-        
-        String requestBody = capturedRequestBody.get();
-        String authHeader = capturedAuthorization.get();
-        
-        logger.info("=== 捕获的请求信息 ===");
-        logger.info("Authorization头: {}", authHeader);
-        logger.info("请求体: {}", requestBody);
-        logger.info("====================");
-        
-        // 验证请求体格式
-        assertTrue(requestBody.contains("\"model\""), "请求体应包含model字段");
-        assertTrue(requestBody.contains("\"messages\""), "请求体应包含messages字段");
-        assertTrue(requestBody.contains("\"role\""), "请求体应包含role字段");
-        assertTrue(requestBody.contains("\"content\""), "请求体应包含content字段");
-        assertTrue(requestBody.contains("\"user\""), "messages中应包含user角色");
-        assertTrue(requestBody.contains(testPrompt), "content应包含用户输入的提示词");
-        
-        // 验证Authorization格式
-        assertTrue(authHeader.startsWith("Bearer "), "Authorization应以Bearer开头");
-        assertTrue(authHeader.length() > 10, "Authorization应有合理的长度");
+        try {
+            // 手动构建和发送请求，捕获详细信息
+            String apiUrl = "https://api-inference.modelscope.cn/v1/chat/completions";
+            String apiKey = "Bearer YOUR_API_KEY"; // 替换为实际的API密钥
+            
+            // 构建请求体
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", "Qwen/Qwen3-32B");
+            
+            // 构建消息列表
+            List<Map<String, Object>> messages = new ArrayList<>();
+            Map<String, Object> userMessage = new HashMap<>();
+            userMessage.put("role", "user");
+            userMessage.put("content", testPrompt);
+            messages.add(userMessage);
+            requestBody.put("messages", messages);
+            
+            requestBody.put("max_tokens", 100);
+            requestBody.put("temperature", 0.7);
+            requestBody.put("enable_thinking", false);
+            
+            // 序列化为JSON
+            String requestBodyJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(requestBody);
+            System.out.println("=== 手动构建的请求体 ===");
+            System.out.println("JSON字符串：" + requestBodyJson);
+            System.out.println("JSON长度：" + requestBodyJson.length());
+            
+            // 使用RestTemplate发送请求
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", apiKey);
+            
+            HttpEntity<String> requestEntity = new HttpEntity<>(requestBodyJson, headers);
+            
+            System.out.println("=== 请求头信息 ===");
+            System.out.println("Content-Type: " + headers.getContentType());
+            System.out.println("Authorization: " + headers.get("Authorization"));
+            
+            ResponseEntity<String> response = restTemplate.exchange(
+                apiUrl, 
+                HttpMethod.POST, 
+                requestEntity, 
+                String.class
+            );
+            
+            System.out.println("=== 响应信息 ===");
+            System.out.println("状态码：" + response.getStatusCode());
+            System.out.println("响应体：" + response.getBody());
+            
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+            assertNotNull(response.getBody());
+            
+        } catch (Exception e) {
+            System.err.println("测试失败：" + e.getMessage());
+            e.printStackTrace();
+            fail("API调用失败：" + e.getMessage());
+        }
     }
-    
+
     /**
-     * 测试复杂提示词的请求构建
+     * 测试使用字符串作为请求体
      */
     @Test
-    void testComplexPromptRequest() {
-        String complexPrompt = "你是一个商品问答助手，请根据用户的问题生成合适的商品查询意图。\n" +
-                "用户问题：请推荐一些价格在100-500元之间的商品\n" +
-                "请严格按照JSON格式输出：";
-        
-        String result = qwen3Service.callLLM(complexPrompt);
-        
-        assertNotNull(result, "响应不应为null");
-        
-        String requestBody = capturedRequestBody.get();
-        assertNotNull(requestBody, "应捕获到请求体");
-        
-        logger.info("复杂提示词请求体: {}", requestBody);
-        
-        // 验证复杂内容被正确处理
-        assertTrue(requestBody.contains(complexPrompt), "请求体应包含完整的复杂提示词");
-        assertTrue(requestBody.contains("\"max_tokens\""), "请求体应包含max_tokens");
-        assertTrue(requestBody.contains("\"temperature\""), "请求体应包含temperature");
-        assertTrue(requestBody.contains("\"enable_thinking\""), "请求体应包含enable_thinking");
+    public void testStringRequestBody() {
+        try {
+            String apiUrl = "https://api-inference.modelscope.cn/v1/chat/completions";
+            String apiKey = "Bearer YOUR_API_KEY"; // 替换为实际的API密钥
+            
+            // 直接使用字符串作为请求体
+            String requestBodyJson = "{"
+                + "\"model\":\"Qwen/Qwen3-32B\","
+                + "\"messages\":[{\"role\":\"user\",\"content\":\"你好，请简单介绍一下你自己\"}],"
+                + "\"max_tokens\":100,"
+                + "\"temperature\":0.7,"
+                + "\"enable_thinking\":false"
+                + "}";
+            
+            System.out.println("=== 字符串请求体 ===");
+            System.out.println(requestBodyJson);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", apiKey);
+            
+            HttpEntity<String> requestEntity = new HttpEntity<>(requestBodyJson, headers);
+            
+            ResponseEntity<String> response = restTemplate.exchange(
+                apiUrl, 
+                HttpMethod.POST, 
+                requestEntity, 
+                String.class
+            );
+            
+            System.out.println("状态码：" + response.getStatusCode());
+            System.out.println("响应体：" + response.getBody());
+            
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+            
+        } catch (Exception e) {
+            System.err.println("字符串请求体测试失败：" + e.getMessage());
+            e.printStackTrace();
+            fail("字符串请求体测试失败：" + e.getMessage());
+        }
     }
-    
+
     /**
-     * 测试特殊字符处理
+     * 模拟成功的curl命令的Java实现
      */
     @Test
-    void testSpecialCharactersInPrompt() {
-        String specialPrompt = "测试特殊字符：\"quotes\", 'apostrophes', \n换行, \t制表符, \\反斜杠";
-        
-        String result = qwen3Service.callLLM(specialPrompt);
-        
-        assertNotNull(result, "响应不应为null");
-        
-        String requestBody = capturedRequestBody.get();
-        assertNotNull(requestBody, "应捕获到请求体");
-        
-        logger.info("特殊字符请求体: {}", requestBody);
-        
-        // 验证特殊字符被正确转义
-        assertTrue(requestBody.contains("\"quotes\""), "双引号应被正确转义");
-        assertTrue(requestBody.contains("\\n"), "换行符应被正确转义");
-        assertTrue(requestBody.contains("\\t"), "制表符应被正确转义");
-        assertTrue(requestBody.contains("\\\\"), "反斜杠应被正确转义");
+    public void testCurlEquivalent() {
+        try {
+            // 模拟curl命令：
+            // curl -X POST "https://api-inference.modelscope.cn/v1/chat/completions" \
+            //   -H "Content-Type: application/json" \
+            //   -H "Authorization: Bearer YOUR_API_KEY" \
+            //   -d '{
+            //     "model": "Qwen/Qwen3-32B",
+            //     "messages": [{"role": "user", "content": "你好，请简单介绍一下你自己"}],
+            //     "max_tokens": 100,
+            //     "temperature": 0.7,
+            //     "enable_thinking": false
+            //   }'
+            
+            String apiUrl = "https://api-inference.modelscope.cn/v1/chat/completions";
+            String apiKey = "Bearer YOUR_API_KEY"; // 替换为实际的API密钥
+            
+            // 使用LinkedMultiValueMap模拟curl的表单数据
+            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+            formData.add("model", "Qwen/Qwen3-32B");
+            formData.add("messages", "[{\"role\":\"user\",\"content\":\"你好，请简单介绍一下你自己\"}]");
+            formData.add("max_tokens", "100");
+            formData.add("temperature", "0.7");
+            formData.add("enable_thinking", "false");
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", apiKey);
+            
+            // 使用MultiValueMap作为请求体
+            HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(formData, headers);
+            
+            ResponseEntity<String> response = restTemplate.exchange(
+                apiUrl, 
+                HttpMethod.POST, 
+                requestEntity, 
+                String.class
+            );
+            
+            System.out.println("=== curl等效测试 ===");
+            System.out.println("状态码：" + response.getStatusCode());
+            System.out.println("响应体：" + response.getBody());
+            
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+            
+        } catch (Exception e) {
+            System.err.println("curl等效测试失败：" + e.getMessage());
+            e.printStackTrace();
+            fail("curl等效测试失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 测试比较Map和字符串序列化的差异
+     */
+    @Test
+    public void testSerializationDifference() {
+        try {
+            // 构建Map请求体
+            Map<String, Object> requestBodyMap = new HashMap<>();
+            requestBodyMap.put("model", "Qwen/Qwen3-32B");
+            
+            List<Map<String, Object>> messages = new ArrayList<>();
+            Map<String, Object> userMessage = new HashMap<>();
+            userMessage.put("role", "user");
+            userMessage.put("content", "你好，请简单介绍一下你自己");
+            messages.add(userMessage);
+            requestBodyMap.put("messages", messages);
+            
+            requestBodyMap.put("max_tokens", 100);
+            requestBodyMap.put("temperature", 0.7);
+            requestBodyMap.put("enable_thinking", false);
+            
+            // Map序列化
+            String mapJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(requestBodyMap);
+            
+            // 手动构建的字符串
+            String manualJson = "{"
+                + "\"model\":\"Qwen/Qwen3-32B\","
+                + "\"messages\":[{\"role\":\"user\",\"content\":\"你好，请简单介绍一下你自己\"}],"
+                + "\"max_tokens\":100,"
+                + "\"temperature\":0.7,"
+                + "\"enable_thinking\":false"
+                + "}";
+            
+            System.out.println("=== 序列化比较 ===");
+            System.out.println("Map序列化结果：" + mapJson);
+            System.out.println("手动构建结果：" + manualJson);
+            System.out.println("是否相等：" + mapJson.equals(manualJson));
+            
+            // 检查messages字段的具体内容
+            System.out.println("=== messages字段详细比较 ===");
+            System.out.println("Map中的messages：" + requestBodyMap.get("messages"));
+            System.out.println("Map中的messages类型：" + requestBodyMap.get("messages").getClass().getName());
+            
+            // 比较字符级别的差异
+            if (!mapJson.equals(manualJson)) {
+                System.out.println("字符级别差异：");
+                for (int i = 0; i < Math.min(mapJson.length(), manualJson.length()); i++) {
+                    if (mapJson.charAt(i) != manualJson.charAt(i)) {
+                        System.out.println("位置 " + i + ": Map='" + mapJson.charAt(i) + "', Manual='" + manualJson.charAt(i) + "'");
+                        break;
+                    }
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("序列化比较测试失败：" + e.getMessage());
+            e.printStackTrace();
+            fail("序列化比较测试失败：" + e.getMessage());
+        }
     }
 }

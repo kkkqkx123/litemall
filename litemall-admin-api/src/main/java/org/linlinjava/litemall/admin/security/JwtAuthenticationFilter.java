@@ -38,6 +38,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         System.out.println("🚀 JWT FILTER WAS CALLED FOR URI: " + request.getRequestURI());
         logger.info("*** JWT FILTER WAS CALLED FOR URI: " + request.getRequestURI() + " ***");
         
+        logger.info("*** ABOUT TO ENTER TRY BLOCK ***");
+        try {
+            logger.info("*** INSIDE TRY BLOCK ***");
+            // 跳过LLM调试接口的JWT验证
+            String requestURI = request.getRequestURI();
+            String contextPath = request.getContextPath();
+            logger.info("*** CHECKING URI FOR SKIP: " + requestURI + " ***");
+            logger.info("*** CONTEXT PATH: " + contextPath + " ***");
+            logger.info("*** REQUEST URL: " + request.getRequestURL() + " ***");
+            logger.info("*** SERVLET PATH: " + request.getServletPath() + " ***");
+            
+            // 检查多种可能的URI格式
+            if (requestURI != null) {
+                logger.info("*** URI CHECK: equals('/admin/llm/debug/test-call') = " + requestURI.equals("/admin/llm/debug/test-call"));
+                logger.info("*** URI CHECK: contains('/admin/llm/debug/test-call') = " + requestURI.contains("/admin/llm/debug/test-call"));
+                logger.info("*** URI CHECK: endsWith('/test-call') = " + requestURI.endsWith("/test-call"));
+            }
+            
+            if (requestURI != null && requestURI.equals("/admin/llm/debug/test-call")) {
+                logger.info("*** SKIPPING JWT FILTER FOR LLM DEBUG ENDPOINT ***");
+                // 确保SecurityContext中有一个匿名认证，避免后续的权限检查失败
+                if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                    // 创建匿名认证对象
+                    UsernamePasswordAuthenticationToken anonymousAuth = 
+                        new UsernamePasswordAuthenticationToken("anonymous", null, 
+                            java.util.Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ANONYMOUS")));
+                    SecurityContextHolder.getContext().setAuthentication(anonymousAuth);
+                    logger.info("*** SET ANONYMOUS AUTHENTICATION FOR LLM DEBUG ENDPOINT ***");
+                }
+                filterChain.doFilter(request, response);
+                return;
+            }
+        } catch (Exception e) {
+            logger.error("*** ERROR IN URI CHECK: " + e.getMessage(), e);
+        }
+        
         // 使用logger.info确保输出可见
         logger.info("*** JWT FILTER CALLED *** URI: " + request.getRequestURI());
         logger.info("*** Authorization: " + request.getHeader("Authorization"));

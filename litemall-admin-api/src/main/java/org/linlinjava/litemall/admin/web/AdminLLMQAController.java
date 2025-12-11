@@ -13,6 +13,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -155,6 +158,88 @@ public class AdminLLMQAController {
         } catch (Exception e) {
             logger.error("获取会话统计失败", e);
             return ResponseUtil.fail(500, "获取统计信息失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 调试接口 - 获取LLM服务配置信息
+     * 用于调试API调用问题
+     *
+     * @return 服务配置信息
+     */
+    @GetMapping("/debug/config")
+    @PreAuthorize("hasAuthority('admin:llm:qa:status')")
+    @RequiresPermissions("admin:llm:qa:status")
+    @RequiresPermissionsDesc(menu = {"智能问答", "商品问答"}, button = "调试配置")
+    public Object getDebugConfig() {
+        try {
+            Map<String, Object> status = llmqaService.getServiceStatus();
+            
+            // 添加额外的调试信息
+            Map<String, Object> debugInfo = new HashMap<>();
+            debugInfo.put("serviceStatus", status);
+            debugInfo.put("timestamp", System.currentTimeMillis());
+            debugInfo.put("systemProperties", Map.of(
+                "java.version", System.getProperty("java.version"),
+                "os.name", System.getProperty("os.name"),
+                "user.timezone", System.getProperty("user.timezone")
+            ));
+            
+            return ResponseUtil.ok(debugInfo);
+            
+        } catch (Exception e) {
+            logger.error("获取调试配置失败", e);
+            return ResponseUtil.fail(500, "获取调试配置失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 调试接口 - 测试LLM API调用
+     * 用于调试实际的API调用过程
+     *
+     * @param testQuestion 测试问题
+     * @return 详细的调试信息
+     */
+    @PostMapping("/debug/test-call")
+    public Object testLLMApiCall(@RequestBody Map<String, String> request) {
+        try {
+            String testQuestion = request.get("question");
+            if (testQuestion == null || testQuestion.trim().isEmpty()) {
+                return ResponseUtil.fail(400, "测试问题不能为空");
+            }
+            
+            // 创建测试请求
+            GoodsQARequest qaRequest = new GoodsQARequest();
+            qaRequest.setQuestion(testQuestion);
+            qaRequest.setSessionId("debug-session-" + System.currentTimeMillis());
+            
+            // 调用服务并捕获详细日志
+            logger.info("=== 开始调试LLM API调用 ===");
+            logger.info("测试问题：" + testQuestion);
+            
+            GoodsQAResponse response = llmqaService.processQuestion(qaRequest);
+            
+            logger.info("调用LLM服务成功，回答：" + response.getAnswer());
+            
+            Map<String, Object> debugInfo = new HashMap<>();
+            debugInfo.put("success", response.getCode() == 200);
+            debugInfo.put("answer", response.getAnswer());
+            debugInfo.put("goodsCount", response.getGoods() != null ? response.getGoods().size() : 0);
+            debugInfo.put("sessionId", response.getSessionId());
+            debugInfo.put("queryIntent", response.getQueryIntent());
+            debugInfo.put("queryTime", response.getQueryTime());
+            
+            return ResponseUtil.ok(debugInfo);
+            
+        } catch (Exception e) {
+            logger.error("调试API调用失败", e);
+            
+            Map<String, Object> errorInfo = new HashMap<>();
+            errorInfo.put("error", e.getMessage());
+            errorInfo.put("errorType", e.getClass().getSimpleName());
+            errorInfo.put("stackTrace", Arrays.toString(e.getStackTrace()).substring(0, 1000));
+            
+            return ResponseUtil.fail(500, "调试API调用失败：" + e.getMessage());
         }
     }
 }

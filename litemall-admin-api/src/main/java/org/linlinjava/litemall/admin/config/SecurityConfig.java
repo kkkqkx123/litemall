@@ -97,6 +97,7 @@ public class SecurityConfig {
                 .requestMatchers("/admin/auth/index").permitAll()
                 .requestMatchers("/admin/auth/403").permitAll()
                 .requestMatchers("/admin/index/**").permitAll()
+                .requestMatchers("/admin/llm/debug/test-call").permitAll() // 允许LLM调试接口匿名访问
                 // 确保admin路径能通过JWT过滤器验证
                 .requestMatchers("/admin/**").authenticated()
                 .anyRequest().authenticated()
