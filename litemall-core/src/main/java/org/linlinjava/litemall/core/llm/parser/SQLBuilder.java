@@ -43,7 +43,8 @@ public class SQLBuilder {
         
         // 构建排序
         if (queryIntent.getSort() != null && !queryIntent.getSort().trim().isEmpty()) {
-            sql.append(" ORDER BY ").append(queryIntent.getSort());
+            String sortField = mapSortField(queryIntent.getSort());
+            sql.append(" ORDER BY ").append(sortField);
         }
         
         // 构建限制
@@ -209,6 +210,45 @@ public class SQLBuilder {
         }
         
         return nameClause.toString();
+    }
+    
+    /**
+     * 映射排序字段到数据库实际字段名
+     * @param sortField 原始排序字段
+     * @return 映射后的数据库字段名
+     */
+    private String mapSortField(String sortField) {
+        if (sortField == null || sortField.trim().isEmpty()) {
+            return sortField;
+        }
+        
+        // 处理字段映射
+        String mappedField = sortField.trim();
+        
+        // 将price映射为retail_price
+        if ("price".equalsIgnoreCase(mappedField)) {
+            mappedField = "retail_price";
+        }
+        
+        // 处理带排序方向的字段（如"price desc"）
+        if (mappedField.toLowerCase().startsWith("price ")) {
+            String[] parts = mappedField.split("\\s+", 2);
+            if (parts.length == 2) {
+                mappedField = "retail_price " + parts[1];
+            }
+        }
+        
+        // 处理带排序方向的字段（如"price asc"）
+        if (mappedField.toLowerCase().contains("price")) {
+            String[] parts = mappedField.split("\\s+", 2);
+            if (parts.length == 2) {
+                if ("price".equalsIgnoreCase(parts[0])) {
+                    mappedField = "retail_price " + parts[1];
+                }
+            }
+        }
+        
+        return mappedField;
     }
     
     /**

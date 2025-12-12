@@ -11,7 +11,7 @@ import request from '@/utils/request'
  */
 export function askQuestion(data) {
   return request({
-    url: '/admin/llm/ask',
+    url: '/admin/llm/qa',
     method: 'post',
     data: data
   })

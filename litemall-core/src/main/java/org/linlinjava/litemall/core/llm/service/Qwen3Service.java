@@ -38,6 +38,12 @@ public class Qwen3Service {
     @Value("${litemall.modelscope.max-retries:3}")
     private int maxRetries;
     
+    @Value("${litemall.modelscope.max-tokens:5000}")
+    private int maxTokens;
+    
+    @Value("${litemall.modelscope.max-context-length:20000}")
+    private int maxContextLength;
+    
     private final RestTemplate restTemplate = new RestTemplate();
     
     /**
@@ -133,8 +139,16 @@ public class Qwen3Service {
         System.out.println("使用正确的messages参数名");
         logger.warn("使用正确的messages参数名");
         
+        // 调试配置值
+        logger.info("=== 配置值调试信息 ===");
+        logger.info("maxTokens配置值：{}", maxTokens);
+        logger.info("maxContextLength配置值：{}", maxContextLength);
+        logger.info("apiKey：{}", apiKey != null ? "已配置" : "未配置");
+        logger.info("apiUrl：{}", apiUrl);
+        logger.info("model：{}", model);
+        
         // 只设置必要的参数，参考成功的curl请求
-        requestBody.put("max_tokens", 100);
+        requestBody.put("max_tokens", maxTokens);
         requestBody.put("temperature", 0.7);
         requestBody.put("enable_thinking", false); // 非流式调用必须设置为false
         
@@ -147,20 +161,10 @@ public class Qwen3Service {
         }
         
         // 添加更多调试信息 - 检查参数名是否正确
-        System.out.println("=== 请求体构建完成 ===");
-        System.out.println("model参数值：" + model);
-        System.out.println("messages参数名：messages");
-        System.out.println("messages参数值：" + messages);
-        System.out.println("messages数组大小：" + messages.size());
-        System.out.println("第一个消息：" + userMessage);
-        System.out.println("提示词内容：" + prompt);
-        logger.warn("=== 请求体构建完成 ===");
-        logger.warn("model参数值：{}", model);
-        logger.warn("messages参数名：messages");
-        logger.warn("messages参数值：{}", messages);
-        logger.warn("messages数组大小：{}", messages.size());
-        logger.warn("第一个消息：{}", userMessage);
-        logger.warn("提示词内容：{}", prompt);
+        logger.info("=== 请求体构建完成 ===");
+        logger.info("model参数值：{}", model);
+        logger.info("messages数组大小：{}", messages.size());
+        logger.info("提示词长度：{}", prompt.length());
         
         // 发送请求
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
@@ -174,84 +178,37 @@ public class Qwen3Service {
         }
         logger.info("调用Qwen3 API，模型：{}，提示词长度：{}，API端点：{}", model, prompt.length(), apiUrl);
         
-        // 将请求体序列化为JSON字符串，便于调试 - 使用System.out确保输出
+        // 将请求体序列化为JSON字符串，便于调试
         try {
             requestBodyJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(requestBody);
-            System.out.println("实际发送的请求体JSON：" + requestBodyJson);
-            logger.error("实际发送的请求体JSON：{}", requestBodyJson);
-            
-            // 详细检查messages参数 - 使用System.out确保输出
-            Object messagesObj = requestBody.get("messages");
-            if (messagesObj != null) {
-                System.out.println("messages参数类型：" + messagesObj.getClass().getName());
-                System.out.println("messages参数内容：" + messagesObj);
-                logger.warn("messages参数类型：{}", messagesObj.getClass().getName());
-                logger.warn("messages参数内容：{}", messagesObj);
-                if (messagesObj instanceof List) {
-                    List<?> messagesList = (List<?>) messagesObj;
-                    System.out.println("messages数组长度：" + messagesList.size());
-                    logger.warn("messages数组长度：{}", messagesList.size());
-                    if (!messagesList.isEmpty()) {
-                        Object firstMessage = messagesList.get(0);
-                        System.out.println("第一个消息类型：" + firstMessage.getClass().getName());
-                        System.out.println("第一个消息内容：" + firstMessage);
-                        logger.warn("第一个消息类型：{}", firstMessage.getClass().getName());
-                        logger.warn("第一个消息内容：{}", firstMessage);
-                        
-                        // 检查消息结构
-                        if (firstMessage instanceof Map) {
-                            Map<?, ?> messageMap = (Map<?, ?>) firstMessage;
-                            System.out.println("消息键集合：" + messageMap.keySet());
-                            System.out.println("role值：" + messageMap.get("role"));
-                            System.out.println("content值：" + messageMap.get("content"));
-                            logger.warn("消息键集合：{}", messageMap.keySet());
-                            logger.warn("role值：{}", messageMap.get("role"));
-                            logger.warn("content值：{}", messageMap.get("content"));
-                        }
-                    }
-                }
-            } else {
-                System.out.println("messages参数为空！");
-                logger.error("messages参数为空！");
-            }
+            logger.debug("实际发送的请求体JSON：{}", requestBodyJson);
             
         } catch (Exception e) {
-            System.out.println("无法序列化请求体为JSON：" + e.getMessage());
             logger.warn("无法序列化请求体为JSON", e);
         }
         
-        // 在发送请求前记录完整的请求信息 - 使用System.out确保输出
-        System.out.println("即将发送HTTP请求到：" + apiUrl);
-        System.out.println("请求方法：POST");
-        System.out.println("请求头Content-Type：" + headers.getContentType());
-        System.out.println("请求头Authorization：" + (headers.getFirst("Authorization") != null ? "已设置" : "未设置"));
-        logger.warn("即将发送HTTP请求到：{}", apiUrl);
-        logger.warn("请求方法：POST");
-        logger.warn("请求头Content-Type：{}", headers.getContentType());
-        logger.warn("请求头Authorization：{}", headers.getFirst("Authorization") != null ? "已设置" : "未设置");
-        logger.warn("完整请求URL：{}", finalApiUrl);
-        logger.warn("请求方法：POST");
+        // 在发送请求前记录请求信息
+        logger.info("即将发送HTTP请求到：{}", finalApiUrl);
+        logger.info("请求方法：POST");
+        logger.info("请求头Content-Type：{}", headers.getContentType());
+        logger.info("请求头Authorization：{}", headers.getFirst("Authorization") != null ? "已设置" : "未设置");
         
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(finalApiUrl, HttpMethod.POST, request,
                 new ParameterizedTypeReference<Map<String, Object>>() {});
         
-        System.out.println("Qwen3 API响应状态码：" + response.getStatusCode());
         logger.info("Qwen3 API响应状态码：{}", response.getStatusCode());
         
         if (response.getStatusCode() != HttpStatus.OK) {
-            System.out.println("API调用失败，状态码：" + response.getStatusCode() + "，响应体：" + response.getBody());
-            logger.error("API调用失败，状态码：{}，响应体：{}", response.getStatusCode(), response.getBody());
+            logger.error("API调用失败，状态码：{}", response.getStatusCode());
             throw new LLMServiceException("API调用失败，状态码：" + response.getStatusCode());
         }
         
         Map<String, Object> responseBody = response.getBody();
         if (responseBody == null) {
-            System.out.println("API响应为空");
             logger.error("API响应为空");
             throw new LLMServiceException("API响应为空");
         }
         
-        System.out.println("API响应体：" + responseBody);
         logger.debug("API响应体：{}", responseBody);
         
         // 解析响应
@@ -486,19 +443,60 @@ public class Qwen3Service {
     private String buildFullPrompt(String userPrompt, String sessionContext) {
         StringBuilder fullPrompt = new StringBuilder();
         
-        // 添加系统提示词
+        // 检查并限制会话上下文长度
+        if (sessionContext != null && sessionContext.length() > maxContextLength / 2) {
+            logger.warn("会话上下文过长，进行截断处理。原长度：{}，截断后长度：{}", 
+                sessionContext.length(), maxContextLength / 2);
+            sessionContext = sessionContext.substring(0, maxContextLength / 2);
+        }
+        
+        // 添加系统提示词 - 更明确的要求
         fullPrompt.append("你是一个智能商品问答助手。请根据用户的商品查询需求，生成结构化的查询意图。\n");
         fullPrompt.append("请严格按照以下JSON格式返回结果，不要包含任何其他文本：\n");
         fullPrompt.append("{\n");
         fullPrompt.append("  \"query_type\": \"查询类型\",\n");
         fullPrompt.append("  \"conditions\": {\n");
-        fullPrompt.append("    \"条件1\": \"值1\",\n");
-        fullPrompt.append("    \"条件2\": \"值2\"\n");
+        fullPrompt.append("    \"条件名\": \"条件值\"\n");
         fullPrompt.append("  },\n");
-        fullPrompt.append("  \"sort\": \"排序字段 排序方式\",\n");
+        fullPrompt.append("  \"sort\": \"排序方式\",\n");
         fullPrompt.append("  \"limit\": 数量,\n");
         fullPrompt.append("  \"confidence\": 置信度,\n");
         fullPrompt.append("  \"explanation\": \"查询解释\"\n");
+        fullPrompt.append("}\n\n");
+        
+        // 添加查询类型说明
+        fullPrompt.append("可用的查询类型包括：\n");
+        fullPrompt.append("- price_range: 价格范围查询\n");
+        fullPrompt.append("- stock_check: 库存查询\n");
+        fullPrompt.append("- statistical: 统计查询\n");
+        fullPrompt.append("- name_pattern: 名称模式匹配\n");
+        fullPrompt.append("- keyword_search: 关键词搜索\n");
+        fullPrompt.append("- recommendation: 推荐查询\n");
+        fullPrompt.append("- unknown: 未知查询类型\n\n");
+        
+        // 添加条件说明
+        fullPrompt.append("条件说明：\n");
+        fullPrompt.append("- min_price: 最低价格\n");
+        fullPrompt.append("- max_price: 最高价格\n");
+        fullPrompt.append("- min_number: 最低库存\n");
+        fullPrompt.append("- max_number: 最高库存\n");
+        fullPrompt.append("- is_on_sale: 是否在售（1表示在售）\n");
+        fullPrompt.append("- keyword: 搜索关键词\n");
+        fullPrompt.append("- statistic_type: 统计类型（total_count, price_stats, stock_stats, category_stats）\n\n");
+        
+        // 添加示例
+        fullPrompt.append("示例：\n");
+        fullPrompt.append("用户问题：请推荐一些价格在100元以下的商品\n");
+        fullPrompt.append("正确响应：{\n");
+        fullPrompt.append("  \"query_type\": \"price_range\",\n");
+        fullPrompt.append("  \"conditions\": {\n");
+        fullPrompt.append("    \"max_price\": 100,\n");
+        fullPrompt.append("    \"is_on_sale\": 1\n");
+        fullPrompt.append("  },\n");
+        fullPrompt.append("  \"sort\": \"retail_price ASC\",\n");
+        fullPrompt.append("  \"limit\": 10,\n");
+        fullPrompt.append("  \"confidence\": 0.85,\n");
+        fullPrompt.append("  \"explanation\": \"根据用户询问100元以下商品，设置价格上限为100元\"\n");
         fullPrompt.append("}\n\n");
         
         // 添加会话上下文（如果有）

@@ -155,68 +155,26 @@ public class LLMQAService {
     private String buildPrompt(GoodsQARequest request) {
         StringBuilder prompt = new StringBuilder();
         
-        // 基础提示词
-        prompt.append("你是一个商品问答助手，请根据用户的问题生成合适的商品查询意图。\n");
-        prompt.append("请严格按照以下JSON格式输出，不要包含其他内容：\n");
+        // 简化后的提示词
+        prompt.append("根据用户问题生成商品查询意图，输出JSON格式：\n");
         prompt.append("{\n");
-        prompt.append("  \"query_type\": \"查询类型\",\n");
-        prompt.append("  \"conditions\": {\n");
-        prompt.append("    \"条件名\": \"条件值\"\n");
-        prompt.append("  },\n");
-        prompt.append("  \"sort\": \"排序方式\",\n");
-        prompt.append("  \"limit\": 数量\n");
+        prompt.append("  \"query_type\": \"price_range|keyword_search|category_filter\",\n");
+        prompt.append("  \"conditions\": {条件对象},\n");
+        prompt.append("  \"sort\": \"排序字段\",\n");
+        prompt.append("  \"limit\": 10\n");
         prompt.append("}\n\n");
         
-        // 商品数据库表结构
-        prompt.append("商品数据库表结构：\n");
-        prompt.append("表名：litemall_goods\n");
-        prompt.append("字段：id, name, category_id, brand_id, brief, keywords, is_on_sale, pic_url, gallery, \n");
-        prompt.append("       retail_price, number, detail, sort_order, add_time, update_time, deleted\n\n");
+        // 简化查询类型说明
+        prompt.append("查询类型：price_range(价格范围), keyword_search(关键词), category_filter(分类)\n");
         
-        // 查询类型说明
-        prompt.append("支持的查询类型：\n");
-        prompt.append("- price_range: 价格范围查询\n");
-        prompt.append("- stock_check: 库存查询\n");
-        prompt.append("- category_filter: 分类筛选\n");
-        prompt.append("- keyword_search: 关键词搜索\n");
-        prompt.append("- name_pattern: 名称模式匹配\n");
-        prompt.append("- specific_product: 特定商品查询\n");
-        prompt.append("- statistical: 统计查询\n\n");
+        // 简化条件说明
+        prompt.append("条件字段：min_price, max_price, keyword, category_id\n");
         
-        // 条件说明
-        prompt.append("条件说明：\n");
-        prompt.append("- min_price: 最低价格\n");
-        prompt.append("- max_price: 最高价格\n");
-        prompt.append("- min_number: 最低库存\n");
-        prompt.append("- max_number: 最高库存\n");
-        prompt.append("- is_on_sale: 是否在售（1表示在售）\n");
-        prompt.append("- keyword: 搜索关键词（会在name, keywords, brief字段中搜索）\n");
-        prompt.append("- name: 名称模式匹配（包含pattern, mode, case_sensitive字段）\n");
-        prompt.append("- statistic_type: 统计类型（total_count, price_stats, stock_stats, category_stats）\n\n");
-        
-        // 排序说明
-        prompt.append("排序方式：\n");
-        prompt.append("- price ASC: 价格升序\n");
-        prompt.append("- price DESC: 价格降序\n");
-        prompt.append("- number ASC: 库存升序\n");
-        prompt.append("- number DESC: 库存降序\n");
-        prompt.append("- sort_order ASC: 排序值升序\n");
-        prompt.append("- sort_order DESC: 排序值降序\n");
-        prompt.append("- add_time DESC: 添加时间降序\n\n");
-        
-        // 会话上下文
-        if (request.getSessionId() != null) {
-            Map<String, Object> context = getSessionContext(request.getSessionId());
-            if (context != null && !context.isEmpty()) {
-                prompt.append("会话上下文：\n").append(context.toString()).append("\n\n");
-            }
-        }
+        // 简化排序说明
+        prompt.append("排序字段：retail_price, number, add_time\n");
         
         // 用户问题
-        prompt.append("用户问题：").append(request.getQuestion()).append("\n\n");
-        
-        // 输出要求
-        prompt.append("请根据用户问题生成相应的查询意图，严格按照JSON格式输出。");
+        prompt.append("用户问题：").append(request.getQuestion()).append("\n");
         
         return prompt.toString();
     }
@@ -261,8 +219,8 @@ public class LLMQAService {
     }
 
     /**
-     * 根据模式匹配条件过滤结果
-     * @param results 原始查询结果
+     * 根据查询意图过滤结果
+     * @param results 查询结果
      * @param queryIntent 查询意图
      * @return 过滤后的结果
      */
@@ -271,112 +229,31 @@ public class LLMQAService {
             return results;
         }
         
-        // 检查是否有名称模式匹配条件
         Map<String, Object> conditions = queryIntent.getConditions();
-        if (conditions == null || !conditions.containsKey("name")) {
+        if (conditions == null || !conditions.containsKey("keyword")) {
             return results;
         }
         
-        Object nameCondition = conditions.get("name");
-        if (!(nameCondition instanceof Map)) {
-            return results;
-        }
-        
-        @SuppressWarnings("unchecked")
-        Map<String, Object> namePattern = (Map<String, Object>) nameCondition;
-        
-        String pattern = (String) namePattern.get("pattern");
-        String mode = (String) namePattern.getOrDefault("mode", "contains");
-        Boolean caseSensitive = (Boolean) namePattern.getOrDefault("case_sensitive", false);
-        
-        if (pattern == null || pattern.trim().isEmpty()) {
+        String keyword = (String) conditions.get("keyword");
+        if (keyword == null || keyword.trim().isEmpty()) {
             return results;
         }
         
         List<Map<String, Object>> filteredResults = new ArrayList<>();
         
-        for (Map<String, Object> goods : results) {
-            String goodsName = (String) goods.get("name");
-            String goodsBrief = (String) goods.get("brief");
-            
-            if (goodsName == null) {
+        for (Map<String, Object> result : results) {
+            Object nameValue = result.get("name");
+            if (nameValue == null) {
                 continue;
             }
             
-            // 对商品名称进行模式匹配
-            if (matchesPattern(goodsName, pattern, mode, caseSensitive)) {
-                filteredResults.add(goods);
-                continue;
-            }
-            
-            // 如果商品简介存在，也对简介进行匹配
-            if (goodsBrief != null && matchesPattern(goodsBrief, pattern, mode, caseSensitive)) {
-                filteredResults.add(goods);
+            String name = nameValue.toString().toLowerCase();
+            if (name.contains(keyword.toLowerCase())) {
+                filteredResults.add(result);
             }
         }
         
         return filteredResults;
-    }
-    
-    /**
-     * 检查文本是否匹配指定模式
-     * @param text 待匹配的文本
-     * @param pattern 匹配模式
-     * @param mode 匹配模式类型
-     * @param caseSensitive 是否大小写敏感
-     * @return 是否匹配
-     */
-    private boolean matchesPattern(String text, String pattern, String mode, boolean caseSensitive) {
-        if (text == null || pattern == null) {
-            return false;
-        }
-        
-        // 验证模式长度，防止过长的正则表达式导致ReDoS攻击
-        if (pattern.length() > 100) {
-            logger.warn("正则表达式模式过长，模式：{}，长度：{}", pattern, pattern.length());
-            return false;
-        }
-        
-        String targetText = caseSensitive ? text : text.toLowerCase();
-        String targetPattern = caseSensitive ? pattern : pattern.toLowerCase();
-        
-        switch (mode) {
-            case "exact":
-                return targetText.equals(targetPattern);
-            case "contains":
-                return targetText.contains(targetPattern);
-            case "starts_with":
-                return targetText.startsWith(targetPattern);
-            case "ends_with":
-                return targetText.endsWith(targetPattern);
-            case "regex":
-                try {
-                    // 为正则表达式添加超时限制，防止ReDoS攻击
-                    if (text.length() > 1000) {
-                        logger.warn("文本过长，跳过正则匹配，文本长度：{}", text.length());
-                        return false;
-                    }
-                    
-                    int flags = 0;
-                    if (!caseSensitive) {
-                        flags |= Pattern.CASE_INSENSITIVE;
-                    }
-                    // 添加时间限制编译标志，虽然Java的正则表达式没有直接的timeout机制，
-                    // 但可以通过限制文本和模式长度来防止ReDoS攻击
-                    Pattern regex = Pattern.compile(pattern, flags);
-                    
-                    // 使用Matcher进行匹配
-                    return regex.matcher(text).find();
-                } catch (PatternSyntaxException e) {
-                    logger.warn("正则表达式语法错误，模式：{}，错误：{}", pattern, e.getMessage());
-                    return false;
-                } catch (Exception e) {
-                    logger.warn("正则表达式匹配失败，模式：{}，文本：{}", pattern, text, e);
-                    return false;
-                }
-            default:
-                return targetText.contains(targetPattern);
-        }
     }
     
     /**
@@ -386,26 +263,14 @@ public class LLMQAService {
      * @return 回答文本
      */
     private String generateAnswer(QueryIntent queryIntent, List<Map<String, Object>> results) {
-        StringBuilder answer = new StringBuilder();
-        
-        // 查询类型描述
-        String queryTypeDesc = queryIntentBuilder.getQueryTypeDescription(queryIntent.getQueryType());
-        answer.append("根据您的查询意图（").append(queryTypeDesc).append("），");
-        
         if (results == null || results.isEmpty()) {
-            answer.append("没有找到符合条件的商品。");
-            return answer.toString();
+            return "没有找到符合条件的商品。";
         }
         
-        // 统计查询
-        if ("statistical".equals(queryIntent.getQueryType())) {
-            return generateStatisticalAnswer(queryIntent, results);
-        }
-        
-        // 普通查询结果
+        StringBuilder answer = new StringBuilder();
         answer.append("找到 ").append(results.size()).append(" 个商品：\n\n");
         
-        // 显示前几个商品
+        // 显示前5个商品
         int displayCount = Math.min(results.size(), 5);
         for (int i = 0; i < displayCount; i++) {
             Map<String, Object> goods = results.get(i);
@@ -420,64 +285,11 @@ public class LLMQAService {
                 answer.append(" - 库存：").append(goods.get("number")).append("件");
             }
             
-            if (goods.containsKey("brief")) {
-                answer.append("\n   ").append(goods.get("brief"));
-            }
-            
             answer.append("\n");
         }
         
         if (results.size() > displayCount) {
             answer.append("\n... 还有 ").append(results.size() - displayCount).append(" 个商品");
-        }
-        
-        return answer.toString();
-    }
-    
-    /**
-     * 生成统计回答
-     * @param queryIntent 查询意图
-     * @param results 统计结果
-     * @return 统计回答
-     */
-    private String generateStatisticalAnswer(QueryIntent queryIntent, List<Map<String, Object>> results) {
-        StringBuilder answer = new StringBuilder();
-        
-        if (results.isEmpty()) {
-            answer.append("没有获取到统计数据。");
-            return answer.toString();
-        }
-        
-        Map<String, Object> stats = results.get(0);
-        String statisticType = (String) queryIntent.getConditions().get("statistic_type");
-        
-        switch (statisticType) {
-            case "total_count":
-                answer.append("商品总数：").append(stats.getOrDefault("total", 0)).append("个");
-                break;
-            case "price_stats":
-                answer.append("价格统计信息：\n");
-                answer.append("- 商品数量：").append(stats.getOrDefault("count", 0)).append("个\n");
-                answer.append("- 最低价格：¥").append(stats.getOrDefault("min_price", 0)).append("\n");
-                answer.append("- 最高价格：¥").append(stats.getOrDefault("max_price", 0)).append("\n");
-                answer.append("- 平均价格：¥").append(String.format("%.2f", stats.getOrDefault("avg_price", 0.0)));
-                break;
-            case "stock_stats":
-                answer.append("库存统计信息：\n");
-                answer.append("- 商品数量：").append(stats.getOrDefault("count", 0)).append("个\n");
-                answer.append("- 总库存：").append(stats.getOrDefault("total_stock", 0)).append("件\n");
-                answer.append("- 平均库存：").append(String.format("%.1f", stats.getOrDefault("avg_stock", 0.0))).append("件");
-                break;
-            case "category_stats":
-                answer.append("分类统计信息：\n");
-                for (Map<String, Object> categoryStat : results) {
-                    answer.append("- 分类ID：").append(categoryStat.getOrDefault("category_id", "未知"));
-                    answer.append("，商品数量：").append(categoryStat.getOrDefault("count", 0)).append("个\n");
-                }
-                break;
-            default:
-                answer.append("获取到统计数据，但无法生成对应的回答。");
-                break;
         }
         
         return answer.toString();

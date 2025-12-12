@@ -33,100 +33,47 @@ public class LLMOutputParser {
      * @throws JSONParseException 当解析失败时抛出异常
      */
     public QueryIntent parseQueryIntent(String llmOutput) throws JSONParseException {
+        if (llmOutput == null || llmOutput.trim().isEmpty()) {
+            throw new JSONParseException("LLM输出为空");
+        }
+        
+        // 提取JSON内容
+        String jsonContent = jsonExtractor.extractJSON(llmOutput);
+        if (jsonContent == null) {
+            throw new JSONParseException("无法提取有效的JSON格式");
+        }
+        
         try {
-            if (llmOutput == null || llmOutput.trim().isEmpty()) {
-                String errorMsg = "LLM输出为空";
-                logger.warn(errorMsg);
-                throw new JSONParseException(errorMsg);
-            }
-            
-            // 提取JSON内容
-            String jsonContent = jsonExtractor.extractJSON(llmOutput);
-            if (jsonContent == null) {
-                String errorMsg = "无法从LLM输出中提取有效的JSON格式";
-                logger.warn("{}: {}", errorMsg, llmOutput);
-                throw new JSONParseException(errorMsg, llmOutput, "JSON提取失败");
-            }
-            
             // 解析JSON为Map
-            Map<String, Object> jsonMap;
-            try {
-                Object rawMap = objectMapper.readValue(jsonContent, Object.class);
-                if (rawMap instanceof Map<?, ?>) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> tempMap = (Map<String, Object>) rawMap;
-                    jsonMap = tempMap;
-                } else {
-                    throw new JSONParseException("JSON格式错误，期望Map类型", jsonContent, "类型不匹配");
-                }
-            } catch (Exception e) {
-                String errorMsg = "JSON格式解析失败";
-                logger.error("{}: {}", errorMsg, jsonContent, e);
-                throw new JSONParseException(errorMsg, jsonContent, e.getMessage());
-            }
-            
-            // 验证必需字段
-            if (!jsonMap.containsKey("query_type")) {
-                String errorMsg = "缺少必需的query_type字段";
-                logger.warn("{}: {}", errorMsg, jsonContent);
-                throw new JSONParseException(errorMsg, jsonContent, "缺少query_type");
-            }
+            @SuppressWarnings("unchecked")
+            Map<String, Object> jsonMap = objectMapper.readValue(jsonContent, Map.class);
             
             // 创建QueryIntent对象
             QueryIntent queryIntent = new QueryIntent();
             
             // 设置查询类型
-            String queryType = (String) jsonMap.get("query_type");
-            if (queryType != null) {
-                queryIntent.setQueryType(queryType);
-            }
+            queryIntent.setQueryType((String) jsonMap.getOrDefault("query_type", "keyword_search"));
             
             // 设置查询条件
             Object conditionsObj = jsonMap.get("conditions");
-            Map<String, Object> conditions = null;
-            if (conditionsObj instanceof Map<?, ?>) {
+            if (conditionsObj instanceof Map) {
                 @SuppressWarnings("unchecked")
-                Map<String, Object> tempConditions = (Map<String, Object>) conditionsObj;
-                conditions = tempConditions;
-            }
-            if (conditions != null) {
+                Map<String, Object> conditions = (Map<String, Object>) conditionsObj;
                 queryIntent.setConditions(conditions);
             }
             
-            // 设置排序
-            String sort = (String) jsonMap.get("sort");
-            if (sort != null) {
-                queryIntent.setSort(sort);
-            }
+            // 设置排序（进行字段映射）
+            String sort = (String) jsonMap.getOrDefault("sort", "retail_price ASC");
+            queryIntent.setSort(mapSortField(sort));
             
             // 设置限制数量
-            Integer limit = (Integer) jsonMap.get("limit");
-            if (limit != null) {
-                queryIntent.setLimit(limit);
-            }
+            queryIntent.setLimit((Integer) jsonMap.getOrDefault("limit", 10));
             
-            // 设置置信度
-            Double confidence = (Double) jsonMap.get("confidence");
-            if (confidence != null) {
-                queryIntent.setConfidence(confidence);
-            }
-            
-            // 设置解释
-            String explanation = (String) jsonMap.get("explanation");
-            if (explanation != null) {
-                queryIntent.setExplanation(explanation);
-            }
-            
-            logger.debug("成功解析LLM输出为QueryIntent: {}", queryIntent);
+            logger.debug("解析LLM输出为QueryIntent: {}", queryIntent);
             return queryIntent;
             
-        } catch (JSONParseException e) {
-            // 重新抛出JSON解析异常
-            throw e;
         } catch (Exception e) {
-            String errorMsg = "解析LLM输出时发生未知错误";
-            logger.error("{}: {}", errorMsg, e.getMessage(), e);
-            throw new JSONParseException(errorMsg, llmOutput, e.getMessage());
+            throw new JSONParseException("JSON解析失败: " + e.getMessage());
         }
     }
     
@@ -385,5 +332,42 @@ public class LLMOutputParser {
                "starts_with".equals(mode) ||
                "ends_with".equals(mode) ||
                "regex".equals(mode);
+    }
+    
+    /**
+     * 映射排序字段
+     * 将LLM生成的字段名映射为数据库中的实际字段名
+     * @param sortField 原始排序字段
+     * @return 映射后的排序字段
+     */
+    private String mapSortField(String sortField) {
+        if (sortField == null || sortField.trim().isEmpty()) {
+            return "retail_price ASC";
+        }
+        
+        String[] parts = sortField.split("\\s+");
+        String field = parts[0];
+        String direction = parts.length > 1 ? parts[1] : "ASC";
+        
+        // 字段映射
+        switch (field.toLowerCase()) {
+            case "price":
+                field = "retail_price";
+                break;
+            case "name":
+                field = "name";
+                break;
+            case "stock":
+                field = "number";
+                break;
+            case "sales":
+                field = "sales";
+                break;
+            default:
+                // 如果字段不在映射列表中，使用原字段
+                break;
+        }
+        
+        return field + " " + direction;
     }
 }
