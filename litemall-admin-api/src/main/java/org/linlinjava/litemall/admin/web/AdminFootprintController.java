@@ -38,31 +38,16 @@ public class AdminFootprintController {
         return ResponseUtil.okList(footprintList);
     }
 
-    @PreAuthorize("hasAuthority('admin:footprint:delete')")
+    @PreAuthorize("hasPermission('admin:footprint:delete')")
     @RequiresPermissions("admin:footprint:delete")
-    @RequiresPermissionsDesc(menu = {"用户管理", "会员足迹"}, button = "删除")
-    @DeleteMapping("/delete")
-    public Object delete(@RequestBody Map<String, Object> request) {
-        System.out.println("=== DEBUG: delete request received: " + request);
-        Object idObj = request.get("id");
-        System.out.println("=== DEBUG: extracted id object: " + idObj + " (type: " + (idObj != null ? idObj.getClass().getName() : "null") + ")");
-        
-        Integer id = null;
-        if (idObj instanceof Integer) {
-            id = (Integer) idObj;
-        } else if (idObj instanceof Number) {
-            id = ((Number) idObj).intValue();
-        }
-        
-        System.out.println("=== DEBUG: converted id: " + id);
+    @RequiresPermissionsDesc(menu = {"用户管理", "用户足迹"}, button = "删除")
+    @PostMapping("/delete")
+    public Object delete(@RequestBody LitemallFootprint footprint) {
+        Integer id = footprint.getId();
         if (id == null) {
-            System.out.println("=== DEBUG: id is null, returning badArgument");
             return ResponseUtil.badArgument();
         }
-        
-        System.out.println("=== DEBUG: calling deleteById with id: " + id);
         footprintService.deleteById(id);
-        System.out.println("=== DEBUG: deleteById completed successfully");
         return ResponseUtil.ok();
     }
 

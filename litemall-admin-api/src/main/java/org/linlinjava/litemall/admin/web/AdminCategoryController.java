@@ -29,7 +29,7 @@ public class AdminCategoryController {
     @Autowired
     private LitemallCategoryService categoryService;
 
-    @PreAuthorize("hasAuthority('admin:category:list')")
+    @PreAuthorize("hasPermission('admin:category:list')")
     @RequiresPermissions("admin:category:list")
     @RequiresPermissionsDesc(menu = {"商场管理", "类目管理"}, button = "查询")
     @GetMapping("/list")
@@ -105,18 +105,18 @@ public class AdminCategoryController {
         return ResponseUtil.ok(category);
     }
 
-    @PreAuthorize("hasAuthority('admin:category:read')")
+    @PreAuthorize("hasPermission('admin:category:read')")
     @RequiresPermissions("admin:category:read")
-    @RequiresPermissionsDesc(menu = {"商场管理", "类目管理"}, button = "详情")
+    @RequiresPermissionsDesc(menu = {"商品管理", "类目管理"}, button = "详情")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
         LitemallCategory category = categoryService.findById(id);
         return ResponseUtil.ok(category);
     }
 
-    @PreAuthorize("hasAuthority('admin:category:update')")
+    @PreAuthorize("hasPermission('admin:category:update')")
     @RequiresPermissions("admin:category:update")
-    @RequiresPermissionsDesc(menu = {"商场管理", "类目管理"}, button = "编辑")
+    @RequiresPermissionsDesc(menu = {"商品管理", "类目管理"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallCategory category) {
         Object error = validate(category);
@@ -130,7 +130,7 @@ public class AdminCategoryController {
         return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasAuthority('admin:category:delete')")
+    @PreAuthorize("hasPermission('admin:category:delete')")
     @RequiresPermissions("admin:category:delete")
     @RequiresPermissionsDesc(menu = {"商场管理", "类目管理"}, button = "删除")
     @PostMapping("/delete")

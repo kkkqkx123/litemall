@@ -28,13 +28,15 @@ public class AdminAddressController {
     @Autowired
     private LitemallRegionService regionService;
 
+    @PreAuthorize("hasPermission('admin:address:list')")
+    @RequiresPermissions("admin:address:list")
+    @RequiresPermissionsDesc(menu = {"用户管理", "收货地址"}, button = "查询")
     @GetMapping("/list")
     public Object list(Integer userId, String name,
                        @RequestParam(defaultValue = "1") Integer page,
                        @RequestParam(defaultValue = "10") Integer limit,
                        @Sort @RequestParam(defaultValue = "add_time") String sort,
                        @Order @RequestParam(defaultValue = "desc") String order) {
-
         List<LitemallAddress> addressList = addressService.querySelective(userId, name, page, limit, sort, order);
         return ResponseUtil.okList(addressList);
     }

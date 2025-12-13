@@ -34,7 +34,7 @@ public class AdminStatController {
     @Autowired
     private WordCloudService wordCloudService;
 
-    @PreAuthorize("hasAuthority('admin:stat:user')")
+    @PreAuthorize("hasPermission('admin:stat:user')")
     @RequiresPermissions("admin:stat:user")
     @RequiresPermissionsDesc(menu = {"统计管理", "用户统计"}, button = "查询")
     @GetMapping("/user")
@@ -47,7 +47,7 @@ public class AdminStatController {
         return ResponseUtil.ok(statVo);
     }
 
-    @PreAuthorize("hasAuthority('admin:stat:order')")
+    @PreAuthorize("hasPermission('admin:stat:order')")
     @RequiresPermissions("admin:stat:order")
     @RequiresPermissionsDesc(menu = {"统计管理", "订单统计"}, button = "查询")
     @GetMapping("/order")
@@ -72,7 +72,7 @@ public class AdminStatController {
      * @param day 日期(1-31)，可为null
      * @return 订单统计数据
      */
-    @PreAuthorize("hasAuthority('admin:stat:order')")
+    @PreAuthorize("hasPermission('admin:stat:order')")
     @RequiresPermissions("admin:stat:order")
     @RequiresPermissionsDesc(menu = {"统计管理", "订单统计"}, button = "查询")
     @GetMapping("/order/enhanced")
@@ -111,7 +111,7 @@ public class AdminStatController {
         return ResponseUtil.ok(statVo);
     }
 
-    @PreAuthorize("hasAuthority('admin:stat:goods')")
+    @PreAuthorize("hasPermission('admin:stat:goods')")
     @RequiresPermissions("admin:stat:goods")
     @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
     @GetMapping("/goods")
@@ -229,6 +229,7 @@ public class AdminStatController {
      * @param maxWords 最大词数
      * @return 词云数据
      */
+    @PreAuthorize("hasAuthority('admin:stat:goods')")
     @RequiresPermissions("admin:stat:goods")
     @RequiresPermissionsDesc(menu = {"统计管理", "商品评论词云"}, button = "生成词云")
     @GetMapping("/goods/wordcloud/{goodsId}")
@@ -283,6 +284,7 @@ public class AdminStatController {
      * @param maxWords 最大词数
      * @return 词云数据
      */
+    @PreAuthorize("hasAuthority('admin:stat:goods')")
     @RequiresPermissions("admin:stat:goods")
     @RequiresPermissionsDesc(menu = {"统计管理", "全局评论词云"}, button = "生成词云")
     @GetMapping("/goods/wordcloud")

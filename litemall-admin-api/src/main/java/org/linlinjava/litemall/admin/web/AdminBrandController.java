@@ -28,7 +28,7 @@ public class AdminBrandController {
     @Autowired
     private LitemallBrandService brandService;
 
-    @PreAuthorize("hasAuthority('admin:brand:list')")
+    @PreAuthorize("hasPermission('admin:brand:list')")
     @RequiresPermissions("admin:brand:list")
     @RequiresPermissionsDesc(menu = {"商场管理", "品牌管理"}, button = "查询")
     @GetMapping("/list")
@@ -59,7 +59,7 @@ public class AdminBrandController {
         return null;
     }
 
-    @PreAuthorize("hasAuthority('admin:brand:create')")
+    @PreAuthorize("hasPermission('admin:brand:create')")
     @RequiresPermissions("admin:brand:create")
     @RequiresPermissionsDesc(menu = {"商场管理", "品牌管理"}, button = "添加")
     @PostMapping("/create")
@@ -72,7 +72,7 @@ public class AdminBrandController {
         return ResponseUtil.ok(brand);
     }
 
-    @PreAuthorize("hasAuthority('admin:brand:read')")
+    @PreAuthorize("hasPermission('admin:brand:read')")
     @RequiresPermissions("admin:brand:read")
     @RequiresPermissionsDesc(menu = {"商场管理", "品牌管理"}, button = "详情")
     @GetMapping("/read")
@@ -81,7 +81,7 @@ public class AdminBrandController {
         return ResponseUtil.ok(brand);
     }
 
-    @PreAuthorize("hasAuthority('admin:brand:update')")
+    @PreAuthorize("hasPermission('admin:brand:update')")
     @RequiresPermissions("admin:brand:update")
     @RequiresPermissionsDesc(menu = {"商场管理", "品牌管理"}, button = "编辑")
     @PostMapping("/update")
@@ -96,7 +96,7 @@ public class AdminBrandController {
         return ResponseUtil.ok(brand);
     }
 
-    @PreAuthorize("hasAuthority('admin:brand:delete')")
+    @PreAuthorize("hasPermission('admin:brand:delete')")
     @RequiresPermissions("admin:brand:delete")
     @RequiresPermissionsDesc(menu = {"商场管理", "品牌管理"}, button = "删除")
     @PostMapping("/delete")

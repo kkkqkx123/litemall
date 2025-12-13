@@ -24,7 +24,7 @@ public class AdminConfigController {
     @Autowired
     private LitemallSystemConfigService systemConfigService;
 
-    @PreAuthorize("hasAuthority('admin:config:mall:list')")
+    @PreAuthorize("hasPermission('admin:config:mall:list')")
     @RequiresPermissions("admin:config:mall:list")
     @RequiresPermissionsDesc(menu = {"配置管理", "商场配置"}, button = "详情")
     @GetMapping("/mall")
@@ -33,7 +33,7 @@ public class AdminConfigController {
         return ResponseUtil.ok(data);
     }
 
-    @PreAuthorize("hasAuthority('admin:config:mall:updateConfigs')")
+    @PreAuthorize("hasPermission('admin:config:mall:updateConfigs')")
     @RequiresPermissions("admin:config:mall:updateConfigs")
     @RequiresPermissionsDesc(menu = {"配置管理", "商场配置"}, button = "编辑")
     @PostMapping("/mall")
@@ -44,7 +44,7 @@ public class AdminConfigController {
         return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasAuthority('admin:config:express:list')")
+    @PreAuthorize("hasPermission('admin:config:express:list')")
     @RequiresPermissions("admin:config:express:list")
     @RequiresPermissionsDesc(menu = {"配置管理", "运费配置"}, button = "详情")
     @GetMapping("/express")
@@ -53,7 +53,7 @@ public class AdminConfigController {
         return ResponseUtil.ok(data);
     }
 
-    @PreAuthorize("hasAuthority('admin:config:express:updateConfigs')")
+    @PreAuthorize("hasPermission('admin:config:express:updateConfigs')")
     @RequiresPermissions("admin:config:express:updateConfigs")
     @RequiresPermissionsDesc(menu = {"配置管理", "运费配置"}, button = "编辑")
     @PostMapping("/express")
@@ -64,7 +64,7 @@ public class AdminConfigController {
         return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasAuthority('admin:config:order:list')")
+    @PreAuthorize("hasPermission('admin:config:order:list')")
     @RequiresPermissions("admin:config:order:list")
     @RequiresPermissionsDesc(menu = {"配置管理", "订单配置"}, button = "详情")
     @GetMapping("/order")
@@ -73,7 +73,7 @@ public class AdminConfigController {
         return ResponseUtil.ok(data);
     }
 
-    @PreAuthorize("hasAuthority('admin:config:order:updateConfigs')")
+    @PreAuthorize("hasPermission('admin:config:order:updateConfigs')")
     @RequiresPermissions("admin:config:order:updateConfigs")
     @RequiresPermissionsDesc(menu = {"配置管理", "订单配置"}, button = "编辑")
     @PostMapping("/order")
@@ -83,7 +83,7 @@ public class AdminConfigController {
         return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasAuthority('admin:config:wx:list')")
+    @PreAuthorize("hasPermission('admin:config:wx:list')")
     @RequiresPermissions("admin:config:wx:list")
     @RequiresPermissionsDesc(menu = {"配置管理", "小程序配置"}, button = "详情")
     @GetMapping("/wx")
@@ -92,7 +92,7 @@ public class AdminConfigController {
         return ResponseUtil.ok(data);
     }
 
-    @PreAuthorize("hasAuthority('admin:config:wx:updateConfigs')")
+    @PreAuthorize("hasPermission('admin:config:wx:updateConfigs')")
     @RequiresPermissions("admin:config:wx:updateConfigs")
     @RequiresPermissionsDesc(menu = {"配置管理", "小程序配置"}, button = "编辑")
     @PostMapping("/wx")

@@ -46,7 +46,7 @@ public class AdminGrouponController {
     @Autowired
     private TaskService taskService;
 
-    @PreAuthorize("hasAuthority('admin:groupon:read')")
+    @PreAuthorize("hasPermission('admin:groupon:read')")
     @RequiresPermissions("admin:groupon:read")
     @RequiresPermissionsDesc(menu = {"推广管理", "团购管理"}, button = "详情")
     @GetMapping("/listRecord")
@@ -79,9 +79,9 @@ public class AdminGrouponController {
         return ResponseUtil.okList(groupons, grouponList);
     }
 
-    @PreAuthorize("hasAuthority('admin:groupon:list')")
+    @PreAuthorize("hasPermission('admin:groupon:list')")
     @RequiresPermissions("admin:groupon:list")
-    @RequiresPermissionsDesc(menu = {"推广管理", "团购管理"}, button = "查询")
+    @RequiresPermissionsDesc(menu = {"营销管理", "团购管理"}, button = "查询")
     @GetMapping("/list")
     public Object list(String goodsId,
                        @RequestParam(defaultValue = "1") Integer page,
@@ -113,7 +113,7 @@ public class AdminGrouponController {
         return null;
     }
 
-    @PreAuthorize("hasAuthority('admin:groupon:update')")
+    @PreAuthorize("hasPermission('admin:groupon:update')")
     @RequiresPermissions("admin:groupon:update")
     @RequiresPermissionsDesc(menu = {"推广管理", "团购管理"}, button = "编辑")
     @PostMapping("/update")
@@ -147,7 +147,7 @@ public class AdminGrouponController {
         return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasAuthority('admin:groupon:create')")
+    @PreAuthorize("hasPermission('admin:groupon:create')")
     @RequiresPermissions("admin:groupon:create")
     @RequiresPermissionsDesc(menu = {"推广管理", "团购管理"}, button = "添加")
     @PostMapping("/create")
@@ -180,7 +180,7 @@ public class AdminGrouponController {
         return ResponseUtil.ok(grouponRules);
     }
 
-    @PreAuthorize("hasAuthority('admin:groupon:delete')")
+    @PreAuthorize("hasPermission('admin:groupon:delete')")
     @RequiresPermissions("admin:groupon:delete")
     @RequiresPermissionsDesc(menu = {"推广管理", "团购管理"}, button = "删除")
     @PostMapping("/delete")

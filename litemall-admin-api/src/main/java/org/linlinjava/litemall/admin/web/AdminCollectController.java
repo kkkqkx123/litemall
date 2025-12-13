@@ -29,7 +29,7 @@ public class AdminCollectController {
     private LitemallCollectService collectService;
 
 
-    @PreAuthorize("hasAuthority('admin:collect:list')")
+    @PreAuthorize("hasPermission('admin:collect:list')")
     @RequiresPermissions("admin:collect:list")
     @RequiresPermissionsDesc(menu = {"用户管理", "用户收藏"}, button = "查询")
     @GetMapping("/list")

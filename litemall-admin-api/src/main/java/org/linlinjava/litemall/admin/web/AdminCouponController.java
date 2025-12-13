@@ -32,20 +32,20 @@ public class AdminCouponController {
     @Autowired
     private LitemallCouponUserService couponUserService;
 
-    @PreAuthorize("hasAuthority('admin:coupon:list')")
+    @PreAuthorize("hasPermission('admin:coupon:list')")
     @RequiresPermissions("admin:coupon:list")
-    @RequiresPermissionsDesc(menu = {"推广管理", "优惠券管理"}, button = "查询")
+    @RequiresPermissionsDesc(menu = {"营销管理", "优惠券管理"}, button = "查询")
     @GetMapping("/list")
     public Object list(String name, Short type, Short status,
                        @RequestParam(defaultValue = "1") Integer page,
                        @RequestParam(defaultValue = "10") Integer limit,
                        @Sort @RequestParam(defaultValue = "add_time") String sort,
                        @Order @RequestParam(defaultValue = "desc") String order) {
-        List<LitemallCoupon> couponList = couponService.querySelective(name, type, status, page, limit, sort, order);
+        List<LitemallCoupon> couponList = couponService.queryList(name, type, status, page, limit, sort, order);
         return ResponseUtil.okList(couponList);
     }
 
-    @PreAuthorize("hasAuthority('admin:coupon:listuser')")
+    @PreAuthorize("hasPermission('admin:coupon:listuser')")
     @RequiresPermissions("admin:coupon:listuser")
     @RequiresPermissionsDesc(menu = {"推广管理", "优惠券管理"}, button = "查询用户")
     @GetMapping("/listuser")
@@ -54,9 +54,8 @@ public class AdminCouponController {
                            @RequestParam(defaultValue = "10") Integer limit,
                            @Sort @RequestParam(defaultValue = "add_time") String sort,
                            @Order @RequestParam(defaultValue = "desc") String order) {
-        List<LitemallCouponUser> couponList = couponUserService.queryList(userId, couponId, status, page,
-                limit, sort, order);
-        return ResponseUtil.okList(couponList);
+        List<LitemallCouponUser> couponUserList = couponUserService.querySelective(userId, couponId, status, page, limit, sort, order);
+        return ResponseUtil.okList(couponUserList);
     }
 
     private Object validate(LitemallCoupon coupon) {
@@ -67,9 +66,9 @@ public class AdminCouponController {
         return null;
     }
 
-    @PreAuthorize("hasAuthority('admin:coupon:create')")
+    @PreAuthorize("hasPermission('admin:coupon:create')")
     @RequiresPermissions("admin:coupon:create")
-    @RequiresPermissionsDesc(menu = {"推广管理", "优惠券管理"}, button = "添加")
+    @RequiresPermissionsDesc(menu = {"营销管理", "优惠券管理"}, button = "添加")
     @PostMapping("/create")
     public Object create(@RequestBody LitemallCoupon coupon) {
         Object error = validate(coupon);
@@ -87,18 +86,18 @@ public class AdminCouponController {
         return ResponseUtil.ok(coupon);
     }
 
-    @PreAuthorize("hasAuthority('admin:coupon:read')")
+    @PreAuthorize("hasPermission('admin:coupon:read')")
     @RequiresPermissions("admin:coupon:read")
-    @RequiresPermissionsDesc(menu = {"推广管理", "优惠券管理"}, button = "详情")
+    @RequiresPermissionsDesc(menu = {"营销管理", "优惠券管理"}, button = "详情")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
         LitemallCoupon coupon = couponService.findById(id);
         return ResponseUtil.ok(coupon);
     }
 
-    @PreAuthorize("hasAuthority('admin:coupon:update')")
+    @PreAuthorize("hasPermission('admin:coupon:update')")
     @RequiresPermissions("admin:coupon:update")
-    @RequiresPermissionsDesc(menu = {"推广管理", "优惠券管理"}, button = "编辑")
+    @RequiresPermissionsDesc(menu = {"营销管理", "优惠券管理"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallCoupon coupon) {
         Object error = validate(coupon);
@@ -108,12 +107,12 @@ public class AdminCouponController {
         if (couponService.updateById(coupon) == 0) {
             return ResponseUtil.updatedDataFailed();
         }
-        return ResponseUtil.ok(coupon);
+        return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasAuthority('admin:coupon:delete')")
+    @PreAuthorize("hasPermission('admin:coupon:delete')")
     @RequiresPermissions("admin:coupon:delete")
-    @RequiresPermissionsDesc(menu = {"推广管理", "优惠券管理"}, button = "删除")
+    @RequiresPermissionsDesc(menu = {"营销管理", "优惠券管理"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallCoupon coupon) {
         couponService.deleteById(coupon.getId());

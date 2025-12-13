@@ -2,12 +2,15 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
+import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.admin.dto.GoodsAllinone;
 import org.linlinjava.litemall.admin.service.AdminGoodsService;
 import org.linlinjava.litemall.core.validator.Order;
 import org.linlinjava.litemall.core.validator.Sort;
 import org.linlinjava.litemall.db.domain.LitemallGoods;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +37,9 @@ public class AdminGoodsController {
      * @param order
      * @return
      */
+    @PreAuthorize("hasPermission('admin:goods:list')")
+    @RequiresPermissions("admin:goods:list")
+    @RequiresPermissionsDesc(menu = {"商品管理", "商品列表"}, button = "查询")
     @GetMapping("/list")
     public Object list(Integer goodsId, String goodsSn, String name,
                        @RequestParam(defaultValue = "1") Integer page,
@@ -43,6 +49,9 @@ public class AdminGoodsController {
         return adminGoodsService.list(goodsId, goodsSn, name, page, limit, sort, order);
     }
 
+    @PreAuthorize("hasAuthority('admin:goods:catAndBrand')")
+    @RequiresPermissions("admin:goods:catAndBrand")
+    @RequiresPermissionsDesc(menu = {"商品管理", "商品列表"}, button = "分类品牌")
     @GetMapping("/catAndBrand")
     public Object list2() {
         return adminGoodsService.list2();
@@ -54,6 +63,9 @@ public class AdminGoodsController {
      * @param goodsAllinone
      * @return
      */
+    @PreAuthorize("hasPermission('admin:goods:update')")
+    @RequiresPermissions("admin:goods:update")
+    @RequiresPermissionsDesc(menu = {"商品管理", "商品列表"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody GoodsAllinone goodsAllinone) {
         return adminGoodsService.update(goodsAllinone);
@@ -65,6 +77,9 @@ public class AdminGoodsController {
      * @param goods
      * @return
      */
+    @PreAuthorize("hasPermission('admin:goods:delete')")
+    @RequiresPermissions("admin:goods:delete")
+    @RequiresPermissionsDesc(menu = {"商品管理", "商品列表"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallGoods goods) {
         return adminGoodsService.delete(goods);
@@ -76,6 +91,9 @@ public class AdminGoodsController {
      * @param goodsAllinone
      * @return
      */
+    @PreAuthorize("hasPermission('admin:goods:create')")
+    @RequiresPermissions("admin:goods:create")
+    @RequiresPermissionsDesc(menu = {"商品管理", "商品列表"}, button = "添加")
     @PostMapping("/create")
     public Object create(@RequestBody GoodsAllinone goodsAllinone) {
         return adminGoodsService.create(goodsAllinone);
@@ -87,6 +105,9 @@ public class AdminGoodsController {
      * @param id
      * @return
      */
+    @PreAuthorize("hasPermission('admin:goods:detail')")
+    @RequiresPermissions("admin:goods:detail")
+    @RequiresPermissionsDesc(menu = {"商品管理", "商品列表"}, button = "详情")
     @GetMapping("/detail")
     public Object detail(@NotNull Integer id) {
         return adminGoodsService.detail(id);

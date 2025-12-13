@@ -28,7 +28,7 @@ public class AdminLogController {
     @Autowired
     private LitemallLogService logService;
 
-    @PreAuthorize("hasAuthority('admin:log:list')")
+    @PreAuthorize("hasPermission('admin:log:list')")
     @RequiresPermissions("admin:log:list")
     @RequiresPermissionsDesc(menu = {"系统管理", "操作日志"}, button = "查询")
     @GetMapping("/list")

@@ -2,6 +2,7 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
 import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,51 +16,68 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminIndexController {
     private final Log logger = LogFactory.getLog(AdminIndexController.class);
 
-    @RequestMapping("/index")
+    @PreAuthorize("hasPermission('admin:index:index')")
+    @RequiresPermissions("admin:index:index")
+    @RequiresPermissionsDesc(menu = {"系统管理", "系统首页"}, button = "首页")
+    @GetMapping("/index")
     public Object index() {
-        return ResponseUtil.ok("hello world, this is admin service");
+        return ResponseUtil.ok();
     }
 
-    @RequestMapping("/guest")
+    @PreAuthorize("hasPermission('admin:index:guest')")
+    @RequiresPermissions("admin:index:guest")
+    @RequiresPermissionsDesc(menu = {"系统管理", "访客访问"}, button = "访客")
+    @GetMapping("/guest")
     public Object guest() {
-        return ResponseUtil.ok("hello world, this is admin service");
+        return ResponseUtil.ok();
     }
 
-    @PreAuthorize("isAuthenticated()")
-    @RequestMapping("/authn")
+    @PreAuthorize("hasPermission('admin:index:authn')")
+    @RequiresPermissions("admin:index:authn")
+    @RequiresPermissionsDesc(menu = {"系统管理", "认证测试"}, button = "认证")
+    @GetMapping("/authn")
     public Object authn() {
-        return ResponseUtil.ok("hello world, this is admin service");
+        return ResponseUtil.ok();
     }
 
-    @RequestMapping("/user")
+    @PreAuthorize("hasPermission('admin:index:user')")
+    @RequiresPermissions("admin:index:user")
+    @RequiresPermissionsDesc(menu = {"系统管理", "用户访问"}, button = "用户")
+    @GetMapping("/user")
     public Object user() {
-        return ResponseUtil.ok("hello world, this is admin service");
+        return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasRole('admin')")
-    @RequestMapping("/admin")
+    @PreAuthorize("hasPermission('admin:index:admin')")
+    @RequiresPermissions("admin:index:admin")
+    @RequiresPermissionsDesc(menu = {"系统管理", "管理员访问"}, button = "管理员")
+    @GetMapping("/admin")
     public Object admin() {
-        return ResponseUtil.ok("hello world, this is admin service");
+        return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasRole('admin2')")
-    @RequestMapping("/admin2")
+    @PreAuthorize("hasPermission('admin:index:admin2')")
+    @RequiresPermissions("admin:index:admin2")
+    @RequiresPermissionsDesc(menu = {"系统管理", "管理员2访问"}, button = "管理员2")
+    @GetMapping("/admin2")
     public Object admin2() {
-        return ResponseUtil.ok("hello world, this is admin service");
+        return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasAuthority('index:permission:read')")
-    @RequiresPermissionsDesc(menu = {"其他", "权限测试"}, button = "权限读")
+    @PreAuthorize("hasPermission('admin:index:permission:read')")
+    @RequiresPermissions("admin:index:permission:read")
+    @RequiresPermissionsDesc(menu = {"系统管理", "权限测试"}, button = "权限读")
     @GetMapping("/read")
     public Object read() {
-        return ResponseUtil.ok("hello world, this is admin service");
+        return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasAuthority('index:permission:write')")
-    @RequiresPermissionsDesc(menu = {"其他", "权限测试"}, button = "权限写")
+    @PreAuthorize("hasPermission('admin:index:permission:write')")
+    @RequiresPermissions("admin:index:permission:write")
+    @RequiresPermissionsDesc(menu = {"系统管理", "权限测试"}, button = "权限写")
     @PostMapping("/write")
     public Object write() {
-        return ResponseUtil.ok("hello world, this is admin service");
+        return ResponseUtil.ok();
     }
 
 }

@@ -41,16 +41,16 @@ public class AdminNoticeController {
     @Autowired
     private LitemallNoticeAdminService noticeAdminService;
 
-    @PreAuthorize("hasAuthority('admin:notice:list')")
+    @PreAuthorize("hasPermission('admin:notice:list')")
     @RequiresPermissions("admin:notice:list")
     @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "查询")
     @GetMapping("/list")
-    public Object list(String title, String content,
+    public Object list(String title, String type,
                        @RequestParam(defaultValue = "1") Integer page,
                        @RequestParam(defaultValue = "10") Integer limit,
                        @Sort @RequestParam(defaultValue = "add_time") String sort,
                        @Order @RequestParam(defaultValue = "desc") String order) {
-        List<LitemallNotice> noticeList = noticeService.querySelective(title, content, page, limit, sort, order);
+        List<LitemallNotice> noticeList = noticeService.querySelective(title, type, page, limit, sort, order);
         return ResponseUtil.okList(noticeList);
     }
 
@@ -71,93 +71,62 @@ public class AdminNoticeController {
         return adminUserDetails.getAdmin().getId();
     }
 
-    @PreAuthorize("hasAuthority('admin:notice:create')")
+    @PreAuthorize("hasPermission('admin:notice:create')")
     @RequiresPermissions("admin:notice:create")
-    @RequiresPermissionsDesc(menu = {"推广管理", "通知管理"}, button = "添加")
+    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "添加")
     @PostMapping("/create")
     public Object create(@RequestBody LitemallNotice notice) {
         Object error = validate(notice);
         if (error != null) {
             return error;
         }
-        // 1. 添加通知记录
-        notice.setAdminId(getAdminId());
         noticeService.add(notice);
-        // 2. 添加管理员通知记录
-        List<LitemallAdmin> adminList = adminService.all();
-        LitemallNoticeAdmin noticeAdmin = new LitemallNoticeAdmin();
-        noticeAdmin.setNoticeId(notice.getId());
-        noticeAdmin.setNoticeTitle(notice.getTitle());
-        for(LitemallAdmin admin : adminList){
-            noticeAdmin.setAdminId(admin.getId());
-            noticeAdminService.add(noticeAdmin);
-        }
         return ResponseUtil.ok(notice);
     }
 
-    @PreAuthorize("hasAuthority('admin:notice:read')")
+    @PreAuthorize("hasPermission('admin:notice:read')")
     @RequiresPermissions("admin:notice:read")
-    @RequiresPermissionsDesc(menu = {"推广管理", "通知管理"}, button = "详情")
+    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "详情")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
         LitemallNotice notice = noticeService.findById(id);
-        List<LitemallNoticeAdmin> noticeAdminList = noticeAdminService.queryByNoticeId(id);
-        Map<String, Object> data = new HashMap<>(2);
-        data.put("notice", notice);
-        data.put("noticeAdminList", noticeAdminList);
-        return ResponseUtil.ok(data);
+        return ResponseUtil.ok(notice);
     }
 
-    @PreAuthorize("hasAuthority('admin:notice:update')")
+    @PreAuthorize("hasPermission('admin:notice:update')")
     @RequiresPermissions("admin:notice:update")
-    @RequiresPermissionsDesc(menu = {"推广管理", "通知管理"}, button = "编辑")
+    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallNotice notice) {
         Object error = validate(notice);
         if (error != null) {
             return error;
         }
-        LitemallNotice originalNotice = noticeService.findById(notice.getId());
-        if (originalNotice == null) {
-            return ResponseUtil.badArgument();
+        if (noticeService.updateById(notice) == 0) {
+            return ResponseUtil.updatedDataFailed();
         }
-        // 如果通知已经有人阅读过，则不支持编辑
-        if(noticeAdminService.countReadByNoticeId(notice.getId()) > 0){
-            return ResponseUtil.fail(NOTICE_UPDATE_NOT_ALLOWED, "通知已被阅读，不能重新编辑");
-        }
-        // 1. 更新通知记录
-        notice.setAdminId(getAdminId());
-        noticeService.updateById(notice);
-        // 2. 更新管理员通知记录
-        if(!originalNotice.getTitle().equals(notice.getTitle())){
-            LitemallNoticeAdmin noticeAdmin = new LitemallNoticeAdmin();
-            noticeAdmin.setNoticeTitle(notice.getTitle());
-            noticeAdminService.updateByNoticeId(noticeAdmin, notice.getId());
-        }
-        return ResponseUtil.ok(notice);
-    }
-
-    @PreAuthorize("hasAuthority('admin:notice:delete')")
-    @RequiresPermissions("admin:notice:delete")
-    @RequiresPermissionsDesc(menu = {"推广管理", "通知管理"}, button = "删除")
-    @PostMapping("/delete")
-    public Object delete(@RequestBody LitemallNotice notice) {
-        // 1. 删除通知管理员记录
-        noticeAdminService.deleteByNoticeId(notice.getId());
-        // 2. 删除通知记录
-        noticeService.deleteById(notice.getId());
         return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasAuthority('admin:notice:batch-delete')")
+    @PreAuthorize("hasPermission('admin:notice:delete')")
+    @RequiresPermissions("admin:notice:delete")
+    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "删除")
+    @PostMapping("/delete")
+    public Object delete(@RequestBody LitemallNotice notice) {
+        Integer id = notice.getId();
+        if (id == null) {
+            return ResponseUtil.badArgument();
+        }
+        noticeService.deleteById(id);
+        return ResponseUtil.ok();
+    }
+
+    @PreAuthorize("hasPermission('admin:notice:batch-delete')")
     @RequiresPermissions("admin:notice:batch-delete")
-    @RequiresPermissionsDesc(menu = {"推广管理", "通知管理"}, button = "批量删除")
+    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "批量删除")
     @PostMapping("/batch-delete")
     public Object batchDelete(@RequestBody String body) {
         List<Integer> ids = JacksonUtil.parseIntegerList(body, "ids");
-        // 1. 删除通知管理员记录
-        noticeAdminService.deleteByNoticeIds(ids);
-        // 2. 删除通知记录
         noticeService.deleteByIds(ids);
         return ResponseUtil.ok();
     }

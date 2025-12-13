@@ -22,8 +22,11 @@ public class AdminCommentController {
     @Autowired
     private LitemallCommentService commentService;
 
+    @PreAuthorize("hasPermission('admin:comment:list')")
+    @RequiresPermissions("admin:comment:list")
+    @RequiresPermissionsDesc(menu = {"用户管理", "评论管理"}, button = "查询")
     @GetMapping("/list")
-    public Object list(String userId, String valueId,
+    public Object list(Integer userId, Integer valueId,
                        @RequestParam(defaultValue = "1") Integer page,
                        @RequestParam(defaultValue = "10") Integer limit,
                        @Sort @RequestParam(defaultValue = "add_time") String sort,
@@ -32,6 +35,7 @@ public class AdminCommentController {
         return ResponseUtil.okList(commentList);
     }
 
+    @PreAuthorize("hasPermission('admin:comment:delete')")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallComment comment) {
         Integer id = comment.getId();

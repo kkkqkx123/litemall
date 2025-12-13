@@ -38,10 +38,19 @@ public class AdminLLMQAController {
      * @return 问答响应
      */
     @PostMapping("")
-    @PreAuthorize("hasAuthority('admin:llm:qa:ask')")
+    @PreAuthorize("hasPermission('admin:llm:qa:ask')")
     @RequiresPermissions("admin:llm:qa:ask")
-    @RequiresPermissionsDesc(menu = {"智能问答", "商品问答"}, button = "提问")
-    public Object askQuestion(@Valid @RequestBody GoodsQARequest request) {
+    @RequiresPermissionsDesc(menu = {"AI助手", "AI问答"}, button = "提问")
+    @PostMapping("/ask")
+    public Object ask(@RequestBody Map<String, String> body) {
+        String question = body.get("question");
+        if (question == null || question.trim().isEmpty()) {
+            return ResponseUtil.badArgument();
+        }
+        
+        String answer = llmqaService.ask(question);
+        return ResponseUtil.ok(Map.of("answer", answer));
+    }
         try {
             // 处理问答请求
             GoodsQAResponse response = llmqaService.processQuestion(request);
@@ -65,10 +74,19 @@ public class AdminLLMQAController {
      * @return 会话ID
      */
     @PostMapping("/session")
-    @PreAuthorize("hasAuthority('admin:llm:qa:createSession')")
+    @PreAuthorize("hasPermission('admin:llm:qa:createSession')")
     @RequiresPermissions("admin:llm:qa:createSession")
-    @RequiresPermissionsDesc(menu = {"智能问答", "商品问答"}, button = "创建会话")
-    public Object createSession(@RequestParam(value = "userId", required = false) Integer userId) {
+    @RequiresPermissionsDesc(menu = {"AI助手", "AI问答"}, button = "创建会话")
+    @PostMapping("/session/create")
+    public Object createSession(@RequestBody Map<String, String> body) {
+        String title = body.get("title");
+        if (title == null || title.trim().isEmpty()) {
+            return ResponseUtil.badArgument();
+        }
+        
+        String sessionId = llmqaService.createSession(title);
+        return ResponseUtil.ok(Map.of("sessionId", sessionId));
+    }
         try {
             String sessionId = llmqaService.createSession(userId);
             return ResponseUtil.ok(Map.of("sessionId", sessionId));
@@ -86,10 +104,15 @@ public class AdminLLMQAController {
      * @return 会话历史
      */
     @GetMapping("/session/{sessionId}/history")
-    @PreAuthorize("hasAuthority('admin:llm:qa:history')")
+    @PreAuthorize("hasPermission('admin:llm:qa:history')")
     @RequiresPermissions("admin:llm:qa:history")
-    @RequiresPermissionsDesc(menu = {"智能问答", "商品问答"}, button = "查看历史")
-    public Object getSessionHistory(@PathVariable String sessionId) {
+    @RequiresPermissionsDesc(menu = {"AI助手", "AI问答"}, button = "历史记录")
+    @GetMapping("/history")
+    public Object getHistory(@RequestParam(defaultValue = "1") Integer page,
+                           @RequestParam(defaultValue = "20") Integer limit) {
+        List<LitemallLLMQA> history = llmqaService.getHistory(page, limit);
+        return ResponseUtil.okList(history);
+    }
         try {
             Object history = llmqaService.getSessionHistory(sessionId);
             return ResponseUtil.ok(history);
@@ -107,10 +130,14 @@ public class AdminLLMQAController {
      * @return 操作结果
      */
     @DeleteMapping("/session/{sessionId}")
-    @PreAuthorize("hasAuthority('admin:llm:qa:destroySession')")
+    @PreAuthorize("hasPermission('admin:llm:qa:destroySession')")
     @RequiresPermissions("admin:llm:qa:destroySession")
-    @RequiresPermissionsDesc(menu = {"智能问答", "商品问答"}, button = "销毁会话")
+    @RequiresPermissionsDesc(menu = {"AI助手", "AI问答"}, button = "销毁会话")
+    @DeleteMapping("/session/{sessionId}")
     public Object destroySession(@PathVariable String sessionId) {
+        llmqaService.destroySession(sessionId);
+        return ResponseUtil.ok();
+    }
         try {
             llmqaService.destroySession(sessionId);
             return ResponseUtil.ok();
@@ -127,10 +154,14 @@ public class AdminLLMQAController {
      * @return 服务状态
      */
     @GetMapping("/status")
-    @PreAuthorize("hasAuthority('admin:llm:qa:status')")
+    @PreAuthorize("hasPermission('admin:llm:qa:status')")
     @RequiresPermissions("admin:llm:qa:status")
-    @RequiresPermissionsDesc(menu = {"智能问答", "商品问答"}, button = "查看状态")
-    public Object getServiceStatus() {
+    @RequiresPermissionsDesc(menu = {"AI助手", "AI问答"}, button = "服务状态")
+    @GetMapping("/status")
+    public Object getStatus() {
+        Map<String, Object> status = llmqaService.getStatus();
+        return ResponseUtil.ok(status);
+    }
         try {
             Map<String, Object> status = llmqaService.getServiceStatus();
             return ResponseUtil.ok(status);
@@ -147,10 +178,14 @@ public class AdminLLMQAController {
      * @return 会话统计
      */
     @GetMapping("/statistics")
-    @PreAuthorize("hasAuthority('admin:llm:qa:statistics')")
+    @PreAuthorize("hasPermission('admin:llm:qa:statistics')")
     @RequiresPermissions("admin:llm:qa:statistics")
-    @RequiresPermissionsDesc(menu = {"智能问答", "商品问答"}, button = "查看统计")
-    public Object getSessionStatistics() {
+    @RequiresPermissionsDesc(menu = {"AI助手", "AI问答"}, button = "使用统计")
+    @GetMapping("/statistics")
+    public Object getStatistics(@RequestParam(defaultValue = "7") Integer days) {
+        Map<String, Object> statistics = llmqaService.getStatistics(days);
+        return ResponseUtil.ok(statistics);
+    }
         try {
             Map<String, Object> statistics = llmqaService.getSessionStatistics();
             return ResponseUtil.ok(statistics);
@@ -168,10 +203,11 @@ public class AdminLLMQAController {
      * @return 服务配置信息
      */
     @GetMapping("/debug/config")
-    @PreAuthorize("hasAuthority('admin:llm:qa:status')")
+    @PreAuthorize("hasPermission('admin:llm:qa:status')")
     @RequiresPermissions("admin:llm:qa:status")
-    @RequiresPermissionsDesc(menu = {"智能问答", "商品问答"}, button = "调试配置")
-    public Object getDebugConfig() {
+    @RequiresPermissionsDesc(menu = {"AI助手", "AI问答"}, button = "配置信息")
+    @GetMapping("/config")
+    public Object getConfig() {
         try {
             Map<String, Object> status = llmqaService.getServiceStatus();
             
