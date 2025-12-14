@@ -2,12 +2,14 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.core.validator.Order;
 import org.linlinjava.litemall.core.validator.Sort;
 import org.linlinjava.litemall.db.domain.LitemallKeyword;
 import org.linlinjava.litemall.db.service.LitemallKeywordService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +27,6 @@ public class AdminKeywordController {
     private LitemallKeywordService keywordService;
 
     @PreAuthorize("hasPermission('admin:keyword:list')")
-    @RequiresPermissions("admin:keyword:list")
     @RequiresPermissionsDesc(menu = {"系统管理", "关键词"}, button = "查询")
     @GetMapping("/list")
     public Object list(String keyword, String url,
@@ -46,7 +47,6 @@ public class AdminKeywordController {
     }
 
     @PreAuthorize("hasPermission('admin:keyword:create')")
-    @RequiresPermissions("admin:keyword:create")
     @RequiresPermissionsDesc(menu = {"系统管理", "关键词"}, button = "添加")
     @PostMapping("/create")
     public Object create(@RequestBody LitemallKeyword keyword) {
@@ -59,7 +59,6 @@ public class AdminKeywordController {
     }
 
     @PreAuthorize("hasPermission('admin:keyword:read')")
-    @RequiresPermissions("admin:keyword:read")
     @RequiresPermissionsDesc(menu = {"系统管理", "关键词"}, button = "详情")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
@@ -68,7 +67,6 @@ public class AdminKeywordController {
     }
 
     @PreAuthorize("hasPermission('admin:keyword:update')")
-    @RequiresPermissions("admin:keyword:update")
     @RequiresPermissionsDesc(menu = {"系统管理", "关键词"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallKeyword keyword) {
@@ -83,7 +81,6 @@ public class AdminKeywordController {
     }
 
     @PreAuthorize("hasPermission('admin:keyword:delete')")
-    @RequiresPermissions("admin:keyword:delete")
     @RequiresPermissionsDesc(menu = {"系统管理", "关键词"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallKeyword keyword) {

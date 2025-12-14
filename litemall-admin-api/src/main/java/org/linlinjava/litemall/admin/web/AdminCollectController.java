@@ -29,9 +29,7 @@ public class AdminCollectController {
     private LitemallCollectService collectService;
 
 
-    @PreAuthorize("hasPermission('admin:collect:list')")
-    @RequiresPermissions("admin:collect:list")
-    @RequiresPermissionsDesc(menu = {"用户管理", "用户收藏"}, button = "查询")
+    @PreAuthorize("hasPermission('admin:collect:list')")    @RequiresPermissionsDesc(menu = {"用户管理", "用户收藏"}, button = "查询")
     @GetMapping("/list")
     public Object list(String userId, String valueId,
                        @RequestParam(defaultValue = "1") Integer page,

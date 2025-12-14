@@ -41,9 +41,7 @@ public class AdminNoticeController {
     @Autowired
     private LitemallNoticeAdminService noticeAdminService;
 
-    @PreAuthorize("hasPermission('admin:notice:list')")
-    @RequiresPermissions("admin:notice:list")
-    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "查询")
+    @PreAuthorize("hasPermission('admin:notice:list')")    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "查询")
     @GetMapping("/list")
     public Object list(String title, String type,
                        @RequestParam(defaultValue = "1") Integer page,
@@ -71,9 +69,7 @@ public class AdminNoticeController {
         return adminUserDetails.getAdmin().getId();
     }
 
-    @PreAuthorize("hasPermission('admin:notice:create')")
-    @RequiresPermissions("admin:notice:create")
-    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "添加")
+    @PreAuthorize("hasPermission('admin:notice:create')")    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "添加")
     @PostMapping("/create")
     public Object create(@RequestBody LitemallNotice notice) {
         Object error = validate(notice);
@@ -84,18 +80,14 @@ public class AdminNoticeController {
         return ResponseUtil.ok(notice);
     }
 
-    @PreAuthorize("hasPermission('admin:notice:read')")
-    @RequiresPermissions("admin:notice:read")
-    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "详情")
+    @PreAuthorize("hasPermission('admin:notice:read')")    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "详情")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
         LitemallNotice notice = noticeService.findById(id);
         return ResponseUtil.ok(notice);
     }
 
-    @PreAuthorize("hasPermission('admin:notice:update')")
-    @RequiresPermissions("admin:notice:update")
-    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "编辑")
+    @PreAuthorize("hasPermission('admin:notice:update')")    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallNotice notice) {
         Object error = validate(notice);
@@ -108,9 +100,7 @@ public class AdminNoticeController {
         return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasPermission('admin:notice:delete')")
-    @RequiresPermissions("admin:notice:delete")
-    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "删除")
+    @PreAuthorize("hasPermission('admin:notice:delete')")    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallNotice notice) {
         Integer id = notice.getId();
@@ -121,9 +111,7 @@ public class AdminNoticeController {
         return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasPermission('admin:notice:batch-delete')")
-    @RequiresPermissions("admin:notice:batch-delete")
-    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "批量删除")
+    @PreAuthorize("hasPermission('admin:notice:batch-delete')")    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "批量删除")
     @PostMapping("/batch-delete")
     public Object batchDelete(@RequestBody String body) {
         List<Integer> ids = JacksonUtil.parseIntegerList(body, "ids");

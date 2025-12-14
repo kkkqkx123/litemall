@@ -32,9 +32,7 @@ public class AdminUserController {
     @Autowired
     private LitemallUserService userService;
 
-    @PreAuthorize("hasPermission('admin:user:list')")
-    @RequiresPermissions("admin:user:list")
-    @RequiresPermissionsDesc(menu = {"用户管理", "会员管理"}, button = "查询")
+    @PreAuthorize("hasPermission('admin:user:list')")    @RequiresPermissionsDesc(menu = {"用户管理", "会员管理"}, button = "查询")
     @GetMapping("/list")
     public Object list(String username, String mobile,
                        @RequestParam(defaultValue = "1") Integer page,
@@ -44,17 +42,13 @@ public class AdminUserController {
         List<LitemallUser> userList = userService.querySelective(username, mobile, page, limit, sort, order);
         return ResponseUtil.okList(userList);
     }
-    @PreAuthorize("hasPermission('admin:user:read')")
-    @RequiresPermissions("admin:user:read")
-    @RequiresPermissionsDesc(menu = {"用户管理", "会员管理"}, button = "详情")
+    @PreAuthorize("hasPermission('admin:user:read')")    @RequiresPermissionsDesc(menu = {"用户管理", "会员管理"}, button = "详情")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
     	LitemallUser user=userService.findById(id);
         return ResponseUtil.ok(user);
     }
-    @PreAuthorize("hasPermission('admin:user:update')")
-    @RequiresPermissions("admin:user:update")
-    @RequiresPermissionsDesc(menu = {"用户管理", "会员管理"}, button = "编辑")
+    @PreAuthorize("hasPermission('admin:user:update')")    @RequiresPermissionsDesc(menu = {"用户管理", "会员管理"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallUser user) {
         if (userService.updateById(user) == 0) {

@@ -2,12 +2,14 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.core.validator.Order;
 import org.linlinjava.litemall.core.validator.Sort;
 import org.linlinjava.litemall.db.domain.LitemallIssue;
 import org.linlinjava.litemall.db.service.LitemallIssueService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +27,6 @@ public class AdminIssueController {
     private LitemallIssueService issueService;
 
     @PreAuthorize("hasPermission('admin:issue:list')")
-    @RequiresPermissions("admin:issue:list")
     @RequiresPermissionsDesc(menu = {"系统管理", "通用问题"}, button = "查询")
     @GetMapping("/list")
     public Object list(String question,
@@ -50,7 +51,6 @@ public class AdminIssueController {
     }
 
     @PreAuthorize("hasPermission('admin:issue:create')")
-    @RequiresPermissions("admin:issue:create")
     @RequiresPermissionsDesc(menu = {"系统管理", "通用问题"}, button = "添加")
     @PostMapping("/create")
     public Object create(@RequestBody LitemallIssue issue) {
@@ -63,7 +63,6 @@ public class AdminIssueController {
     }
 
     @PreAuthorize("hasPermission('admin:issue:read')")
-    @RequiresPermissions("admin:issue:read")
     @RequiresPermissionsDesc(menu = {"系统管理", "通用问题"}, button = "详情")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
@@ -72,7 +71,6 @@ public class AdminIssueController {
     }
 
     @PreAuthorize("hasPermission('admin:issue:update')")
-    @RequiresPermissions("admin:issue:update")
     @RequiresPermissionsDesc(menu = {"系统管理", "通用问题"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallIssue issue) {
@@ -88,7 +86,6 @@ public class AdminIssueController {
     }
 
     @PreAuthorize("hasPermission('admin:issue:delete')")
-    @RequiresPermissions("admin:issue:delete")
     @RequiresPermissionsDesc(menu = {"系统管理", "通用问题"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallIssue issue) {

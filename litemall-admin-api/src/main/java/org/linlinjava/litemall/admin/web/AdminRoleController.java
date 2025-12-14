@@ -47,9 +47,7 @@ public class AdminRoleController {
     @Autowired
     private LitemallAdminService adminService;
 
-    @PreAuthorize("hasPermission('admin:role:list')")
-    @RequiresPermissions("admin:role:list")
-    @RequiresPermissionsDesc(menu = {"系统管理", "角色管理"}, button = "角色查询")
+    @PreAuthorize("hasPermission('admin:role:list')")    @RequiresPermissionsDesc(menu = {"系统管理", "角色管理"}, button = "角色查询")
     @GetMapping("/list")
     public Object list(String name,
                        @RequestParam(defaultValue = "1") Integer page,
@@ -75,9 +73,7 @@ public class AdminRoleController {
         return ResponseUtil.okList(options);
     }
 
-    @PreAuthorize("hasPermission('admin:role:read')")
-    @RequiresPermissions("admin:role:read")
-    @RequiresPermissionsDesc(menu = {"系统管理", "角色管理"}, button = "角色详情")
+    @PreAuthorize("hasPermission('admin:role:read')")    @RequiresPermissionsDesc(menu = {"系统管理", "角色管理"}, button = "角色详情")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
         LitemallRole role = roleService.findById(id);
@@ -94,9 +90,7 @@ public class AdminRoleController {
         return null;
     }
 
-    @PreAuthorize("hasPermission('admin:role:create')")
-    @RequiresPermissions("admin:role:create")
-    @RequiresPermissionsDesc(menu = {"系统管理", "角色管理"}, button = "角色添加")
+    @PreAuthorize("hasPermission('admin:role:create')")    @RequiresPermissionsDesc(menu = {"系统管理", "角色管理"}, button = "角色添加")
     @PostMapping("/create")
     public Object create(@RequestBody LitemallRole role) {
         Object error = validate(role);
@@ -113,9 +107,7 @@ public class AdminRoleController {
         return ResponseUtil.ok(role);
     }
 
-    @PreAuthorize("hasPermission('admin:role:update')")
-    @RequiresPermissions("admin:role:update")
-    @RequiresPermissionsDesc(menu = {"系统管理", "角色管理"}, button = "角色编辑")
+    @PreAuthorize("hasPermission('admin:role:update')")    @RequiresPermissionsDesc(menu = {"系统管理", "角色管理"}, button = "角色编辑")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallRole role) {
         Object error = validate(role);
@@ -127,9 +119,7 @@ public class AdminRoleController {
         return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasPermission('admin:role:delete')")
-    @RequiresPermissions("admin:role:delete")
-    @RequiresPermissionsDesc(menu = {"系统管理", "角色管理"}, button = "角色删除")
+    @PreAuthorize("hasPermission('admin:role:delete')")    @RequiresPermissionsDesc(menu = {"系统管理", "角色管理"}, button = "角色删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallRole role) {
         Integer id = role.getId();
@@ -187,9 +177,7 @@ public class AdminRoleController {
      *
      * @return 系统所有权限列表、角色权限、管理员已分配权限
      */
-    @PreAuthorize("hasPermission('admin:role:permission:get')")
-    @RequiresPermissions("admin:role:permission:get")
-    @RequiresPermissionsDesc(menu = {"系统管理", "角色管理"}, button = "权限详情")
+    @PreAuthorize("hasPermission('admin:role:permission:get')")    @RequiresPermissionsDesc(menu = {"系统管理", "角色管理"}, button = "权限详情")
     @GetMapping("/permissions")
     public Object getPermissions(Integer roleId) {
         List<PermVo> systemPermissions = getSystemPermissions();
@@ -233,9 +221,7 @@ public class AdminRoleController {
      * @param body
      * @return
      */
-    @PreAuthorize("hasPermission('admin:role:permission:update')")
-    @RequiresPermissions("admin:role:permission:update")
-    @RequiresPermissionsDesc(menu = {"系统管理", "角色管理"}, button = "权限变更")
+    @PreAuthorize("hasPermission('admin:role:permission:update')")    @RequiresPermissionsDesc(menu = {"系统管理", "角色管理"}, button = "权限变更")
     @PostMapping("/permissions")
     public Object updatePermissions(@RequestBody String body) {
         Integer roleId = JacksonUtil.parseInteger(body, "roleId");

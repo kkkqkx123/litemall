@@ -24,9 +24,7 @@ public class AdminFootprintController {
     @Autowired
     private LitemallFootprintService footprintService;
 
-    @PreAuthorize("hasAuthority('admin:footprint:list')")
-    @RequiresPermissions("admin:footprint:list")
-    @RequiresPermissionsDesc(menu = {"用户管理", "会员足迹"}, button = "查询")
+    @PreAuthorize("hasAuthority('admin:footprint:list')")    @RequiresPermissionsDesc(menu = {"用户管理", "会员足迹"}, button = "查询")
     @GetMapping("/list")
     public Object list(String userId, String goodsId,
                        @RequestParam(defaultValue = "1") Integer page,
@@ -38,9 +36,7 @@ public class AdminFootprintController {
         return ResponseUtil.okList(footprintList);
     }
 
-    @PreAuthorize("hasPermission('admin:footprint:delete')")
-    @RequiresPermissions("admin:footprint:delete")
-    @RequiresPermissionsDesc(menu = {"用户管理", "用户足迹"}, button = "删除")
+    @PreAuthorize("hasPermission('admin:footprint:delete')")    @RequiresPermissionsDesc(menu = {"用户管理", "用户足迹"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallFootprint footprint) {
         Integer id = footprint.getId();
@@ -51,9 +47,7 @@ public class AdminFootprintController {
         return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasAuthority('admin:footprint:delete')")
-    @RequiresPermissions("admin:footprint:delete")
-    @RequiresPermissionsDesc(menu = {"用户管理", "会员足迹"}, button = "批量删除")
+    @PreAuthorize("hasAuthority('admin:footprint:delete')")    @RequiresPermissionsDesc(menu = {"用户管理", "会员足迹"}, button = "批量删除")
     @PostMapping("/batch-delete")
     public Object batchDelete(@RequestBody Map<String, List<Integer>> request) {
         List<Integer> ids = request.get("ids");

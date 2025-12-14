@@ -1,9 +1,0 @@
-litemall-admin/src/api/stat.js
-litemall-admin/src/locales/en.js
-litemall-admin/src/locales/zh-Hans.js
-litemall-admin/src/router/index.js
-litemall-admin/src/views/stat/goods-rating.vue
-litemall-admin-api/src/main/java/org/linlinjava/litemall/admin/web/AdminStatController.java
-litemall-db/src/main/java/org/linlinjava/litemall/db/dao/StatMapper.java
-litemall-db/src/main/java/org/linlinjava/litemall/db/service/StatService.java
-litemall-db/src/main/resources/org/linlinjava/litemall/db/dao/StatMapper.xml

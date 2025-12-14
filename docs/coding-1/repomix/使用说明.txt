@@ -1,7 +1,0 @@
-1. .\stash2sequence.ps1
-2. repomix --files 相对路径[空格分隔]
-3. 后续使用go脚本提取
-或：
-根据<directory_structure>xml标记，例如 req8.xml 43-101 ，提取docs\coding-1\repomix\req1-6.xml
-docs\coding-1\repomix\req7.xml
-docs\coding-1\repomix\req8.xml中修改文件的列表，要求分别写入不同md文档中，每行1个文件相对路径
