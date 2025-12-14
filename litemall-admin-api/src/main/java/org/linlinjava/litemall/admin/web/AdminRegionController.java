@@ -37,7 +37,7 @@ public class AdminRegionController {
         return ResponseUtil.okList(regionList);
     }
 
-    @PreAuthorize("hasPermission('admin:region:list')")    @RequiresPermissionsDesc(menu = {"系统管理", "行政区域"}, button = "查询")
+    @RequiresPermissionsDesc(menu = {"系统管理", "行政区域"}, button = "查询")
     @GetMapping("/list")
     public Object list() {
         List<RegionVo> regionVoList = new ArrayList<>();

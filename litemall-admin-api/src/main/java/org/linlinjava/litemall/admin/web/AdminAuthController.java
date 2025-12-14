@@ -198,16 +198,21 @@ public class AdminAuthController {
         }
 
         Collection<String> apis = new HashSet<>();
+        
+        // 检查是否有通配符权限
+        if (permissions.contains("*")) {
+            // 超级管理员权限：返回所有API权限
+            apis.addAll(systemPermissionsMap.values());
+            // 同时添加通配符标识，确保前端能识别超级管理员
+            apis.add("*");
+            return apis;
+        }
+        
+        // 普通权限：只返回对应的API权限
         for (String perm : permissions) {
             String api = systemPermissionsMap.get(perm);
-            apis.add(api);
-
-            if (perm.equals("*")) {
-                apis.clear();
-                apis.add("*");
-                return apis;
-                //                return systemPermissionsMap.values();
-
+            if (api != null) {
+                apis.add(api);
             }
         }
         return apis;

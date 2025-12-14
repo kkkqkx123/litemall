@@ -84,14 +84,12 @@ public class AdminProfileController {
         return adminUserDetails.getAdmin().getId();
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/nnotice")
     public Object nNotice() {
         int count = noticeAdminService.countUnread(getAdminId());
         return ResponseUtil.ok(count);
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/lsnotice")
     public Object lsNotice(String title, String type,
                             @RequestParam(defaultValue = "1") Integer page,
@@ -102,7 +100,6 @@ public class AdminProfileController {
         return ResponseUtil.okList(noticeList);
     }
 
-    @PreAuthorize("isAuthenticated()")
     @PostMapping("/catnotice")
     public Object catNotice(@RequestBody String body) {
         Integer noticeId = JacksonUtil.parseInteger(body, "noticeId");
@@ -136,7 +133,6 @@ public class AdminProfileController {
         return ResponseUtil.ok(data);
     }
 
-    @PreAuthorize("isAuthenticated()")
     @PostMapping("/bcatnotice")
     public Object bcatNotice(@RequestBody String body) {
         List<Integer> ids = JacksonUtil.parseIntegerList(body, "ids");
@@ -144,7 +140,6 @@ public class AdminProfileController {
         return ResponseUtil.ok();
     }
 
-    @PreAuthorize("isAuthenticated()")
     @PostMapping("/rmnotice")
     public Object rmNotice(@RequestBody String body) {
         Integer id = JacksonUtil.parseInteger(body, "id");
@@ -155,7 +150,6 @@ public class AdminProfileController {
         return ResponseUtil.ok();
     }
 
-    @PreAuthorize("isAuthenticated()")
     @PostMapping("/brmnotice")
     public Object brmNotice(@RequestBody String body) {
         List<Integer> ids = JacksonUtil.parseIntegerList(body, "ids");

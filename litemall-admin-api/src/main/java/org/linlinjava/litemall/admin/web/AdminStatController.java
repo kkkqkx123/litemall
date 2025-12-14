@@ -34,7 +34,7 @@ public class AdminStatController {
     @Autowired
     private WordCloudService wordCloudService;
 
-    @PreAuthorize("hasPermission('admin:stat:user')")    @RequiresPermissionsDesc(menu = {"统计管理", "用户统计"}, button = "查询")
+    @RequiresPermissionsDesc(menu = {"统计管理", "用户统计"}, button = "查询")
     @GetMapping("/user")
     public Object statUser() {
         List<Map<String, Object>> rows = statService.statUser();
@@ -45,7 +45,7 @@ public class AdminStatController {
         return ResponseUtil.ok(statVo);
     }
 
-    @PreAuthorize("hasPermission('admin:stat:order')")    @RequiresPermissionsDesc(menu = {"统计管理", "订单统计"}, button = "查询")
+    @RequiresPermissionsDesc(menu = {"统计管理", "订单统计"}, button = "查询")
     @GetMapping("/order")
     public Object statOrder() {
         List<Map<String, Object>> rows = statService.statOrder();
@@ -68,7 +68,7 @@ public class AdminStatController {
      * @param day 日期(1-31)，可为null
      * @return 订单统计数据
      */
-    @PreAuthorize("hasPermission('admin:stat:order')")    @RequiresPermissionsDesc(menu = {"统计管理", "订单统计"}, button = "查询")
+    @RequiresPermissionsDesc(menu = {"统计管理", "订单统计"}, button = "查询")
     @GetMapping("/order/enhanced")
     public Object statOrderEnhanced(@RequestParam(value = "timeDimension", defaultValue = "day") String timeDimension,
                                   @RequestParam(value = "categoryId", required = false) Integer categoryId,
@@ -105,7 +105,7 @@ public class AdminStatController {
         return ResponseUtil.ok(statVo);
     }
 
-    @PreAuthorize("hasPermission('admin:stat:goods')")    @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
+    @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
     @GetMapping("/goods")
     public Object statGoods() {
         List<Map<String, Object>> rows = statService.statGoods();
@@ -125,7 +125,7 @@ public class AdminStatController {
      * @param limit 每页条数
      * @return 商品评分统计数据
      */
-    @PreAuthorize("hasAuthority('admin:stat:goods')")    @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
+    @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
     @GetMapping("/goods/rating")
     public Object statGoodsRating(@RequestParam(value = "categoryId", required = false) Integer categoryId,
                                 @RequestParam(value = "sort", defaultValue = "avg_rating") String sort,
@@ -163,7 +163,7 @@ public class AdminStatController {
      * 商品分类列表接口（用于筛选）
      * @return 商品分类列表
      */
-    @PreAuthorize("hasAuthority('admin:stat:goods')")    @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
+    @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
     @GetMapping("/goods/categories")
     public Object statGoodsCategories() {
         List<Map<String, Object>> categories = statService.statGoodsCategories();
@@ -177,7 +177,7 @@ public class AdminStatController {
      * @param limit 每页条数
      * @return 商品评论统计数据
      */
-    @PreAuthorize("hasAuthority('admin:stat:goods')")    @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
+    @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
     @GetMapping("/goods/comment")
     public Object statGoodsComment(@RequestParam(value = "categoryId", required = false) Integer categoryId,
                                  @RequestParam(value = "page", defaultValue = "1") Integer page,
@@ -215,7 +215,7 @@ public class AdminStatController {
      * @param maxWords 最大词数
      * @return 词云数据
      */
-    @PreAuthorize("hasAuthority('admin:stat:goods')")    @RequiresPermissionsDesc(menu = {"统计管理", "商品评论词云"}, button = "生成词云")
+    @RequiresPermissionsDesc(menu = {"统计管理", "商品评论词云"}, button = "生成词云")
     @GetMapping("/goods/wordcloud/{goodsId}")
     public Object generateWordCloud(@PathVariable(value = "goodsId") Integer goodsId,
                                   @RequestParam(value = "maxWords", defaultValue = "50") Integer maxWords) {
@@ -268,7 +268,7 @@ public class AdminStatController {
      * @param maxWords 最大词数
      * @return 词云数据
      */
-    @PreAuthorize("hasAuthority('admin:stat:goods')")    @RequiresPermissionsDesc(menu = {"统计管理", "全局评论词云"}, button = "生成词云")
+    @RequiresPermissionsDesc(menu = {"统计管理", "全局评论词云"}, button = "生成词云")
     @GetMapping("/goods/wordcloud")
     public Object generateGlobalWordCloud(@RequestParam(value = "categoryId", required = false) Integer categoryId,
                                         @RequestParam(value = "maxWords", defaultValue = "100") Integer maxWords) {

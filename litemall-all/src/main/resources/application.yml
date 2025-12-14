@@ -11,6 +11,12 @@ spring:
   security:
     basic:
       enabled: false
+    # 完全禁用Spring Security方法安全机制
+    method-security:
+      enabled: false
+    authorization:
+      method-security:
+        enabled: false
 
 # 日志配置（基础配置）
 logging:

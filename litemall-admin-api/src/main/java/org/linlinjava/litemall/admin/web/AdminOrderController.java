@@ -42,7 +42,7 @@ public class AdminOrderController {
      * @param order
      * @return
      */
-    @PreAuthorize("hasPermission('admin:order:list')")    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "查询")
+    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "查询")
     @GetMapping("/list")
     public Object list(String nickname, String consignee, String orderSn,
                        @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
@@ -63,7 +63,7 @@ public class AdminOrderController {
      *
      * @return
      */
-    @PreAuthorize("hasPermission('admin:order:channel')")    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "物流渠道")
+    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "物流渠道")
     @GetMapping("/channel")
     public Object channel() {
         return ResponseUtil.ok(expressService.getVendors());
@@ -75,7 +75,7 @@ public class AdminOrderController {
      * @param id
      * @return
      */
-    @PreAuthorize("hasPermission('admin:order:read')")    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "详情")
+    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "详情")
     @GetMapping("/detail")
     public Object detail(@NotNull Integer id) {
         return adminOrderService.detail(id);
@@ -87,7 +87,7 @@ public class AdminOrderController {
      * @param body 订单信息，{ orderId：xxx }
      * @return 订单退款操作结果
      */
-    @PreAuthorize("hasPermission('admin:order:refund')")    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "退款")
+    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "退款")
     @PostMapping("/refund")
     public Object refund(@RequestBody String body) {
         return adminOrderService.refund(body);
@@ -99,13 +99,13 @@ public class AdminOrderController {
      * @param body 订单信息，{ orderId：xxx, shipSn: xxx, shipChannel: xxx }
      * @return 订单操作结果
      */
-    @PreAuthorize("hasPermission('admin:order:ship')")    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "发货")
+    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "发货")
     @PostMapping("/ship")
     public Object ship(@RequestBody String body) {
         return adminOrderService.ship(body);
     }
 
-    @PreAuthorize("hasPermission('admin:order:pay')")    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "支付")
+    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "支付")
     @PostMapping("/pay")
     public Object pay(@RequestBody String body) {
         return adminOrderService.pay(body);
@@ -117,7 +117,7 @@ public class AdminOrderController {
      * @param body 订单信息，{ orderId：xxx }
      * @return 订单操作结果
      */
-    @PreAuthorize("hasPermission('admin:order:delete')")    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "删除")
+    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody String body) {
         return adminOrderService.delete(body);
@@ -129,7 +129,7 @@ public class AdminOrderController {
      * @param body 订单信息，{ orderId：xxx }
      * @return 订单操作结果
      */
-    @PreAuthorize("hasPermission('admin:order:reply')")    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "回复")
+    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "回复")
     @PostMapping("/reply")
     public Object reply(@RequestBody String body) {
         return adminOrderService.reply(body);

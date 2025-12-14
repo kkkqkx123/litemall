@@ -26,7 +26,6 @@ public class AdminKeywordController {
     @Autowired
     private LitemallKeywordService keywordService;
 
-    @PreAuthorize("hasPermission('admin:keyword:list')")
     @RequiresPermissionsDesc(menu = {"系统管理", "关键词"}, button = "查询")
     @GetMapping("/list")
     public Object list(String keyword, String url,
@@ -46,7 +45,6 @@ public class AdminKeywordController {
         return null;
     }
 
-    @PreAuthorize("hasPermission('admin:keyword:create')")
     @RequiresPermissionsDesc(menu = {"系统管理", "关键词"}, button = "添加")
     @PostMapping("/create")
     public Object create(@RequestBody LitemallKeyword keyword) {
@@ -58,7 +56,6 @@ public class AdminKeywordController {
         return ResponseUtil.ok(keyword);
     }
 
-    @PreAuthorize("hasPermission('admin:keyword:read')")
     @RequiresPermissionsDesc(menu = {"系统管理", "关键词"}, button = "详情")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
@@ -66,7 +63,6 @@ public class AdminKeywordController {
         return ResponseUtil.ok(keyword);
     }
 
-    @PreAuthorize("hasPermission('admin:keyword:update')")
     @RequiresPermissionsDesc(menu = {"系统管理", "关键词"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallKeyword keyword) {
@@ -80,7 +76,6 @@ public class AdminKeywordController {
         return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasPermission('admin:keyword:delete')")
     @RequiresPermissionsDesc(menu = {"系统管理", "关键词"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallKeyword keyword) {

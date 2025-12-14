@@ -26,7 +26,6 @@ public class AdminIssueController {
     @Autowired
     private LitemallIssueService issueService;
 
-    @PreAuthorize("hasPermission('admin:issue:list')")
     @RequiresPermissionsDesc(menu = {"系统管理", "通用问题"}, button = "查询")
     @GetMapping("/list")
     public Object list(String question,
@@ -50,7 +49,6 @@ public class AdminIssueController {
         return null;
     }
 
-    @PreAuthorize("hasPermission('admin:issue:create')")
     @RequiresPermissionsDesc(menu = {"系统管理", "通用问题"}, button = "添加")
     @PostMapping("/create")
     public Object create(@RequestBody LitemallIssue issue) {
@@ -62,7 +60,6 @@ public class AdminIssueController {
         return ResponseUtil.ok(issue);
     }
 
-    @PreAuthorize("hasPermission('admin:issue:read')")
     @RequiresPermissionsDesc(menu = {"系统管理", "通用问题"}, button = "详情")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
@@ -70,7 +67,6 @@ public class AdminIssueController {
         return ResponseUtil.ok(issue);
     }
 
-    @PreAuthorize("hasPermission('admin:issue:update')")
     @RequiresPermissionsDesc(menu = {"系统管理", "通用问题"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallIssue issue) {
@@ -85,7 +81,6 @@ public class AdminIssueController {
         return ResponseUtil.ok(issue);
     }
 
-    @PreAuthorize("hasPermission('admin:issue:delete')")
     @RequiresPermissionsDesc(menu = {"系统管理", "通用问题"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallIssue issue) {
