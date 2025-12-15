@@ -3,9 +3,6 @@ package org.linlinjava.litemall;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Primary;
@@ -15,11 +12,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication(
-    exclude = {
-        SecurityAutoConfiguration.class,
-        UserDetailsServiceAutoConfiguration.class,
-        SecurityFilterAutoConfiguration.class
-    },
     scanBasePackages = {"org.linlinjava.litemall", "org.linlinjava.litemall.admin"}
 )
 @MapperScan("org.linlinjava.litemall.db.dao")
@@ -35,8 +27,8 @@ public class Application {
     }
 
     public static void main(String[] args) throws Exception {
-        // 禁用Spring Security方法安全机制，让自定义权限切面能够正常工作
-        System.setProperty("spring.security.method-security.enabled", "false");
+        // 启用Spring Security方法安全机制，让@PreAuthorize注解能够正常工作
+        System.setProperty("spring.security.method-security.enabled", "true");
         
         SpringApplication.run(Application.class, args);
     }

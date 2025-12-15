@@ -3,6 +3,7 @@ package org.linlinjava.litemall.admin.config;
 import org.linlinjava.litemall.admin.security.JwtAuthenticationFilter;
 import org.linlinjava.litemall.admin.security.AdminUserDetailsService;
 import org.linlinjava.litemall.admin.security.CustomPermissionEvaluator;
+import org.linlinjava.litemall.admin.security.PermissionMethodSecurityExpressionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,11 +14,14 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -48,10 +52,22 @@ public class SecurityConfig {
 
     /**
      * 配置自定义权限评估器到Spring Security表达式处理器
+     * 使用不同的Bean名称避免与Spring Security自动配置冲突
      */
     @Bean
-    public DefaultWebSecurityExpressionHandler webSecurityExpressionHandler() {
+    public DefaultWebSecurityExpressionHandler adminWebSecurityExpressionHandler() {
         DefaultWebSecurityExpressionHandler expressionHandler = new DefaultWebSecurityExpressionHandler();
+        expressionHandler.setPermissionEvaluator(customPermissionEvaluator);
+        return expressionHandler;
+    }
+
+    /**
+     * 配置方法安全表达式处理器，确保@PreAuthorize注解使用自定义权限评估器
+     * Spring Security 6.x需要配置自定义的PermissionMethodSecurityExpressionHandler
+     */
+    @Bean
+    public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
+        PermissionMethodSecurityExpressionHandler expressionHandler = new PermissionMethodSecurityExpressionHandler();
         expressionHandler.setPermissionEvaluator(customPermissionEvaluator);
         return expressionHandler;
     }
@@ -61,6 +77,9 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, DaoAuthenticationProvider authenticationProvider) throws Exception {
+        // 配置SecurityContextHolder使用INHERITABLETHREADLOCAL策略，确保认证上下文在方法调用中正确传递
+        SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+        
         http
             .cors(cors -> cors.configure(http))
             .csrf(csrf -> csrf.disable())
@@ -74,7 +93,10 @@ public class SecurityConfig {
                 .accessDeniedHandler(accessDeniedHandler())
             )
             .authenticationProvider(authenticationProvider)
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            // 完全禁用匿名认证，避免AnonymousAuthenticationFilter覆盖认证上下文
+            .anonymous(anonymous -> anonymous.disable())
+            // 将JWT过滤器添加在AnonymousAuthenticationFilter之后，确保认证上下文不被覆盖
+            .addFilterAfter(jwtAuthenticationFilter, org.springframework.security.web.authentication.AnonymousAuthenticationFilter.class);
 
         return http.build();
     }

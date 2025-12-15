@@ -51,18 +51,19 @@ public class AdminUserDetailsService implements UserDetailsService {
             }
             
             // 检查是否有超级权限
-            List<Integer> roleIdList = Arrays.asList(roleIds);
-            boolean hasSuperPermission = permissionService.checkSuperPermission(roleIdList);
-            if (hasSuperPermission) {
-                // 如果有超级权限，添加一个特殊的超级权限标识
-                authorities.add(new SimpleGrantedAuthority("*"));
-            } else {
-                // 添加普通权限
-                Set<String> permissions = permissionService.queryByRoleIds(roleIds);
-                for (String permission : permissions) {
-                    authorities.add(new SimpleGrantedAuthority(permission));
-                }
-            }
+        List<Integer> roleIdList = Arrays.asList(roleIds);
+        boolean hasSuperPermission = permissionService.checkSuperPermission(roleIdList);
+        
+        // 添加普通权限（无论是否为超级管理员都需要添加具体权限）
+        Set<String> permissions = permissionService.queryByRoleIds(roleIds);
+        for (String permission : permissions) {
+            authorities.add(new SimpleGrantedAuthority(permission));
+        }
+        
+        // 如果是超级管理员，额外添加通配符权限
+        if (hasSuperPermission) {
+            authorities.add(new SimpleGrantedAuthority("*"));
+        }
         }
         
         // 如果没有角色，添加默认的管理员角色

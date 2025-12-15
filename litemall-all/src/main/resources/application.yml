@@ -2,6 +2,8 @@
 spring:
   profiles:
     active: db, core, admin, wx  # 模块化配置文件加载
+  main:
+    allow-bean-definition-overriding: true  # 启用Bean定义覆盖，解决Spring Security Bean名称冲突
   messages:
     encoding: UTF-8
   servlet:
@@ -11,14 +13,9 @@ spring:
   security:
     basic:
       enabled: false
-spring:
-  security:
-    # 禁用Spring Security方法安全机制，让自定义权限切面能够正常工作
+    # 启用Spring Security方法安全机制，使用@PreAuthorize注解
     method-security:
-      enabled: false
-    authorization:
-      method-security:
-        enabled: false
+      enabled: true
 
 # 日志配置（基础配置）
 logging:

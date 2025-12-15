@@ -68,4 +68,16 @@
     <logger name="org.linlinjava.litemall.admin.security.JwtAuthenticationFilter" level="TRACE">
         <appender-ref ref="jwt-console" />
     </logger>
+    <logger name="org.linlinjava.litemall.admin.security.PermissionMethodSecurityExpressionRoot" level="TRACE" />
+    <logger name="org.linlinjava.litemall.admin.security.CustomPermissionEvaluator" level="TRACE" />
+    <logger name="org.linlinjava.litemall.admin.security.AdminUserDetailsService" level="TRACE" />
+    <logger name="org.linlinjava.litemall.admin.security.AccessDeniedHandler" level="TRACE" />
+    <logger name="org.springframework.security.access.expression" level="DEBUG" />
+    <logger name="org.springframework.security.access.vote" level="DEBUG" />
+    <logger name="org.springframework.security.web.access" level="DEBUG" />
+    <logger name="org.springframework.security.web.FilterChainProxy" level="DEBUG" />
+    <logger name="org.springframework.security.web.access.intercept.FilterSecurityInterceptor" level="DEBUG" />
+    <logger name="org.springframework.security.authentication" level="DEBUG" />
+    <logger name="org.springframework.security.authorization" level="DEBUG" />
+    <logger name="org.springframework.security" level="DEBUG" />
 </configuration>

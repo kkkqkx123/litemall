@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 
 import java.util.List;
+import java.util.Set;
 
 @SpringBootTest
 class PermissionTest {
@@ -21,7 +22,8 @@ class PermissionTest {
     public void test() {
         final String basicPackage = "org.linlinjava.litemall.admin";
         List<Permission> permissionList = PermissionUtil.listPermission(context, basicPackage);
-        List<PermVo> permVoList = PermissionUtil.listPermVo(permissionList);
+        Set<String> permissionStringSet = PermissionUtil.listPermissionString(permissionList);
+        List<PermVo> permVoList = PermissionUtil.listPermVo(permissionStringSet);
         permVoList.stream().forEach(System.out::println);
     }
 }

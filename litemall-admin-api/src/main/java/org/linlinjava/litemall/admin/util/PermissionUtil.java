@@ -14,13 +14,13 @@ public class PermissionUtil {
 
     /**
      * 根据权限字符串列表构建权限树结构
-     * @param permissions 权限字符串集合
+     * @param permissionList 权限字符串集合
      * @return 权限树结构
      */
-    public static List<PermVo> listPermVo(Set<String> permissions) {
+    public static List<PermVo> listPermVo(Collection<String> permissionList) {
         List<PermVo> root = new ArrayList<>();
         
-        for (String permission : permissions) {
+        for (String permission : permissionList) {
             // 解析权限字符串格式，例如：admin:category:list
             String[] parts = permission.split(":");
             if (parts.length < 3) {

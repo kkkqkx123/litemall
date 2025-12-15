@@ -1,5 +1,7 @@
 package org.linlinjava.litemall.admin.security;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,63 +19,91 @@ import java.util.Collection;
 @Component
 public class CustomPermissionEvaluator implements org.springframework.security.access.PermissionEvaluator {
 
-    private static final String SUPER_ADMIN_ROLE = "超级管理员";
+    private static final Logger logger = LoggerFactory.getLogger(CustomPermissionEvaluator.class);
+    private static final String WILDCARD_PERMISSION = "*";
 
     @Override
     public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
-        // 检查是否为超级管理员
-        if (isSuperAdmin(authentication)) {
-            return true;
-        }
-
-        // 对于非超级管理员，进行具体的权限检查
-        if (targetDomainObject instanceof String && permission instanceof String) {
-            String targetType = (String) targetDomainObject;
-            String requiredPermission = (String) permission;
-            
-            // 检查用户是否具有所需的权限
-            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-            return authorities.stream()
-                    .anyMatch(authority -> authority.getAuthority().equals(requiredPermission));
-        }
+        logger.trace("CustomPermissionEvaluator.hasPermission called - targetDomainObject: {}, permission: {}", 
+                targetDomainObject, permission);
         
-        return false;
-    }
-
-    @Override
-    public boolean hasPermission(Authentication authentication, Serializable targetId, String targetType, Object permission) {
-        // 检查是否为超级管理员
+        // 检查是否为超级管理员（拥有通配符权限）
         if (isSuperAdmin(authentication)) {
+            logger.trace("User is super admin, permission granted");
             return true;
         }
 
         // 对于非超级管理员，进行具体的权限检查
         if (permission instanceof String) {
             String requiredPermission = (String) permission;
+            logger.trace("Checking permission: {}", requiredPermission);
             
+            // 检查用户是否具有所需的权限
             Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-            return authorities.stream()
+            logger.trace("User authorities: {}", authorities);
+            
+            boolean hasPermission = authorities.stream()
                     .anyMatch(authority -> authority.getAuthority().equals(requiredPermission));
+            
+            logger.trace("Permission check result for '{}': {}", requiredPermission, hasPermission);
+            return hasPermission;
         }
         
+        logger.trace("Permission is not a String, returning false");
+        return false;
+    }
+
+    @Override
+    public boolean hasPermission(Authentication authentication, Serializable targetId, String targetType, Object permission) {
+        logger.trace("CustomPermissionEvaluator.hasPermission called - targetId: {}, targetType: {}, permission: {}", 
+                targetId, targetType, permission);
+        
+        // 检查是否为超级管理员（拥有通配符权限）
+        if (isSuperAdmin(authentication)) {
+            logger.trace("User is super admin, permission granted");
+            return true;
+        }
+
+        // 对于非超级管理员，进行具体的权限检查
+        if (permission instanceof String) {
+            String requiredPermission = (String) permission;
+            logger.trace("Checking permission: {}", requiredPermission);
+            
+            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+            logger.trace("User authorities: {}", authorities);
+            
+            boolean hasPermission = authorities.stream()
+                    .anyMatch(authority -> authority.getAuthority().equals(requiredPermission));
+            
+            logger.trace("Permission check result for '{}': {}", requiredPermission, hasPermission);
+            return hasPermission;
+        }
+        
+        logger.trace("Permission is not a String, returning false");
         return false;
     }
 
     /**
-     * 判断当前用户是否为超级管理员
+     * 判断当前用户是否为超级管理员（拥有通配符权限）
      */
     private boolean isSuperAdmin(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
+            logger.trace("Authentication is null or not authenticated");
             return false;
         }
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        return authorities.stream()
-                .anyMatch(authority -> SUPER_ADMIN_ROLE.equals(authority.getAuthority()));
+        logger.trace("Checking super admin - authorities: {}", authorities);
+        
+        boolean isSuperAdmin = authorities.stream()
+                .anyMatch(authority -> WILDCARD_PERMISSION.equals(authority.getAuthority()));
+        
+        logger.trace("Super admin check result: {}", isSuperAdmin);
+        return isSuperAdmin;
     }
 
     /**
-     * 检查当前认证用户是否为超级管理员
+     * 检查当前认证用户是否为超级管理员（拥有通配符权限）
      */
     public static boolean isCurrentUserSuperAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -90,6 +120,6 @@ public class CustomPermissionEvaluator implements org.springframework.security.a
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         return authorities.stream()
-                .anyMatch(authority -> SUPER_ADMIN_ROLE.equals(authority.getAuthority()));
+                .anyMatch(authority -> WILDCARD_PERMISSION.equals(authority.getAuthority()));
     }
 }
