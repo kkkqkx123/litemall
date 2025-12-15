@@ -18,10 +18,14 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // 启用Spring Security方法安全机制，让自定义权限切面能够正常工作
+// @EnableMethodSecurity(prePostEnabled = false) // 禁用Spring Security方法安全机制，使用自定义权限切面
 @EnableAspectJAutoProxy // 启用AOP切面支持，让自定义权限切面生效
 public class SecurityConfig {
 
@@ -35,17 +39,10 @@ public class SecurityConfig {
      */
     @Bean
     public DaoAuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder, AdminUserDetailsService userDetailsService) {
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(userDetailsService);
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService);
         authenticationProvider.setPasswordEncoder(passwordEncoder);
         return authenticationProvider;
-    }
-
-    /**
-     * 配置AuthenticationManager
-     */
-    @Bean
-    public AuthenticationManager authenticationManager(DaoAuthenticationProvider authenticationProvider) {
-        return new ProviderManager(authenticationProvider);
     }
 
     /**
@@ -71,9 +68,26 @@ public class SecurityConfig {
                 // 允许所有请求通过，由自定义权限切面进行权限检查
                 .anyRequest().permitAll()
             )
+            .exceptionHandling(exceptions -> exceptions
+                // 配置访问拒绝处理器，使用项目中的403端点
+                .accessDeniedHandler(accessDeniedHandler())
+            )
             .authenticationProvider(authenticationProvider)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+    
+    /**
+     * 自定义访问拒绝处理器
+     * 当Spring Security拒绝访问时，重定向到项目中的403端点
+     */
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        return (HttpServletRequest request, HttpServletResponse response, 
+                org.springframework.security.access.AccessDeniedException accessDeniedException) -> {
+            // 重定向到项目中的403端点
+            response.sendRedirect("/admin/auth/403");
+        };
     }
 }

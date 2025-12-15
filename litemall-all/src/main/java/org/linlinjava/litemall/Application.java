@@ -35,8 +35,8 @@ public class Application {
     }
 
     public static void main(String[] args) throws Exception {
-        // 启用Spring Security方法安全机制，让自定义权限切面能够正常工作
-        System.setProperty("spring.security.method-security.enabled", "true");
+        // 禁用Spring Security方法安全机制，让自定义权限切面能够正常工作
+        System.setProperty("spring.security.method-security.enabled", "false");
         
         SpringApplication.run(Application.class, args);
     }

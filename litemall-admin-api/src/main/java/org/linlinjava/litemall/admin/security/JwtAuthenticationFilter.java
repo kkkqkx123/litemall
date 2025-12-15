@@ -83,15 +83,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
             logger.info("*** JWT EXTRACTED: " + (jwt != null ? (jwt.length() > 20 ? jwt.substring(0, 20) + "..." : jwt) : "null"));
 
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                String username = tokenProvider.getUsernameFromToken(jwt);
+            if (StringUtils.hasText(jwt)) {
+                logger.info("*** JWT VALIDATION START ***");
+                boolean isValid = tokenProvider.validateToken(jwt);
+                logger.info("*** VALIDATE TOKEN RESULT: " + isValid + " ***");
+                
+                if (isValid) {
+                    logger.info("*** JWT VALIDATION SUCCESSFUL ***");
+                    String username = tokenProvider.getUsernameFromToken(jwt);
+                    logger.info("*** USERNAME FROM TOKEN: " + username + " ***");
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication = 
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    logger.info("*** USER DETAILS LOADED: " + userDetails.getUsername() + " ***");
+                    logger.info("*** USER AUTHORITIES: " + userDetails.getAuthorities() + " ***");
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    UsernamePasswordAuthenticationToken authentication = 
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    logger.info("*** AUTHENTICATION SET IN SECURITY CONTEXT ***");
+                    logger.info("*** CURRENT AUTHENTICATION: " + SecurityContextHolder.getContext().getAuthentication() + " ***");
+                } else {
+                    logger.info("*** JWT VALIDATION FAILED ***");
+                    // 尝试获取更多错误信息
+                    try {
+                        String username = tokenProvider.getUsernameFromToken(jwt);
+                        logger.info("*** USERNAME FROM INVALID TOKEN: " + username + " ***");
+                    } catch (Exception e) {
+                        logger.error("*** ERROR GETTING USERNAME FROM INVALID TOKEN: " + e.getMessage(), e);
+                    }
+                }
+            } else {
+                logger.info("*** NO JWT FOUND ***");
             }
         } catch (Exception ex) {
             logger.error("Could not set user authentication in security context", ex);
