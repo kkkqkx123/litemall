@@ -34,6 +34,7 @@ public class AdminStatController {
     @Autowired
     private WordCloudService wordCloudService;
 
+    @RequiresPermissions("admin:stat:user")
     @RequiresPermissionsDesc(menu = {"统计管理", "用户统计"}, button = "查询")
     @GetMapping("/user")
     public Object statUser() {
@@ -45,6 +46,7 @@ public class AdminStatController {
         return ResponseUtil.ok(statVo);
     }
 
+    @RequiresPermissions("admin:stat:order")
     @RequiresPermissionsDesc(menu = {"统计管理", "订单统计"}, button = "查询")
     @GetMapping("/order")
     public Object statOrder() {
@@ -68,6 +70,7 @@ public class AdminStatController {
      * @param day 日期(1-31)，可为null
      * @return 订单统计数据
      */
+    @RequiresPermissions("admin:stat:order")
     @RequiresPermissionsDesc(menu = {"统计管理", "订单统计"}, button = "查询")
     @GetMapping("/order/enhanced")
     public Object statOrderEnhanced(@RequestParam(value = "timeDimension", defaultValue = "day") String timeDimension,
@@ -105,6 +108,7 @@ public class AdminStatController {
         return ResponseUtil.ok(statVo);
     }
 
+    @RequiresPermissions("admin:stat:goods")
     @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
     @GetMapping("/goods")
     public Object statGoods() {
@@ -125,6 +129,7 @@ public class AdminStatController {
      * @param limit 每页条数
      * @return 商品评分统计数据
      */
+    @RequiresPermissions("admin:stat:goods")
     @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
     @GetMapping("/goods/rating")
     public Object statGoodsRating(@RequestParam(value = "categoryId", required = false) Integer categoryId,
@@ -163,6 +168,7 @@ public class AdminStatController {
      * 商品分类列表接口（用于筛选）
      * @return 商品分类列表
      */
+    @RequiresPermissions("admin:stat:goods")
     @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
     @GetMapping("/goods/categories")
     public Object statGoodsCategories() {
@@ -177,6 +183,7 @@ public class AdminStatController {
      * @param limit 每页条数
      * @return 商品评论统计数据
      */
+    @RequiresPermissions("admin:stat:goods")
     @RequiresPermissionsDesc(menu = {"统计管理", "商品统计"}, button = "查询")
     @GetMapping("/goods/comment")
     public Object statGoodsComment(@RequestParam(value = "categoryId", required = false) Integer categoryId,
@@ -215,6 +222,7 @@ public class AdminStatController {
      * @param maxWords 最大词数
      * @return 词云数据
      */
+    @RequiresPermissions("admin:stat:wordcloud")
     @RequiresPermissionsDesc(menu = {"统计管理", "商品评论词云"}, button = "生成词云")
     @GetMapping("/goods/wordcloud/{goodsId}")
     public Object generateWordCloud(@PathVariable(value = "goodsId") Integer goodsId,
@@ -268,6 +276,7 @@ public class AdminStatController {
      * @param maxWords 最大词数
      * @return 词云数据
      */
+    @RequiresPermissions("admin:stat:wordcloud")
     @RequiresPermissionsDesc(menu = {"统计管理", "全局评论词云"}, button = "生成词云")
     @GetMapping("/goods/wordcloud")
     public Object generateGlobalWordCloud(@RequestParam(value = "categoryId", required = false) Integer categoryId,
@@ -319,5 +328,4 @@ public class AdminStatController {
         
         return ResponseUtil.ok(result);
     }
-
 }

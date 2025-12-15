@@ -10,17 +10,22 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-@SpringBootApplication(exclude = {
-    SecurityAutoConfiguration.class,
-    UserDetailsServiceAutoConfiguration.class,
-    SecurityFilterAutoConfiguration.class
-})
+@SpringBootApplication(
+    exclude = {
+        SecurityAutoConfiguration.class,
+        UserDetailsServiceAutoConfiguration.class,
+        SecurityFilterAutoConfiguration.class
+    },
+    scanBasePackages = {"org.linlinjava.litemall", "org.linlinjava.litemall.admin"}
+)
 @MapperScan("org.linlinjava.litemall.db.dao")
 @EnableTransactionManagement
 @EnableScheduling
+@EnableAspectJAutoProxy
 @Primary
 public class Application {
 
@@ -30,11 +35,8 @@ public class Application {
     }
 
     public static void main(String[] args) throws Exception {
-        // 在Spring Boot启动前完全禁用Spring Security 6.x的方法安全机制
-        System.setProperty("spring.security.method-security.enabled", "false");
-        System.setProperty("spring.security.authorization.method-security.enabled", "false");
-        System.setProperty("spring.security.method.interceptor.enabled", "false");
-        System.setProperty("spring.security.authorization.method.interceptor.enabled", "false");
+        // 启用Spring Security方法安全机制，让自定义权限切面能够正常工作
+        System.setProperty("spring.security.method-security.enabled", "true");
         
         SpringApplication.run(Application.class, args);
     }

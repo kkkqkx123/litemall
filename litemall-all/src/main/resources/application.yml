@@ -11,12 +11,12 @@ spring:
   security:
     basic:
       enabled: false
-    # 完全禁用Spring Security方法安全机制
+    # 启用Spring Security方法安全机制，让自定义权限切面能够正常工作
     method-security:
-      enabled: false
+      enabled: true
     authorization:
       method-security:
-        enabled: false
+        enabled: true
 
 # 日志配置（基础配置）
 logging:

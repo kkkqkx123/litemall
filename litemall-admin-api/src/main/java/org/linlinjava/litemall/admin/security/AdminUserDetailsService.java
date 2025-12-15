@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -49,10 +50,18 @@ public class AdminUserDetailsService implements UserDetailsService {
                 authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
             }
             
-            // 添加权限
-            Set<String> permissions = permissionService.queryByRoleIds(roleIds);
-            for (String permission : permissions) {
-                authorities.add(new SimpleGrantedAuthority(permission));
+            // 检查是否有超级权限
+            List<Integer> roleIdList = Arrays.asList(roleIds);
+            boolean hasSuperPermission = permissionService.checkSuperPermission(roleIdList);
+            if (hasSuperPermission) {
+                // 如果有超级权限，添加一个特殊的超级权限标识
+                authorities.add(new SimpleGrantedAuthority("*"));
+            } else {
+                // 添加普通权限
+                Set<String> permissions = permissionService.queryByRoleIds(roleIds);
+                for (String permission : permissions) {
+                    authorities.add(new SimpleGrantedAuthority(permission));
+                }
             }
         }
         
