@@ -2,8 +2,6 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.core.validator.Order;
 import org.linlinjava.litemall.core.validator.Sort;
@@ -32,7 +30,6 @@ public class AdminUserController {
     @Autowired
     private LitemallUserService userService;
 
-    @RequiresPermissionsDesc(menu = {"用户管理", "会员管理"}, button = "查询")
     @GetMapping("/list")
     public Object list(String username, String mobile,
                        @RequestParam(defaultValue = "1") Integer page,
@@ -42,13 +39,11 @@ public class AdminUserController {
         List<LitemallUser> userList = userService.querySelective(username, mobile, page, limit, sort, order);
         return ResponseUtil.okList(userList);
     }
-    @RequiresPermissionsDesc(menu = {"用户管理", "会员管理"}, button = "详情")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
     	LitemallUser user=userService.findById(id);
         return ResponseUtil.ok(user);
     }
-    @RequiresPermissionsDesc(menu = {"用户管理", "会员管理"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallUser user) {
         if (userService.updateById(user) == 0) {

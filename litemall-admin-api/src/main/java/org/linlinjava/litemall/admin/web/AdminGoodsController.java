@@ -2,8 +2,6 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.admin.dto.GoodsAllinone;
 import org.linlinjava.litemall.admin.service.AdminGoodsService;
 import org.linlinjava.litemall.core.validator.Order;
@@ -37,7 +35,6 @@ public class AdminGoodsController {
      * @param order
      * @return
      */
-    @RequiresPermissionsDesc(menu = {"商品管理", "商品列表"}, button = "查询")
     @GetMapping("/list")
     public Object list(Integer goodsId, String goodsSn, String name,
                        @RequestParam(defaultValue = "1") Integer page,
@@ -47,7 +44,6 @@ public class AdminGoodsController {
         return adminGoodsService.list(goodsId, goodsSn, name, page, limit, sort, order);
     }
 
-    @RequiresPermissionsDesc(menu = {"商品管理", "商品列表"}, button = "分类品牌")
     @GetMapping("/catAndBrand")
     public Object list2() {
         return adminGoodsService.list2();
@@ -59,7 +55,6 @@ public class AdminGoodsController {
      * @param goodsAllinone
      * @return
      */
-    @RequiresPermissionsDesc(menu = {"商品管理", "商品列表"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody GoodsAllinone goodsAllinone) {
         return adminGoodsService.update(goodsAllinone);
@@ -71,7 +66,6 @@ public class AdminGoodsController {
      * @param goods
      * @return
      */
-    @RequiresPermissionsDesc(menu = {"商品管理", "商品列表"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallGoods goods) {
         return adminGoodsService.delete(goods);
@@ -83,7 +77,6 @@ public class AdminGoodsController {
      * @param goodsAllinone
      * @return
      */
-    @RequiresPermissionsDesc(menu = {"商品管理", "商品列表"}, button = "添加")
     @PostMapping("/create")
     public Object create(@RequestBody GoodsAllinone goodsAllinone) {
         return adminGoodsService.create(goodsAllinone);
@@ -95,7 +88,6 @@ public class AdminGoodsController {
      * @param id
      * @return
      */
-    @RequiresPermissionsDesc(menu = {"商品管理", "商品列表"}, button = "详情")
     @GetMapping("/detail")
     public Object detail(@NotNull Integer id) {
         return adminGoodsService.detail(id);

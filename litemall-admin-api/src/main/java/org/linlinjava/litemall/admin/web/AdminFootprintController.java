@@ -1,7 +1,4 @@
 package org.linlinjava.litemall.admin.web;
-
-import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.linlinjava.litemall.core.validator.Order;
@@ -24,7 +21,6 @@ public class AdminFootprintController {
     @Autowired
     private LitemallFootprintService footprintService;
 
-    @RequiresPermissionsDesc(menu = {"用户管理", "会员足迹"}, button = "查询")
     @GetMapping("/list")
     public Object list(String userId, String goodsId,
                        @RequestParam(defaultValue = "1") Integer page,
@@ -36,7 +32,6 @@ public class AdminFootprintController {
         return ResponseUtil.okList(footprintList);
     }
 
-    @RequiresPermissionsDesc(menu = {"用户管理", "用户足迹"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallFootprint footprint) {
         Integer id = footprint.getId();
@@ -47,7 +42,6 @@ public class AdminFootprintController {
         return ResponseUtil.ok();
     }
 
-    @RequiresPermissionsDesc(menu = {"用户管理", "会员足迹"}, button = "批量删除")
     @PostMapping("/batch-delete")
     public Object batchDelete(@RequestBody Map<String, List<Integer>> request) {
         List<Integer> ids = request.get("ids");

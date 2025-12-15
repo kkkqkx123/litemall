@@ -2,14 +2,13 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.db.service.LitemallGoodsProductService;
 import org.linlinjava.litemall.db.service.LitemallGoodsService;
 import org.linlinjava.litemall.db.service.LitemallOrderService;
 import org.linlinjava.litemall.db.service.LitemallUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,8 +32,7 @@ public class AdminDashbordController {
     @Autowired
     private LitemallOrderService orderService;
 
-    @RequiresPermissions("admin:dashboard:info")
-    @RequiresPermissionsDesc(menu = {"系统管理", "仪表盘"}, button = "查看")
+    @PreAuthorize("hasPermission('admin:dashboard:info', 'admin')")
     @GetMapping("")
     public Object info() {
         int userTotal = userService.count();

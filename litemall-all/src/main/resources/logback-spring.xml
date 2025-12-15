@@ -68,7 +68,4 @@
     <logger name="org.linlinjava.litemall.admin.security.JwtAuthenticationFilter" level="TRACE">
         <appender-ref ref="jwt-console" />
     </logger>
-    <logger name="org.linlinjava.litemall.admin.security.PermissionSecurityAspect" level="TRACE">
-        <appender-ref ref="console" />
-    </logger>
 </configuration>

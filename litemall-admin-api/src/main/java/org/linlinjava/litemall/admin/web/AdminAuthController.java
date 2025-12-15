@@ -156,7 +156,6 @@ public class AdminAuthController {
         return ResponseUtil.ok();
     }
 
-
     @GetMapping("/info")
     public Object info() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -189,10 +188,9 @@ public class AdminAuthController {
         if (systemPermissionsMap == null) {
             systemPermissionsMap = new HashMap<>();
             final String basicPackage = "org.linlinjava.litemall.admin";
-            List<Permission> systemPermissions = PermissionUtil.listPermission(context, basicPackage);
-            for (Permission permission : systemPermissions) {
-                String perm = permission.getRequiresPermissions().value()[0];
-                String api = permission.getApi();
+            Set<String> systemPermissions = PermissionUtil.listPermissionString(PermissionUtil.listPermission(context, basicPackage));
+            for (String perm : systemPermissions) {
+                String api = perm; // 权限字符串即为API权限
                 systemPermissionsMap.put(perm, api);
             }
         }

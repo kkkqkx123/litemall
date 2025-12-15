@@ -2,11 +2,9 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
 import org.linlinjava.litemall.admin.security.AdminUserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.core.util.JacksonUtil;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.core.validator.Order;
@@ -41,7 +39,6 @@ public class AdminNoticeController {
     @Autowired
     private LitemallNoticeAdminService noticeAdminService;
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "查询")
     @GetMapping("/list")
     public Object list(String title, String type,
                        @RequestParam(defaultValue = "1") Integer page,
@@ -69,7 +66,6 @@ public class AdminNoticeController {
         return adminUserDetails.getAdmin().getId();
     }
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "添加")
     @PostMapping("/create")
     public Object create(@RequestBody LitemallNotice notice) {
         Object error = validate(notice);
@@ -80,14 +76,12 @@ public class AdminNoticeController {
         return ResponseUtil.ok(notice);
     }
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "详情")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
         LitemallNotice notice = noticeService.findById(id);
         return ResponseUtil.ok(notice);
     }
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallNotice notice) {
         Object error = validate(notice);
@@ -100,7 +94,6 @@ public class AdminNoticeController {
         return ResponseUtil.ok();
     }
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallNotice notice) {
         Integer id = notice.getId();
@@ -111,7 +104,6 @@ public class AdminNoticeController {
         return ResponseUtil.ok();
     }
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "通知管理"}, button = "批量删除")
     @PostMapping("/batch-delete")
     public Object batchDelete(@RequestBody String body) {
         List<Integer> ids = JacksonUtil.parseIntegerList(body, "ids");

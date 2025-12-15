@@ -22,9 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
-
-
 
 @RestController
 @RequestMapping("/admin/topic")
@@ -37,7 +34,6 @@ public class AdminTopicController {
     @Autowired
     private LitemallGoodsService goodsService;
 
-    @RequiresPermissionsDesc(menu = {"营销管理", "专题管理"}, button = "查询")
     @GetMapping("/list")
     public Object list(String title, String subtitle,
                        @RequestParam(defaultValue = "1") Integer page,
@@ -64,7 +60,6 @@ public class AdminTopicController {
         return null;
     }
 
-    @RequiresPermissionsDesc(menu = {"营销管理", "专题管理"}, button = "添加")
     @PostMapping("/create")
     public Object create(@RequestBody LitemallTopic topic) {
         Object error = validate(topic);
@@ -75,7 +70,6 @@ public class AdminTopicController {
         return ResponseUtil.ok(topic);
     }
 
-    @RequiresPermissionsDesc(menu = {"营销管理", "专题管理"}, button = "详情")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
         LitemallTopic topic = topicService.findById(id);
@@ -92,7 +86,6 @@ public class AdminTopicController {
         return ResponseUtil.ok(data);
     }
 
-    @RequiresPermissionsDesc(menu = {"营销管理", "专题管理"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallTopic topic) {
         Object error = validate(topic);
@@ -105,7 +98,6 @@ public class AdminTopicController {
         return ResponseUtil.ok();
     }
 
-    @RequiresPermissionsDesc(menu = {"营销管理", "专题管理"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallTopic topic) {
         topicService.deleteById(topic.getId());

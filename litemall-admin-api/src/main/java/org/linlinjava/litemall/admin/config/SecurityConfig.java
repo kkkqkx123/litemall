@@ -2,16 +2,14 @@ package org.linlinjava.litemall.admin.config;
 
 import org.linlinjava.litemall.admin.security.JwtAuthenticationFilter;
 import org.linlinjava.litemall.admin.security.AdminUserDetailsService;
-import org.linlinjava.litemall.admin.security.PermissionSecurityAspect;
+import org.linlinjava.litemall.admin.security.CustomPermissionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -19,15 +17,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
-// @EnableMethodSecurity(prePostEnabled = false) // 禁用Spring Security方法安全机制，使用自定义权限切面
-@EnableAspectJAutoProxy // 启用AOP切面支持，让自定义权限切面生效
+@EnableMethodSecurity(prePostEnabled = true) // 启用Spring Security方法安全机制
 public class SecurityConfig {
+
+    @Autowired
+    private CustomPermissionEvaluator customPermissionEvaluator;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -46,14 +47,14 @@ public class SecurityConfig {
     }
 
     /**
-     * 手动注册权限切面Bean，确保权限切面被Spring容器正确识别
+     * 配置自定义权限评估器到Spring Security表达式处理器
      */
     @Bean
-    public PermissionSecurityAspect permissionSecurityAspect() {
-        return new PermissionSecurityAspect();
+    public DefaultWebSecurityExpressionHandler webSecurityExpressionHandler() {
+        DefaultWebSecurityExpressionHandler expressionHandler = new DefaultWebSecurityExpressionHandler();
+        expressionHandler.setPermissionEvaluator(customPermissionEvaluator);
+        return expressionHandler;
     }
-
-
 
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -65,7 +66,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                // 允许所有请求通过，由自定义权限切面进行权限检查
+                // 允许所有请求通过，权限检查由@PreAuthorize注解处理
                 .anyRequest().permitAll()
             )
             .exceptionHandling(exceptions -> exceptions

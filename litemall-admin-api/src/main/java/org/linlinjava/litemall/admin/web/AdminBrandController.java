@@ -2,8 +2,6 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.core.validator.Order;
 import org.linlinjava.litemall.core.validator.Sort;
@@ -28,7 +26,6 @@ public class AdminBrandController {
     @Autowired
     private LitemallBrandService brandService;
 
-    @RequiresPermissionsDesc(menu = {"商场管理", "品牌管理"}, button = "查询")
     @GetMapping("/list")
     public Object list(String id, String name,
                        @RequestParam(defaultValue = "1") Integer page,
@@ -57,7 +54,6 @@ public class AdminBrandController {
         return null;
     }
 
-    @RequiresPermissionsDesc(menu = {"商场管理", "品牌管理"}, button = "添加")
     @PostMapping("/create")
     public Object create(@RequestBody LitemallBrand brand) {
         Object error = validate(brand);
@@ -68,14 +64,12 @@ public class AdminBrandController {
         return ResponseUtil.ok(brand);
     }
 
-    @RequiresPermissionsDesc(menu = {"商场管理", "品牌管理"}, button = "详情")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
         LitemallBrand brand = brandService.findById(id);
         return ResponseUtil.ok(brand);
     }
 
-    @RequiresPermissionsDesc(menu = {"商场管理", "品牌管理"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallBrand brand) {
         Object error = validate(brand);
@@ -88,7 +82,6 @@ public class AdminBrandController {
         return ResponseUtil.ok(brand);
     }
 
-    @RequiresPermissionsDesc(menu = {"商场管理", "品牌管理"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallBrand brand) {
         Integer id = brand.getId();

@@ -2,8 +2,6 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.admin.service.LogHelper;
 import org.linlinjava.litemall.core.util.RegexUtil;
 import org.linlinjava.litemall.core.util.ResponseUtil;
@@ -39,7 +37,6 @@ public class AdminAdminController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "管理员管理"}, button = "查询")
     @GetMapping("/list")
     public Object list(String username,
                        @RequestParam(defaultValue = "1") Integer page,
@@ -65,7 +62,6 @@ public class AdminAdminController {
         return null;
     }
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "管理员管理"}, button = "添加")
     @PostMapping("/create")
     public Object create(@RequestBody LitemallAdmin admin) {
         Object error = validate(admin);
@@ -87,14 +83,12 @@ public class AdminAdminController {
         return ResponseUtil.ok(admin);
     }
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "管理员管理"}, button = "详情")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
         LitemallAdmin admin = adminService.findById(id);
         return ResponseUtil.ok(admin);
     }
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "管理员管理"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallAdmin admin) {
         Object error = validate(admin);
@@ -118,7 +112,6 @@ public class AdminAdminController {
         return ResponseUtil.ok(admin);
     }
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "管理员管理"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallAdmin admin) {
         Integer anotherAdminId = admin.getId();

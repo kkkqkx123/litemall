@@ -2,8 +2,6 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.core.validator.Order;
 import org.linlinjava.litemall.core.validator.Sort;
@@ -28,7 +26,6 @@ public class AdminLogController {
     @Autowired
     private LitemallLogService logService;
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "操作日志"}, button = "查询")
     @GetMapping("/list")
     public Object list(String name,
                        @RequestParam(defaultValue = "1") Integer page,

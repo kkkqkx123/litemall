@@ -2,8 +2,6 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.linlinjava.litemall.admin.vo.CategoryVo;
 import org.linlinjava.litemall.core.util.ResponseUtil;
@@ -29,9 +27,7 @@ public class AdminCategoryController {
     @Autowired
     private LitemallCategoryService categoryService;
 
-    @PreAuthorize("hasAuthority('admin:category:list')")
-    @RequiresPermissions("admin:category:list")
-    @RequiresPermissionsDesc(menu = {"商场管理", "类目管理"}, button = "查询")
+    @PreAuthorize("hasAuthority('admin:category:list') or hasPermission('admin:category:list', 'admin')")
     @GetMapping("/list")
     public Object list() {
         List<CategoryVo> categoryVoList = new ArrayList<>();
@@ -92,9 +88,7 @@ public class AdminCategoryController {
         return null;
     }
 
-    @PreAuthorize("hasAuthority('admin:category:create')")
-    @RequiresPermissions("admin:category:create")
-    @RequiresPermissionsDesc(menu = {"商场管理", "类目管理"}, button = "添加")
+    @PreAuthorize("hasAuthority('admin:category:create') or hasPermission('admin:category:create', 'admin')")
     @PostMapping("/create")
     public Object create(@RequestBody LitemallCategory category) {
         Object error = validate(category);
@@ -105,18 +99,14 @@ public class AdminCategoryController {
         return ResponseUtil.ok(category);
     }
 
-    @PreAuthorize("hasAuthority('admin:category:read')")
-    @RequiresPermissions("admin:category:read")
-    @RequiresPermissionsDesc(menu = {"商品管理", "类目管理"}, button = "详情")
+    @PreAuthorize("hasAuthority('admin:category:read') or hasPermission('admin:category:read', 'admin')")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
         LitemallCategory category = categoryService.findById(id);
         return ResponseUtil.ok(category);
     }
 
-    @PreAuthorize("hasAuthority('admin:category:update')")
-    @RequiresPermissions("admin:category:update")
-    @RequiresPermissionsDesc(menu = {"商品管理", "类目管理"}, button = "编辑")
+    @PreAuthorize("hasAuthority('admin:category:update') or hasPermission('admin:category:update', 'admin')")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallCategory category) {
         Object error = validate(category);
@@ -130,9 +120,7 @@ public class AdminCategoryController {
         return ResponseUtil.ok();
     }
 
-    @PreAuthorize("hasAuthority('admin:category:delete')")
-    @RequiresPermissions("admin:category:delete")
-    @RequiresPermissionsDesc(menu = {"商场管理", "类目管理"}, button = "删除")
+    @PreAuthorize("hasAuthority('admin:category:delete') or hasPermission('admin:category:delete', 'admin')")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallCategory category) {
         Integer id = category.getId();

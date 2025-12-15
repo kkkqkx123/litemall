@@ -18,9 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
-
-
 
 @RestController
 @RequestMapping("/admin/region")
@@ -37,7 +34,6 @@ public class AdminRegionController {
         return ResponseUtil.okList(regionList);
     }
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "行政区域"}, button = "查询")
     @GetMapping("/list")
     public Object list() {
         List<RegionVo> regionVoList = new ArrayList<>();

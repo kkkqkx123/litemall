@@ -2,7 +2,6 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.core.validator.Order;
 import org.linlinjava.litemall.core.validator.Sort;
@@ -26,7 +25,6 @@ public class AdminIssueController {
     @Autowired
     private LitemallIssueService issueService;
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "通用问题"}, button = "查询")
     @GetMapping("/list")
     public Object list(String question,
                        @RequestParam(defaultValue = "1") Integer page,
@@ -49,7 +47,6 @@ public class AdminIssueController {
         return null;
     }
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "通用问题"}, button = "添加")
     @PostMapping("/create")
     public Object create(@RequestBody LitemallIssue issue) {
         Object error = validate(issue);
@@ -60,14 +57,12 @@ public class AdminIssueController {
         return ResponseUtil.ok(issue);
     }
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "通用问题"}, button = "详情")
     @GetMapping("/read")
     public Object read(@NotNull Integer id) {
         LitemallIssue issue = issueService.findById(id);
         return ResponseUtil.ok(issue);
     }
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "通用问题"}, button = "编辑")
     @PostMapping("/update")
     public Object update(@RequestBody LitemallIssue issue) {
         Object error = validate(issue);
@@ -81,7 +76,6 @@ public class AdminIssueController {
         return ResponseUtil.ok(issue);
     }
 
-    @RequiresPermissionsDesc(menu = {"系统管理", "通用问题"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody LitemallIssue issue) {
         Integer id = issue.getId();

@@ -2,8 +2,6 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.admin.service.AdminOrderService;
 import org.linlinjava.litemall.core.express.ExpressService;
 import org.linlinjava.litemall.core.notify.NotifyService;
@@ -42,7 +40,6 @@ public class AdminOrderController {
      * @param order
      * @return
      */
-    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "查询")
     @GetMapping("/list")
     public Object list(String nickname, String consignee, String orderSn,
                        @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
@@ -63,7 +60,6 @@ public class AdminOrderController {
      *
      * @return
      */
-    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "物流渠道")
     @GetMapping("/channel")
     public Object channel() {
         return ResponseUtil.ok(expressService.getVendors());
@@ -75,7 +71,6 @@ public class AdminOrderController {
      * @param id
      * @return
      */
-    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "详情")
     @GetMapping("/detail")
     public Object detail(@NotNull Integer id) {
         return adminOrderService.detail(id);
@@ -87,7 +82,6 @@ public class AdminOrderController {
      * @param body 订单信息，{ orderId：xxx }
      * @return 订单退款操作结果
      */
-    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "退款")
     @PostMapping("/refund")
     public Object refund(@RequestBody String body) {
         return adminOrderService.refund(body);
@@ -99,13 +93,11 @@ public class AdminOrderController {
      * @param body 订单信息，{ orderId：xxx, shipSn: xxx, shipChannel: xxx }
      * @return 订单操作结果
      */
-    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "发货")
     @PostMapping("/ship")
     public Object ship(@RequestBody String body) {
         return adminOrderService.ship(body);
     }
 
-    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "支付")
     @PostMapping("/pay")
     public Object pay(@RequestBody String body) {
         return adminOrderService.pay(body);
@@ -117,7 +109,6 @@ public class AdminOrderController {
      * @param body 订单信息，{ orderId：xxx }
      * @return 订单操作结果
      */
-    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "删除")
     @PostMapping("/delete")
     public Object delete(@RequestBody String body) {
         return adminOrderService.delete(body);
@@ -129,7 +120,6 @@ public class AdminOrderController {
      * @param body 订单信息，{ orderId：xxx }
      * @return 订单操作结果
      */
-    @RequiresPermissionsDesc(menu = {"订单管理", "订单列表"}, button = "回复")
     @PostMapping("/reply")
     public Object reply(@RequestBody String body) {
         return adminOrderService.reply(body);

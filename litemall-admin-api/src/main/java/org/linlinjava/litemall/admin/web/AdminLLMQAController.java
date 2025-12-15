@@ -2,8 +2,6 @@ package org.linlinjava.litemall.admin.web;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissions;
-import org.linlinjava.litemall.admin.annotation.RequiresPermissionsDesc;
 import org.linlinjava.litemall.core.llm.model.GoodsQARequest;
 import org.linlinjava.litemall.core.llm.model.GoodsQAResponse;
 import org.linlinjava.litemall.core.llm.service.LLMQAService;
@@ -38,7 +36,6 @@ public class AdminLLMQAController {
      * @return 问答响应
      */
     @PostMapping("/ask")
-    @RequiresPermissionsDesc(menu = {"AI助手", "AI问答"}, button = "提问")
     public Object ask(@RequestBody Map<String, String> body) {
         String question = body.get("question");
         String sessionId = body.get("sessionId");
@@ -72,7 +69,6 @@ public class AdminLLMQAController {
      * @return 会话ID
      */
     @PostMapping("/session/create")
-    @RequiresPermissionsDesc(menu = {"AI助手", "AI问答"}, button = "创建会话")
     public Object createSession(@RequestBody Map<String, String> body) {
         String title = body.get("title");
         if (title == null || title.trim().isEmpty()) {
@@ -97,7 +93,6 @@ public class AdminLLMQAController {
      * @return 会话历史
      */
     @GetMapping("/session/{sessionId}/history")
-    @RequiresPermissionsDesc(menu = {"AI助手", "AI问答"}, button = "历史记录")
     public Object getHistory(@PathVariable String sessionId,
                              @RequestParam(defaultValue = "1") Integer page,
                              @RequestParam(defaultValue = "10") Integer limit) {
@@ -117,7 +112,6 @@ public class AdminLLMQAController {
      * @return 操作结果
      */
     @DeleteMapping("/session/{sessionId}")
-    @RequiresPermissionsDesc(menu = {"AI助手", "AI问答"}, button = "销毁会话")
     public Object destroySession(@PathVariable String sessionId) {
         try {
             llmqaService.destroySession(sessionId);
@@ -135,7 +129,6 @@ public class AdminLLMQAController {
      * @return 服务状态
      */
     @GetMapping("/status")
-    @RequiresPermissionsDesc(menu = {"AI助手", "AI问答"}, button = "服务状态")
     public Object getStatus() {
         try {
             Map<String, Object> status = llmqaService.getServiceStatus();
@@ -154,7 +147,6 @@ public class AdminLLMQAController {
      * @return 会话统计
      */
     @GetMapping("/session/{sessionId}/statistics")
-    @RequiresPermissionsDesc(menu = {"AI助手", "AI问答"}, button = "使用统计")
     public Object getSessionStatistics(@PathVariable(required = false) String sessionId,
                                       @RequestParam(defaultValue = "7") Integer days) {
         try {
@@ -174,7 +166,6 @@ public class AdminLLMQAController {
      * @return 服务配置信息
      */
     @GetMapping("/debug/config")
-    @RequiresPermissionsDesc(menu = {"AI助手", "AI问答"}, button = "配置信息")
     public Object getConfig() {
         try {
             Map<String, Object> status = llmqaService.getServiceStatus();
