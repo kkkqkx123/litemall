@@ -47,6 +47,7 @@
       border
       fit
       highlight-current-row
+      :cell-class-name="tableCellClassName"
     >
       <el-table-column
         align="center"
@@ -81,19 +82,20 @@
         prop="desc"
       >
         <template slot-scope="scope">
-          <div
-            v-if="scope.row.desc && scope.row.desc.length > 100"
-            class="desc-cell"
-          >
-            <span
-              v-if="!scope.row.showFullDesc"
-            >{{ scope.row.desc.substring(0, 100) }}...</span>
-            <span v-else>{{ scope.row.desc }}</span>
-            <el-button type="text" size="mini" @click="toggleDesc(scope.row)">
-              {{ scope.row.showFullDesc ? "收起" : "展开" }}
-            </el-button>
+          <div class="desc-content">
+            <div
+              v-if="scope.row.desc && scope.row.desc.length > 100"
+            >
+              <span
+                v-if="!scope.row.showFullDesc"
+              >{{ scope.row.desc.substring(0, 100) }}...</span>
+              <span v-else>{{ scope.row.desc }}</span>
+              <el-button type="text" size="mini" @click="toggleDesc(scope.row)" style="display: block; text-align: right; margin-top: 4px;">
+                {{ scope.row.showFullDesc ? "收起" : "展开" }}
+              </el-button>
+            </div>
+            <div v-else>{{ scope.row.desc || '暂无介绍' }}</div>
           </div>
-          <div v-else>{{ scope.row.desc }}</div>
         </template>
       </el-table-column>
 
@@ -224,6 +226,22 @@
   width: 145px;
   height: 145px;
   display: block;
+}
+
+/* 介绍列内容样式 - 居左显示 */
+.desc-content {
+  text-align: left;
+  border: 1px solid #e8eaec;
+  padding: 8px;
+  background-color: #f8f8f9;
+  border-radius: 4px;
+  min-height: 40px;
+  line-height: 1.5;
+}
+
+/* 表格单元格内容居左显示 */
+.left-align-cell {
+  text-align: left !important;
 }
 </style>
 
@@ -420,6 +438,10 @@ export default {
         )
         this.downloadLoading = false
       })
+    },
+    // 设置表格单元格样式类，使内容居左显示
+    tableCellClassName({ row, column, rowIndex, columnIndex }) {
+      return 'left-align-cell'
     }
   }
 }
