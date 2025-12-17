@@ -1,7 +1,9 @@
 package org.linlinjava.litemall.core.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
@@ -11,6 +13,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
@@ -29,6 +32,9 @@ public class JacksonConfig {
         return new Jackson2ObjectMapperBuilderCustomizer() {
             @Override
             public void customize(Jackson2ObjectMapperBuilder builder) {
+                // 注册JavaTimeModule - 关键修复
+                builder.modules(new JavaTimeModule());
+                
                 builder.serializerByType(LocalDateTime.class,
                         new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 builder.serializerByType(LocalDate.class,
@@ -46,5 +52,14 @@ public class JacksonConfig {
                 builder.featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
             }
         };
+    }
+    
+    /**
+     * 提供全局ObjectMapper配置，确保所有模块使用统一的Jackson配置
+     */
+    @Bean
+    @Primary
+    public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
+        return builder.build();
     }
 }

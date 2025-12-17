@@ -14,12 +14,20 @@ import java.util.Map;
 public class JacksonUtil {
 
     private static final Log logger = LogFactory.getLog(JacksonUtil.class);
+    
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    
+    static {
+        // 配置ObjectMapper以支持Java 8时间类型
+        objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+        // 禁用将日期写为时间戳，保持ISO格式
+        objectMapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    }
 
     public static String parseString(String body, String field) {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode node;
         try {
-            node = mapper.readTree(body);
+            node = objectMapper.readTree(body);
             JsonNode leaf = node.get(field);
             if (leaf != null)
                 return leaf.asText();
@@ -31,14 +39,13 @@ public class JacksonUtil {
 
 
     public static List<String> parseStringList(String body, String field) {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode node;
         try {
-            node = mapper.readTree(body);
+            node = objectMapper.readTree(body);
             JsonNode leaf = node.get(field);
 
             if (leaf != null)
-                return mapper.convertValue(leaf, new TypeReference<List<String>>() {
+                return objectMapper.convertValue(leaf, new TypeReference<List<String>>() {
                 });
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
@@ -47,10 +54,9 @@ public class JacksonUtil {
     }
 
     public static Integer parseInteger(String body, String field) {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode node;
         try {
-            node = mapper.readTree(body);
+            node = objectMapper.readTree(body);
             JsonNode leaf = node.get(field);
             if (leaf != null)
                 return leaf.asInt();
@@ -61,14 +67,13 @@ public class JacksonUtil {
     }
 
     public static List<Integer> parseIntegerList(String body, String field) {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode node;
         try {
-            node = mapper.readTree(body);
+            node = objectMapper.readTree(body);
             JsonNode leaf = node.get(field);
 
             if (leaf != null)
-                return mapper.convertValue(leaf, new TypeReference<List<Integer>>() {
+                return objectMapper.convertValue(leaf, new TypeReference<List<Integer>>() {
                 });
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
@@ -78,10 +83,9 @@ public class JacksonUtil {
 
 
     public static Boolean parseBoolean(String body, String field) {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode node;
         try {
-            node = mapper.readTree(body);
+            node = objectMapper.readTree(body);
             JsonNode leaf = node.get(field);
             if (leaf != null)
                 return leaf.asBoolean();
@@ -92,10 +96,9 @@ public class JacksonUtil {
     }
 
     public static Short parseShort(String body, String field) {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode node;
         try {
-            node = mapper.readTree(body);
+            node = objectMapper.readTree(body);
             JsonNode leaf = node.get(field);
             if (leaf != null) {
                 Integer value = leaf.asInt();
@@ -108,10 +111,9 @@ public class JacksonUtil {
     }
 
     public static Byte parseByte(String body, String field) {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode node;
         try {
-            node = mapper.readTree(body);
+            node = objectMapper.readTree(body);
             JsonNode leaf = node.get(field);
             if (leaf != null) {
                 Integer value = leaf.asInt();
@@ -124,12 +126,11 @@ public class JacksonUtil {
     }
 
     public static <T> T parseObject(String body, String field, Class<T> clazz) {
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode node;
         try {
-            node = mapper.readTree(body);
+            node = objectMapper.readTree(body);
             node = node.get(field);
-            return mapper.treeToValue(node, clazz);
+            return objectMapper.treeToValue(node, clazz);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
@@ -140,10 +141,8 @@ public class JacksonUtil {
         if (json == null) {
             return null;
         }
-        ObjectMapper mapper = new ObjectMapper();
         try {
-
-            return mapper.readTree(json);
+            return objectMapper.readTree(json);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
@@ -152,7 +151,6 @@ public class JacksonUtil {
     }
 
     public static Map<String, String> toMap(String data) {
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
             return objectMapper.readValue(data, new TypeReference<Map<String, String>>() {
             });
@@ -163,11 +161,10 @@ public class JacksonUtil {
     }
 
     public static String toJson(Object data) {
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
             return objectMapper.writeValueAsString(data);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
         return null;
     }
