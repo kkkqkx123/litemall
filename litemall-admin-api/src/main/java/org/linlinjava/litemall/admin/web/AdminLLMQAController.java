@@ -237,4 +237,44 @@ public class AdminLLMQAController {
             return ResponseUtil.fail(500, "调试API调用失败：" + e.getMessage());
         }
     }
+
+    /**
+     * 获取热门问题
+     * 返回预定义的热门商品相关问题列表
+     *
+     * @param limit 返回问题数量限制
+     * @param category 问题分类
+     * @return 热门问题列表
+     */
+    @GetMapping("/hot-questions")
+    public Object getHotQuestions(@RequestParam(defaultValue = "5") Integer limit,
+                                  @RequestParam(required = false) String category) {
+        try {
+            // 预定义的热门问题列表
+            String[] defaultQuestions = {
+                "有什么价格在100到200元之间的商品推荐吗？",
+                "最近有什么新品上市？",
+                "有哪些商品正在促销？",
+                "推荐一些性价比高的商品",
+                "有什么适合送礼的商品吗？"
+            };
+            
+            // 根据限制数量返回问题
+            int actualLimit = Math.min(limit, defaultQuestions.length);
+            String[] questions = Arrays.copyOf(defaultQuestions, actualLimit);
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("questions", questions);
+            result.put("total", questions.length);
+            result.put("category", category != null ? category : "general");
+            
+            logger.info("返回热门问题列表，共" + questions.length + "个问题");
+            
+            return ResponseUtil.ok(result);
+            
+        } catch (Exception e) {
+            logger.error("获取热门问题失败", e);
+            return ResponseUtil.fail(500, "获取热门问题失败：" + e.getMessage());
+        }
+    }
 }

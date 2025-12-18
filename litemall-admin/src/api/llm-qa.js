@@ -11,7 +11,7 @@ import request from '@/utils/request'
  */
 export function askQuestion(data) {
   return request({
-    url: '/admin/llm/qa',
+    url: '/llm/qa/ask',
     method: 'post',
     data: data
   })
@@ -23,7 +23,7 @@ export function askQuestion(data) {
  */
 export function getLLMServiceStatus() {
   return request({
-    url: '/admin/llm/status',
+    url: '/llm/qa/service/status',
     method: 'get'
   })
 }
@@ -37,7 +37,7 @@ export function getLLMServiceStatus() {
  */
 export function getHotQuestions(params) {
   return request({
-    url: '/admin/llm/hot-questions',
+    url: '/llm/qa/hot-questions',
     method: 'get',
     params: params
   })
