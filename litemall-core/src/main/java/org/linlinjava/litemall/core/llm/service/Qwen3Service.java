@@ -222,6 +222,16 @@ public class Qwen3Service {
      * @throws LLMServiceException 当解析失败时抛出
      */
     private String parseResponse(Map<String, Object> responseBody) throws LLMServiceException {
+        // 记录完整的LLM响应，用于调试
+        try {
+            String fullResponseJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(responseBody);
+            logger.info("=== LLM完整响应开始 ===");
+            logger.info("LLM完整响应JSON：{}", fullResponseJson);
+            logger.info("=== LLM完整响应结束 ===");
+        } catch (Exception e) {
+            logger.warn("无法序列化完整LLM响应为JSON，但继续处理", e);
+        }
+        
         // 检查错误信息
         if (responseBody.containsKey("error")) {
             Object errorObj = responseBody.get("error");
@@ -230,8 +240,10 @@ public class Qwen3Service {
                  Map<String, Object> error = (Map<String, Object>) errorObj;
                  String errorCode = (String) error.get("code");
                  String errorMessage = (String) error.get("message");
+                 logger.error("LLM API返回错误：{} - {}", errorCode, errorMessage);
                  throw new LLMServiceException("API错误：" + errorCode + " - " + errorMessage);
              } else {
+                 logger.error("LLM API返回错误格式：{}", errorObj);
                  throw new LLMServiceException("API返回错误格式");
              }
          }
@@ -239,6 +251,7 @@ public class Qwen3Service {
          // 解析OpenAI兼容的Chat Completions格式响应
          Object choicesObj = responseBody.get("choices");
          if (!(choicesObj instanceof List<?>)) {
+             logger.error("LLM响应格式错误，缺少choices字段，响应体：{}", responseBody);
              throw new LLMServiceException("响应格式错误，缺少choices字段");
          }
          
@@ -246,6 +259,7 @@ public class Qwen3Service {
          List<Map<String, Object>> choices = (List<Map<String, Object>>) choicesObj;
          
          if (choices.isEmpty()) {
+             logger.error("LLM模型未生成任何响应，choices为空");
              throw new LLMServiceException("模型未生成任何响应");
          }
          
@@ -254,6 +268,7 @@ public class Qwen3Service {
          Object messageObj = firstChoice.get("message");
          
          if (!(messageObj instanceof Map<?, ?>)) {
+             logger.error("LLM消息格式错误，message字段类型：{}", messageObj != null ? messageObj.getClass() : "null");
              throw new LLMServiceException("消息格式错误");
          }
          
@@ -262,10 +277,16 @@ public class Qwen3Service {
          
          String result = (String) message.get("content");
          if (result == null || result.trim().isEmpty()) {
+             logger.error("LLM模型未生成任何文本，content字段为空");
              throw new LLMServiceException("模型未生成任何文本");
          }
          
-         logger.debug("Qwen3 API响应成功，生成文本长度：{}", result.length());
+         // 记录解析后的结果内容
+         logger.info("=== LLM解析结果开始 ===");
+         logger.info("LLM生成文本内容：{}", result);
+         logger.info("LLM生成文本长度：{}", result.length());
+         logger.info("=== LLM解析结果结束 ===");
+         
          return result.trim();
     }
     
