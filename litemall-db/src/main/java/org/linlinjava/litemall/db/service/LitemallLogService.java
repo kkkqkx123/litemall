@@ -27,13 +27,28 @@ public class LitemallLogService {
         logMapper.insertSelective(log);
     }
 
-    public List<LitemallLog> querySelective(String name, Integer page, Integer size, String sort, String order) {
+    public List<LitemallLog> querySelective(String name, LocalDateTime startTime, LocalDateTime endTime, Boolean status, Integer page, Integer size, String sort, String order) {
         LitemallLogExample example = new LitemallLogExample();
         LitemallLogExample.Criteria criteria = example.createCriteria();
 
         if (!StringUtils.isEmpty(name)) {
             criteria.andAdminLike("%" + name + "%");
         }
+        
+        // 时间范围查询
+        if (startTime != null && endTime != null) {
+            criteria.andAddTimeBetween(startTime, endTime);
+        } else if (startTime != null) {
+            criteria.andAddTimeGreaterThanOrEqualTo(startTime);
+        } else if (endTime != null) {
+            criteria.andAddTimeLessThanOrEqualTo(endTime);
+        }
+        
+        // 操作状态查询
+        if (status != null) {
+            criteria.andStatusEqualTo(status);
+        }
+        
         criteria.andDeletedEqualTo(false);
 
         if (!StringUtils.isEmpty(sort) && !StringUtils.isEmpty(order)) {

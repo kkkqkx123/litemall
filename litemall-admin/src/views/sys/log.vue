@@ -4,6 +4,23 @@
     <!-- 查询和其他操作 -->
     <div class="filter-container">
       <el-input v-model="listQuery.name" clearable class="filter-item" style="width: 200px;" :placeholder="$t('sys_log.placeholder.filter_name')"/>
+      
+      <el-date-picker
+        v-model="listQuery.timeRange"
+        type="datetimerange"
+        range-separator="至"
+        start-placeholder="开始时间"
+        end-placeholder="结束时间"
+        class="filter-item"
+        style="width: 350px;"
+        value-format="yyyy-MM-dd HH:mm:ss">
+      </el-date-picker>
+      
+      <el-select v-model="listQuery.status" clearable placeholder="操作状态" class="filter-item" style="width: 120px;">
+        <el-option label="成功" :value="true"></el-option>
+        <el-option label="失败" :value="false"></el-option>
+      </el-select>
+      
       <el-button v-permission="['GET /admin/log/list']" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">{{ $t('app.button.search') }}</el-button>
     </div>
 
@@ -28,7 +45,7 @@
 
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="handlePagination" />
 
   </div>
 </template>
@@ -61,6 +78,8 @@ export default {
         page: 1,
         limit: 20,
         name: undefined,
+        timeRange: undefined,
+        status: undefined,
         sort: 'add_time',
         order: 'desc'
       },
@@ -77,7 +96,16 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      listLog(this.listQuery)
+      
+      // 处理时间范围参数
+      const query = Object.assign({}, this.listQuery)
+      if (query.timeRange && query.timeRange.length === 2) {
+        query.startTime = query.timeRange[0]
+        query.endTime = query.timeRange[1]
+      }
+      delete query.timeRange
+      
+      listLog(query)
         .then(response => {
           this.list = response.data.data.list
           this.total = response.data.data.total
@@ -91,6 +119,13 @@ export default {
     },
     handleFilter() {
       this.listQuery.page = 1
+      this.getList()
+    },
+    handlePagination(pagination) {
+      // 更新分页参数
+      this.listQuery.page = pagination.page
+      this.listQuery.limit = pagination.limit
+      // 重新获取数据，保留其他查询条件
       this.getList()
     }
   }
