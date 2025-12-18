@@ -121,6 +121,7 @@
                 ORDER BY g.add_time DESC
             </otherwise>
         </choose>
+        LIMIT #{offset}, #{limit}
     </select>
     
     <!-- 商品评分统计总数（用于分页） -->

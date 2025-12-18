@@ -10,9 +10,6 @@
           :value="item.id"
         />
       </el-select>
-      <el-select v-model="listQuery.sort" placeholder="排序字段" class="filter-item">
-        <el-option label="平均评分" value="avg_rating" />
-      </el-select>
       <el-select v-model="listQuery.order" placeholder="排序方式" class="filter-item">
         <el-option label="降序" value="desc" />
         <el-option label="升序" value="asc" />
@@ -68,7 +65,6 @@ export default {
       categories: [],
       listQuery: {
         categoryId: undefined,
-        sort: 'avg_rating',
         order: 'desc',
         page: 1,
         limit: 20
