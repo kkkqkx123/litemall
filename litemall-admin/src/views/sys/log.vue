@@ -3,8 +3,13 @@
 
     <!-- 查询和其他操作 -->
     <div class="filter-container">
-      <el-input v-model="listQuery.name" clearable class="filter-item" style="width: 200px;" :placeholder="$t('sys_log.placeholder.filter_name')"/>
-      
+      <el-input
+        v-model="listQuery.name"
+        clearable
+        class="filter-item"
+        style="width: 200px;"
+        :placeholder="$t('sys_log.placeholder.filter_name')" />
+
       <el-date-picker
         v-model="listQuery.timeRange"
         type="datetimerange"
@@ -13,19 +18,34 @@
         end-placeholder="结束时间"
         class="filter-item"
         style="width: 350px;"
-        value-format="yyyy-MM-dd HH:mm:ss">
-      </el-date-picker>
-      
-      <el-select v-model="listQuery.status" clearable placeholder="操作状态" class="filter-item" style="width: 120px;">
-        <el-option label="成功" :value="true"></el-option>
-        <el-option label="失败" :value="false"></el-option>
+        value-format="yyyy-MM-dd HH:mm:ss" />
+
+      <el-select
+        v-model="listQuery.status"
+        clearable
+        placeholder="操作状态"
+        class="filter-item"
+        style="width: 120px;">
+        <el-option label="成功" :value="true" />
+        <el-option label="失败" :value="false" />
       </el-select>
-      
-      <el-button v-permission="['GET /admin/log/list']" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">{{ $t('app.button.search') }}</el-button>
+
+      <el-button
+        v-permission="['GET /admin/log/list']"
+        class="filter-item"
+        type="primary"
+        icon="el-icon-search"
+        @click="handleFilter">{{ $t('app.button.search') }}</el-button>
     </div>
 
     <!-- 查询结果 -->
-    <el-table v-loading="listLoading" :data="list" :element-loading-text="$t('app.message.list_loading')" border fit highlight-current-row>
+    <el-table
+      v-loading="listLoading"
+      :data="list"
+      :element-loading-text="$t('app.message.list_loading')"
+      border
+      fit
+      highlight-current-row>
       <el-table-column align="center" :label="$t('sys_log.table.admin')" prop="admin" />
       <el-table-column align="center" :label="$t('sys_log.table.ip')" prop="ip" />
       <el-table-column align="center" :label="$t('sys_log.table.add_time')" prop="addTime" />
@@ -37,7 +57,7 @@
       <el-table-column align="center" :label="$t('sys_log.table.action')" prop="action" />
       <el-table-column align="center" :label="$t('sys_log.table.status')" prop="status">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.status ? 'success' : 'error' ">{{ $t(scope.row.status ? 'sys_log.value.status_success' : 'sys_log.value.status_error') }}</el-tag>
+          <el-tag :type="scope.row.status ? 'success' : 'error'">{{ $t(scope.row.status ? 'sys_log.value.status_success' : 'sys_log.value.status_error') }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column align="center" :label="$t('sys_log.table.result')" prop="result" />
@@ -96,7 +116,7 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      
+
       // 处理时间范围参数
       const query = Object.assign({}, this.listQuery)
       if (query.timeRange && query.timeRange.length === 2) {
@@ -104,7 +124,7 @@ export default {
         query.endTime = query.timeRange[1]
       }
       delete query.timeRange
-      
+
       listLog(query)
         .then(response => {
           this.list = response.data.data.list

@@ -5,54 +5,66 @@
       <el-form :inline="true" :model="filterForm" size="small">
         <el-form-item label="年份">
           <el-select v-model="filterForm.year" placeholder="选择年份" @change="handleYearChange">
-            <el-option 
-              v-for="year in availableYears" 
-              :key="year" 
-              :label="year + '年'" 
-              :value="year">
-            </el-option>
+            <el-option
+              v-for="year in availableYears"
+              :key="year"
+              :label="year + '年'"
+              :value="year" />
           </el-select>
         </el-form-item>
         <el-form-item label="季度">
-          <el-select v-model="filterForm.quarter" placeholder="选择季度" clearable @change="handleQuarterChange">
-            <el-option label="全年" :value="null"></el-option>
-            <el-option label="第一季度" :value="1"></el-option>
-            <el-option label="第二季度" :value="2"></el-option>
-            <el-option label="第三季度" :value="3"></el-option>
-            <el-option label="第四季度" :value="4"></el-option>
+          <el-select
+            v-model="filterForm.quarter"
+            placeholder="选择季度"
+            clearable
+            @change="handleQuarterChange">
+            <el-option label="全年" :value="null" />
+            <el-option label="第一季度" :value="1" />
+            <el-option label="第二季度" :value="2" />
+            <el-option label="第三季度" :value="3" />
+            <el-option label="第四季度" :value="4" />
           </el-select>
         </el-form-item>
         <el-form-item label="月份">
-          <el-select v-model="filterForm.month" placeholder="选择月份" clearable @change="handleMonthChange" 
-                     :disabled="!filterForm.year">
-            <el-option label="全季度/全年" :value="null"></el-option>
-            <el-option 
-              v-for="month in availableMonths" 
-              :key="month" 
-              :label="month + '月'" 
-              :value="month">
-            </el-option>
+          <el-select
+            v-model="filterForm.month"
+            placeholder="选择月份"
+            clearable
+            @change="handleMonthChange"
+            :disabled="!filterForm.year">
+            <el-option label="全季度/全年" :value="null" />
+            <el-option
+              v-for="month in availableMonths"
+              :key="month"
+              :label="month + '月'"
+              :value="month" />
           </el-select>
         </el-form-item>
         <el-form-item label="日期">
-          <el-select v-model="filterForm.day" placeholder="选择日期" clearable :disabled="!filterForm.month">
-            <el-option label="全月" :value="null"></el-option>
-            <el-option 
-              v-for="day in 31" 
-              :key="day" 
-              :label="day + '日'" 
-              :value="day">
-            </el-option>
+          <el-select
+            v-model="filterForm.day"
+            placeholder="选择日期"
+            clearable
+            :disabled="!filterForm.month">
+            <el-option label="全月" :value="null" />
+            <el-option
+              v-for="day in 31"
+              :key="day"
+              :label="day + '日'"
+              :value="day" />
           </el-select>
         </el-form-item>
         <el-form-item label="商品类别">
-          <el-select v-model="filterForm.categoryId" placeholder="选择商品类别" clearable @change="handleFilterChange">
+          <el-select
+            v-model="filterForm.categoryId"
+            placeholder="选择商品类别"
+            clearable
+            @change="handleFilterChange">
             <el-option
               v-for="item in categoryOptions"
               :key="item.value"
               :label="item.label"
-              :value="item.value"
-            />
+              :value="item.value" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -79,11 +91,15 @@
           <span class="value">¥{{ summary.avgAmount || 0 }}</span>
         </div>
       </div>
-      
+
       <!-- 统计详情表格 -->
-      <el-table :data="statisticsData" style="width: 100%" v-loading="loading" element-loading-text="加载中...">
-        <el-table-column prop="timeLabel" label="时间" width="180"></el-table-column>
-        <el-table-column prop="orderCount" label="订单数量" width="120"></el-table-column>
+      <el-table
+        v-loading="loading"
+        element-loading-text="加载中..."
+        :data="statisticsData"
+        style="width: 100%">
+        <el-table-column prop="timeLabel" label="时间" width="180" />
+        <el-table-column prop="orderCount" label="订单数量" width="120" />
         <el-table-column prop="orderAmount" label="订单金额">
           <template slot-scope="scope">
             ¥{{ scope.row.orderAmount }}
@@ -141,9 +157,9 @@ export default {
     initAvailableYears() {
       const currentYear = new Date().getFullYear()
       // 生成从当前年份往前5年的选项
-      this.availableYears = Array.from({length: 6}, (_, i) => currentYear - i)
+      this.availableYears = Array.from({ length: 6 }, (_, i) => currentYear - i)
     },
-    
+
     loadCategories() {
       // 首先尝试从商品分类API获取数据
       listCatL1().then(response => {
@@ -191,7 +207,7 @@ export default {
         this.categoryOptions = [{ value: null, label: '全部类别' }]
       })
     },
-    
+
     handleYearChange() {
       this.filterForm.quarter = null
       this.filterForm.month = null
@@ -199,37 +215,37 @@ export default {
       this.updateAvailableMonths()
       this.loadData()
     },
-    
+
     handleQuarterChange() {
       this.filterForm.month = null
       this.filterForm.day = null
       this.updateAvailableMonths()
       this.loadData()
     },
-    
+
     handleMonthChange() {
       this.filterForm.day = null
       this.loadData()
     },
-    
+
     updateAvailableMonths() {
       // 根据选择的季度更新可选月份
       if (this.filterForm.quarter) {
         const quarterMonths = {
           1: [1, 2, 3],
-          2: [4, 5, 6], 
+          2: [4, 5, 6],
           3: [7, 8, 9],
           4: [10, 11, 12]
-        };
-        this.availableMonths = quarterMonths[this.filterForm.quarter];
+        }
+        this.availableMonths = quarterMonths[this.filterForm.quarter]
       } else {
-        this.availableMonths = Array.from({length: 12}, (_, i) => i + 1);
+        this.availableMonths = Array.from({ length: 12 }, (_, i) => i + 1)
       }
     },
-    
+
     loadData() {
       this.loading = true
-      
+
       // 构建查询参数
       const query = {
         categoryId: this.filterForm.categoryId,
@@ -252,7 +268,7 @@ export default {
 
       statOrderEnhanced(query).then(response => {
         console.log('订单统计数据响应:', response)
-        
+
         // 验证返回数据格式
         if (!response.data || !response.data.data) {
           console.error('返回数据格式错误:', response)
@@ -289,14 +305,14 @@ export default {
         console.log('统计数据设置完成:', this.summary, this.statisticsData)
       }).catch(error => {
         console.error('获取订单统计数据失败:', error)
-        
+
         // 处理特定错误码
         if (error.response && error.response.data.errno === 502) {
           this.$message.error('选择的日期超出当月天数范围，请重新选择')
         } else {
           this.$message.error('获取统计数据失败：' + (error.message || '网络错误'))
         }
-        
+
         // 设置空数据
         this.summary = {
           totalCount: 0,
@@ -308,16 +324,16 @@ export default {
         this.loading = false
       })
     },
-    
+
     handleFilterChange() {
       // 当筛选条件改变时自动刷新数据
       this.loadData()
     },
-    
+
     handleQuery() {
       this.loadData()
     },
-    
+
     handleReset() {
       this.filterForm = {
         categoryId: null,
