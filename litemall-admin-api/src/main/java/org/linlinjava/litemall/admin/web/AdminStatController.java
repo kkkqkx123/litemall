@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @RestController
 @RequestMapping("/admin/stat")
@@ -95,12 +97,53 @@ public class AdminStatController {
         
         // 调用服务层进行统计
         List<Map<String, Object>> rows = statService.statOrderEnhanced(timeDimension, categoryId, year, quarter, month, day);
-        String[] columns = new String[]{"period", "orders", "customers", "amount", "pcr"};
-        StatVo statVo = new StatVo();
-        statVo.setColumns(columns);
-        statVo.setRows(rows);
+        
+        // 构建符合前端期望的数据结构
+        Map<String, Object> result = new HashMap<>();
+        
+        // 计算汇总数据
+        int totalCount = 0;
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        
+        List<Map<String, Object>> details = new ArrayList<>();
+        
+        for (Map<String, Object> row : rows) {
+            Map<String, Object> detail = new HashMap<>();
+            
+            // 时间标签
+            detail.put("timeLabel", row.get("period"));
+            
+            // 订单数量
+            Integer orders = row.get("orders") != null ? Integer.parseInt(row.get("orders").toString()) : 0;
+            detail.put("orderCount", orders);
+            totalCount += orders;
+            
+            // 订单金额
+            BigDecimal amount = row.get("amount") != null ? new BigDecimal(row.get("amount").toString()) : BigDecimal.ZERO;
+            detail.put("orderAmount", amount);
+            totalAmount = totalAmount.add(amount);
+            
+            // 平均金额
+            BigDecimal avgAmount = orders > 0 ? amount.divide(new BigDecimal(orders), 2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
+            detail.put("avgAmount", avgAmount);
+            
+            details.add(detail);
+        }
+        
+        // 计算总体平均金额
+        BigDecimal avgAmount = totalCount > 0 ? totalAmount.divide(new BigDecimal(totalCount), 2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
+        
+        // 构建汇总数据
+        Map<String, Object> summary = new HashMap<>();
+        summary.put("totalCount", totalCount);
+        summary.put("totalAmount", totalAmount);
+        summary.put("avgAmount", avgAmount);
+        
+        // 构建最终结果
+        result.put("summary", summary);
+        result.put("details", details);
 
-        return ResponseUtil.ok(statVo);
+        return ResponseUtil.ok(result);
     }
 
     @PreAuthorize("hasPermission('admin:stat:goods', 'admin')")

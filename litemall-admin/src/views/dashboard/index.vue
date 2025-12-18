@@ -25,7 +25,7 @@
         </div>
       </el-col>
       <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-        <div class="card-panel" @click="handleSetLineChartData('purchases')">
+        <div class="card-panel" @click="goToProductManagement">
           <div class="card-panel-icon-wrapper icon-shoppingCard">
             <svg-icon icon-class="shoppingCard" class-name="card-panel-icon" />
           </div>
@@ -84,8 +84,11 @@ export default {
     goToGoodsList() {
       this.$router.push('/goods/list')
     },
+    goToProductManagement() {
+      this.$router.push('/goods/list')
+    },
     goToOrderManagement() {
-      this.$router.push('/order/order')
+      this.$router.push('/mall/order')
     }
   }
 }

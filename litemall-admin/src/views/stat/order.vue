@@ -4,33 +4,46 @@
     <el-card class="filter-container">
       <el-form :inline="true" :model="filterForm" size="small">
         <el-form-item label="年份">
-          <el-input-number v-model="filterForm.year" :min="2020" :max="2030" controls-position="right" @change="handleFilterChange" />
+          <el-select v-model="filterForm.year" placeholder="选择年份" @change="handleYearChange">
+            <el-option 
+              v-for="year in availableYears" 
+              :key="year" 
+              :label="year + '年'" 
+              :value="year">
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="季度">
-          <el-select v-model="filterForm.quarter" placeholder="选择季度" clearable @change="handleFilterChange">
-            <el-option label="全部" value="" />
-            <el-option label="Q1" value="1" />
-            <el-option label="Q2" value="2" />
-            <el-option label="Q3" value="3" />
-            <el-option label="Q4" value="4" />
+          <el-select v-model="filterForm.quarter" placeholder="选择季度" clearable @change="handleQuarterChange">
+            <el-option label="全年" :value="null"></el-option>
+            <el-option label="第一季度" :value="1"></el-option>
+            <el-option label="第二季度" :value="2"></el-option>
+            <el-option label="第三季度" :value="3"></el-option>
+            <el-option label="第四季度" :value="4"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="月份">
-          <el-select v-model="filterForm.month" placeholder="选择月份" clearable @change="handleFilterChange">
-            <el-option label="全部" value="" />
-            <el-option v-for="month in 12" :key="month" :label="month + '月'" :value="month" />
+          <el-select v-model="filterForm.month" placeholder="选择月份" clearable @change="handleMonthChange" 
+                     :disabled="!filterForm.year">
+            <el-option label="全季度/全年" :value="null"></el-option>
+            <el-option 
+              v-for="month in availableMonths" 
+              :key="month" 
+              :label="month + '月'" 
+              :value="month">
+            </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="日期">
-          <el-date-picker
-            v-model="filterForm.day"
-            type="date"
-            placeholder="选择日期"
-            format="yyyy-MM-dd"
-            value-format="yyyy-MM-dd"
-            clearable
-            @change="handleFilterChange"
-          />
+          <el-select v-model="filterForm.day" placeholder="选择日期" clearable :disabled="!filterForm.month">
+            <el-option label="全月" :value="null"></el-option>
+            <el-option 
+              v-for="day in 31" 
+              :key="day" 
+              :label="day + '日'" 
+              :value="day">
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="商品类别">
           <el-select v-model="filterForm.categoryId" placeholder="选择商品类别" clearable @change="handleFilterChange">
@@ -49,9 +62,39 @@
       </el-form>
     </el-card>
 
-    <!-- 图表展示区域 -->
-    <el-card class="chart-container">
-      <ve-line :extend="chartExtend" :data="chartData" :settings="chartSettings" />
+    <!-- 统计信息展示区域 -->
+    <el-card class="statistics-container">
+      <!-- 统计汇总信息 -->
+      <div class="summary-info">
+        <div class="summary-item">
+          <span class="label">总订单数：</span>
+          <span class="value">{{ summary.totalCount || 0 }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">总金额：</span>
+          <span class="value">¥{{ summary.totalAmount || 0 }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">平均金额：</span>
+          <span class="value">¥{{ summary.avgAmount || 0 }}</span>
+        </div>
+      </div>
+      
+      <!-- 统计详情表格 -->
+      <el-table :data="statisticsData" style="width: 100%" v-loading="loading" element-loading-text="加载中...">
+        <el-table-column prop="timeLabel" label="时间" width="180"></el-table-column>
+        <el-table-column prop="orderCount" label="订单数量" width="120"></el-table-column>
+        <el-table-column prop="orderAmount" label="订单金额">
+          <template slot-scope="scope">
+            ¥{{ scope.row.orderAmount }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="avgAmount" label="平均金额">
+          <template slot-scope="scope">
+            ¥{{ scope.row.avgAmount }}
+          </template>
+        </el-table-column>
+      </el-table>
     </el-card>
   </div>
 </template>
@@ -59,33 +102,48 @@
 <script>
 import { statOrderEnhanced } from '@/api/stat'
 import { listCatL1 } from '@/api/category'
-import VeLine from 'v-charts/lib/line'
+
 export default {
-  components: { VeLine },
   data() {
     return {
-      chartData: {
-        columns: ['period', 'orders', 'customers', 'amount', 'pcr'],
-        rows: []
+      loading: false,
+      summary: {
+        totalCount: 0,
+        totalAmount: 0,
+        avgAmount: 0
       },
-      chartSettings: {},
-      chartExtend: {},
+      statisticsData: [],
       filterForm: {
         categoryId: null,
-        year: new Date().getFullYear(), // 使用当前年份
-        quarter: '',
-        month: '',
+        year: null,
+        quarter: null,
+        month: null,
         day: null
       },
-      categoryOptions: []
+      categoryOptions: [],
+      availableYears: [],
+      availableMonths: []
     }
   },
   created() {
-    // 动态获取分类列表，移除硬编码
+    // 初始化可用年份
+    this.initAvailableYears()
+    // 动态获取分类列表
     this.loadCategories()
+    // 设置默认年份为当前年份
+    this.filterForm.year = new Date().getFullYear()
+    // 初始化可用月份
+    this.updateAvailableMonths()
+    // 加载数据
     this.loadData()
   },
   methods: {
+    initAvailableYears() {
+      const currentYear = new Date().getFullYear()
+      // 生成从当前年份往前5年的选项
+      this.availableYears = Array.from({length: 6}, (_, i) => currentYear - i)
+    },
+    
     loadCategories() {
       // 首先尝试从商品分类API获取数据
       listCatL1().then(response => {
@@ -107,16 +165,6 @@ export default {
         // 如果商品分类API失败，尝试使用统计接口获取分类
         this.loadCategoriesFromStat()
       })
-    },
-
-    // 确保分类选项包含"全部类别"
-    ensureAllCategoryOption(categories = []) {
-      // 如果还没有"全部类别"选项，添加它
-      const hasAllCategory = categories.some(item => item.value === null)
-      if (!hasAllCategory) {
-        return [{ value: null, label: '全部类别' }, ...categories]
-      }
-      return categories
     },
 
     // 从统计接口获取分类列表（备选方案）
@@ -143,104 +191,142 @@ export default {
         this.categoryOptions = [{ value: null, label: '全部类别' }]
       })
     },
+    
+    handleYearChange() {
+      this.filterForm.quarter = null
+      this.filterForm.month = null
+      this.filterForm.day = null
+      this.updateAvailableMonths()
+      this.loadData()
+    },
+    
+    handleQuarterChange() {
+      this.filterForm.month = null
+      this.filterForm.day = null
+      this.updateAvailableMonths()
+      this.loadData()
+    },
+    
+    handleMonthChange() {
+      this.filterForm.day = null
+      this.loadData()
+    },
+    
+    updateAvailableMonths() {
+      // 根据选择的季度更新可选月份
+      if (this.filterForm.quarter) {
+        const quarterMonths = {
+          1: [1, 2, 3],
+          2: [4, 5, 6], 
+          3: [7, 8, 9],
+          4: [10, 11, 12]
+        };
+        this.availableMonths = quarterMonths[this.filterForm.quarter];
+      } else {
+        this.availableMonths = Array.from({length: 12}, (_, i) => i + 1);
+      }
+    },
+    
     loadData() {
-      // 构建查询参数，根据实际提供的参数决定时间范围
+      this.loading = true
+      
+      // 构建查询参数
       const query = {
-        categoryId: this.filterForm.categoryId
+        categoryId: this.filterForm.categoryId,
+        year: this.filterForm.year
       }
 
       // 根据优先级设置参数：day > month > quarter > year
       if (this.filterForm.day) {
-        // 如果选择了具体日期，查询当天数据
         query.day = this.filterForm.day
-        query.year = this.filterForm.year // 提供年份作为参考
+        query.month = this.filterForm.month
+        query.quarter = this.filterForm.quarter
       } else if (this.filterForm.month) {
-        // 如果选择了月份，查询整月数据
-        query.month = parseInt(this.filterForm.month) // 确保月份是数字
-        query.year = this.filterForm.year
+        query.month = this.filterForm.month
+        query.quarter = this.filterForm.quarter
       } else if (this.filterForm.quarter) {
-        // 如果选择了季度，查询整季度数据
-        query.quarter = parseInt(this.filterForm.quarter) // 确保季度是数字
-        query.year = this.filterForm.year
-      } else {
-        // 默认使用年份，查询整年数据
-        query.year = this.filterForm.year
+        query.quarter = this.filterForm.quarter
       }
 
       console.log('查询参数:', query)
 
       statOrderEnhanced(query).then(response => {
         console.log('订单统计数据响应:', response)
-        console.log('统计数据详情:', response.data.data)
-
+        
         // 验证返回数据格式
         if (!response.data || !response.data.data) {
           console.error('返回数据格式错误:', response)
           this.$message.error('获取统计数据失败：数据格式错误')
+          this.loading = false
           return
         }
 
         const statData = response.data.data
 
         // 检查是否有数据
-        if (!statData.rows || statData.rows.length === 0) {
+        if (!statData.details || statData.details.length === 0) {
           console.warn('没有查询到统计数据，查询参数:', query)
           this.$message.info('当前筛选条件下没有统计数据')
-          // 设置空数据格式，确保图表能正确显示
-          this.chartData = {
-            columns: ['period', 'orders', 'customers', 'amount', 'pcr'],
-            rows: []
+          // 设置空数据
+          this.summary = {
+            totalCount: 0,
+            totalAmount: 0,
+            avgAmount: 0
           }
+          this.statisticsData = []
+          this.loading = false
           return
         }
 
-        // 验证数据格式
-        if (!statData.columns || !Array.isArray(statData.rows)) {
-          console.error('统计数据格式不正确:', statData)
-          this.$message.error('统计数据格式不正确')
-          return
+        // 设置统计数据
+        this.summary = {
+          totalCount: statData.summary.totalCount,
+          totalAmount: statData.summary.totalAmount,
+          avgAmount: statData.summary.avgAmount
         }
+        this.statisticsData = statData.details
 
-        // 设置图表数据
-        this.chartData = statData
-        this.chartSettings = {
-          labelMap: {
-            'orders': '订单量',
-            'customers': '下单用户',
-            'amount': '订单总额',
-            'pcr': '客单价'
-          }
-        }
-        this.chartExtend = {
-          xAxis: { boundaryGap: true }
-        }
-
-        console.log('图表数据设置完成:', this.chartData)
+        console.log('统计数据设置完成:', this.summary, this.statisticsData)
       }).catch(error => {
         console.error('获取订单统计数据失败:', error)
-        this.$message.error('获取统计数据失败：' + (error.message || '网络错误'))
-        // 设置空数据避免图表报错
-        this.chartData = {
-          columns: ['period', 'orders', 'customers', 'amount', 'pcr'],
-          rows: []
+        
+        // 处理特定错误码
+        if (error.response && error.response.data.errno === 502) {
+          this.$message.error('选择的日期超出当月天数范围，请重新选择')
+        } else {
+          this.$message.error('获取统计数据失败：' + (error.message || '网络错误'))
         }
+        
+        // 设置空数据
+        this.summary = {
+          totalCount: 0,
+          totalAmount: 0,
+          avgAmount: 0
+        }
+        this.statisticsData = []
+      }).finally(() => {
+        this.loading = false
       })
     },
+    
     handleFilterChange() {
       // 当筛选条件改变时自动刷新数据
       this.loadData()
     },
+    
     handleQuery() {
       this.loadData()
     },
+    
     handleReset() {
       this.filterForm = {
         categoryId: null,
         year: new Date().getFullYear(), // 重置时使用当前年份
-        quarter: '',
-        month: '',
+        quarter: null,
+        month: null,
         day: null
       }
+      this.updateAvailableMonths()
       this.loadData()
     }
   }

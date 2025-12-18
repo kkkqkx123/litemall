@@ -87,9 +87,9 @@ public class AdminAuthController {
      *  { username : value, password : value }
      */
     @PostMapping("/login")
-    public Object login(@RequestBody String body, HttpServletRequest request) {
-        String username = JacksonUtil.parseString(body, "username");
-        String password = JacksonUtil.parseString(body, "password");
+    public Object login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+        String username = loginRequest.getUsername();
+        String password = loginRequest.getPassword();
 //        String code = JacksonUtil.parseString(body, "code");
 
         if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
