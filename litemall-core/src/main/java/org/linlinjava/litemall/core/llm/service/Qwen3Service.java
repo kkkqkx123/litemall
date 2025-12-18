@@ -68,12 +68,17 @@ public class Qwen3Service {
             throw new IllegalArgumentException("提示词不能为空");
         }
         
-        // 构建完整的提示词
-        String fullPrompt = buildFullPrompt(prompt, sessionContext);
+        // 直接使用传入的提示词，不再重新构建
+        String fullPrompt = prompt;
+        
+        // 如果需要添加会话上下文，可以在这里添加
+        if (sessionContext != null && !sessionContext.trim().isEmpty()) {
+            fullPrompt = prompt + "\n\n会话上下文：\n" + sessionContext;
+        }
         
         if (apiKey == null || apiKey.trim().isEmpty()) {
             logger.warn("Qwen3 API密钥未配置，使用模拟响应");
-            return generateMockResponse(prompt);
+            return generateMockResponse(fullPrompt);
         }
         
         // 重试逻辑实现
@@ -99,7 +104,7 @@ public class Qwen3Service {
             }
         }
         
-        throw new LLMServiceException("调用Qwen3 API失败，重试" + maxRetries + "次后仍失败：" + lastException.getMessage(), lastException);
+        throw new LLMServiceException("API调用失败，已重试" + maxRetries + "次", lastException);
     }
     
     /**

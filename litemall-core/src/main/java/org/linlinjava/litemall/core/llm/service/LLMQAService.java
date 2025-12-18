@@ -5,6 +5,7 @@ import org.linlinjava.litemall.core.llm.exception.LLMOutputParseException;
 import org.linlinjava.litemall.core.llm.exception.LLMServiceException;
 import org.linlinjava.litemall.core.llm.model.*;
 import org.linlinjava.litemall.core.llm.parser.*;
+import org.linlinjava.litemall.core.llm.util.GoodsDetailFilter;
 import org.linlinjava.litemall.db.domain.LitemallGoods;
 import org.linlinjava.litemall.db.dao.LitemallGoodsMapper;
 import org.linlinjava.litemall.db.domain.LitemallGoodsExample;
@@ -56,6 +57,9 @@ public class LLMQAService {
     
     @Autowired
     private LLMOutputParser llmOutputParser;
+    
+    @Autowired
+    private GoodsDetailFilter goodsDetailFilter;
     
     // 本地缓存
     private final Map<String, GoodsQAResponse> responseCache = new ConcurrentHashMap<>();
@@ -195,23 +199,25 @@ public class LLMQAService {
         
         // 系统提示词 - 智能判断版
         prompt.append("你是一个智能商品问答助手。请分析用户问题并自主决定是否需要查询商品数据库。\n");
-        prompt.append("请根据以下判断标准决定输出格式：\n\n");
+        prompt.append("重要规则：\n");
+        prompt.append("1. 禁止执行任何模糊查询，只允许明确的查询条件（如价格范围、是否在售等）\n");
+        prompt.append("2. 对于基于上下文的后续问题，优先使用已有信息回答，避免不必要的数据库查询\n");
+        prompt.append("3. 如果需要查询数据库，请同时提供自然语言解释和JSON查询条件\n\n");
         
         // 判断标准
         prompt.append("=== 判断标准 ===\n");
         prompt.append("【需要查询数据库的情况】\n");
-        prompt.append("- 用户询问具体商品信息（价格、库存、规格等）\n");
-        prompt.append("- 用户要求推荐商品\n");
-        prompt.append("- 用户查询特定价格范围的商品\n");
-        prompt.append("- 用户搜索特定分类或品牌的商品\n");
-        prompt.append("- 用户需要商品列表或比较\n");
-        prompt.append("- 用户询问商品统计信息\n");
+        prompt.append("- 用户询问具体商品价格范围（必须明确指定价格区间）\n");
+        prompt.append("- 用户查询商品是否在售\n");
+        prompt.append("- 用户需要特定分类的商品列表\n");
+        prompt.append("- 用户需要基于明确条件的商品筛选\n");
         prompt.append("【不需要查询数据库的情况】\n");
+        prompt.append("- 用户询问基于之前查询结果的后续问题（如\"其中哪些适合送给长辈？\"）\n");
         prompt.append("- 用户询问系统功能或操作指南\n");
         prompt.append("- 用户进行一般性对话或问候\n");
         prompt.append("- 用户询问商品使用建议或解释\n");
         prompt.append("- 用户的问题不涉及具体商品信息\n");
-        prompt.append("- 用户的问题可以通过已有知识回答\n\n");
+        prompt.append("- 用户的问题可以通过已有知识或上下文回答\n\n");
         
         // 获取会话上下文
         Map<String, Object> sessionContext = getSessionContext(request.getSessionId());
@@ -258,33 +264,33 @@ public class LLMQAService {
         // 分析步骤
         prompt.append("=== 分析步骤 ===\n");
         prompt.append("1. 理解用户查询意图\n");
-        prompt.append("2. 根据判断标准决定是否需要查询数据库\n");
-        prompt.append("3. 如果需要查询：提取查询条件和参数\n");
-        prompt.append("4. 确定查询类型和排序方式\n");
-        prompt.append("5. 如果不需要查询：直接给出自然语言回答\n\n");
+        prompt.append("2. 检查会话上下文，判断是否可以基于已有信息回答\n");
+        prompt.append("3. 如果需要查询：提取明确的查询条件和参数\n");
+        prompt.append("4. 如果不需要查询：直接给出自然语言回答\n\n");
         
         // 输出格式
         prompt.append("=== 输出格式 ===\n");
-        prompt.append("【如果需要查询数据库】请输出JSON格式：\n");
+        prompt.append("【如果需要查询数据库】请按以下格式输出：\n");
+        prompt.append("自然语言解释（说明您将要执行什么查询）\n");
+        prompt.append("```json\n");
         prompt.append("{\n");
-        prompt.append("  \"query_type\": \"price_range|product_search|category_filter|statistical_query\",\n");
+        prompt.append("  \"query_type\": \"price_range|category_filter|is_on_sale\",\n");
         prompt.append("  \"conditions\": {\n");
-        prompt.append("    \"keyword\": \"搜索关键词（可选）\",\n");
-        prompt.append("    \"categoryId\": \"分类ID（可选）\",\n");
         prompt.append("    \"minPrice\": \"最小价格（分，必须为整数）\",\n");
         prompt.append("    \"maxPrice\": \"最大价格（分，必须为整数）\",\n");
-        prompt.append("    \"statistic_type\": \"统计类型（如category_stats，可选）\"\n");
+        prompt.append("    \"categoryId\": \"分类ID（必须为整数）\",\n");
+        prompt.append("    \"isOnSale\": \"是否在售（true/false）\"\n");
         prompt.append("  }\n");
-        prompt.append("}\n\n");
+        prompt.append("}\n");
+        prompt.append("```\n\n");
         
         prompt.append("【如果不需要查询数据库】请直接输出自然语言回答。\n\n");
         
         // 查询类型说明
         prompt.append("=== 查询类型说明 ===\n");
-        prompt.append("- price_range: 价格范围查询（需要minPrice和maxPrice）\n");
-        prompt.append("- product_search: 关键词搜索（需要keyword）\n");
-        prompt.append("- category_filter: 分类筛选（需要categoryId）\n");
-        prompt.append("- statistical_query: 统计查询（需要statistic_type）\n\n");
+        prompt.append("- price_range: 价格范围查询（必须同时提供minPrice和maxPrice）\n");
+        prompt.append("- category_filter: 分类筛选（必须提供categoryId）\n");
+        prompt.append("- is_on_sale: 是否在售查询（必须提供isOnSale参数）\n\n");
         
         // 用户问题
         prompt.append("=== 当前用户问题 ===\n");
@@ -508,15 +514,25 @@ public class LLMQAService {
         
         // 检查是否包含JSON查询意图
         if (containsJSONQuery(llmResponse)) {
-            // LLM决定需要查询数据库，但可能包含自然语言解释
-            // 提取JSON之前的部分作为自然语言解释
+            // LLM决定需要查询数据库，提取JSON之前的自然语言解释
             int jsonStart = llmResponse.indexOf('{');
-            if (jsonStart > 0) {
+            
+            // 检查是否有markdown代码块标记
+            int codeBlockStart = llmResponse.indexOf("```json");
+            if (codeBlockStart > 0 && codeBlockStart < jsonStart) {
+                // 如果有代码块标记，提取代码块之前的部分
+                String naturalAnswer = llmResponse.substring(0, codeBlockStart).trim();
+                if (!naturalAnswer.isEmpty()) {
+                    return naturalAnswer;
+                }
+            } else if (jsonStart > 0) {
+                // 如果没有代码块标记但有JSON，提取JSON之前的部分
                 String naturalAnswer = llmResponse.substring(0, jsonStart).trim();
                 if (!naturalAnswer.isEmpty()) {
                     return naturalAnswer;
                 }
             }
+            
             // 如果没有自然语言解释，返回默认消息
             return "我理解您的问题，正在为您查询相关商品信息...";
         } else {
@@ -563,7 +579,7 @@ public class LLMQAService {
         Map<String, Object> conditions = queryIntent.getConditions();
         
         try {
-            if (("price_range".equals(queryType) || "recommendation".equals(queryType)) && conditions.containsKey("minPrice") && conditions.containsKey("maxPrice")) {
+            if ("price_range".equals(queryType) && conditions.containsKey("minPrice") && conditions.containsKey("maxPrice")) {
                 // 价格范围查询 - 使用自定义的价格范围查询方法
                 int minPrice = (int) conditions.get("minPrice");
                 int maxPrice = (int) conditions.get("maxPrice");
@@ -572,14 +588,14 @@ public class LLMQAService {
                 BigDecimal maxPriceYuan = new BigDecimal(maxPrice).divide(new BigDecimal(100));
                 // 使用自定义的价格范围查询方法
                 goodsList = queryGoodsByPriceRange(minPriceYuan, maxPriceYuan, 0, 100);
-            } else if ("product_search".equals(queryType) && conditions.containsKey("keyword")) {
-                // 关键词搜索
-                String keyword = (String) conditions.get("keyword");
-                goodsList = goodsService.querySelective(null, null, keyword, null, null, 0, 100, null, null);
             } else if ("category_filter".equals(queryType) && conditions.containsKey("categoryId")) {
                 // 分类筛选
                 Integer categoryId = (Integer) conditions.get("categoryId");
                 goodsList = goodsService.queryByCategory(categoryId, 0, 100);
+            } else if ("is_on_sale".equals(queryType) && conditions.containsKey("isOnSale")) {
+                // 是否在售查询
+                Boolean isOnSale = (Boolean) conditions.get("isOnSale");
+                goodsList = goodsService.querySelective(null, null, null, null, isOnSale, 0, 100, null, null);
             } else if ("statistical_query".equals(queryType)) {
                 // 统计查询 - 根据统计类型进行不同的统计查询
                 String statisticType = (String) conditions.get("statistic_type");
@@ -597,6 +613,16 @@ public class LLMQAService {
         } catch (Exception e) {
             logger.warn("查询商品时发生异常，使用默认查询: {}", e.getMessage());
             goodsList = goodsService.querySelective(null, null, null, null, null, 0, 100, null, null);
+        }
+        
+        // 对于非价格范围查询的结果，也需要过滤detail字段
+        if (!"price_range".equals(queryType)) {
+            for (LitemallGoods goods : goodsList) {
+                if (goods.getDetail() != null && !goods.getDetail().trim().isEmpty()) {
+                    String filteredDetail = goodsDetailFilter.filterDetail(goods.getDetail());
+                    goods.setDetail(filteredDetail);
+                }
+            }
         }
         
         // 应用结果过滤
@@ -633,7 +659,17 @@ public class LLMQAService {
             int startIndex = Math.min(offset, allGoods.size());
             int endIndex = Math.min(startIndex + limit, allGoods.size());
             
-            return allGoods.subList(startIndex, endIndex);
+            List<LitemallGoods> resultGoods = allGoods.subList(startIndex, endIndex);
+            
+            // 过滤每个商品的detail字段，移除HTML标签和图片URL
+            for (LitemallGoods goods : resultGoods) {
+                if (goods.getDetail() != null && !goods.getDetail().trim().isEmpty()) {
+                    String filteredDetail = goodsDetailFilter.filterDetail(goods.getDetail());
+                    goods.setDetail(filteredDetail);
+                }
+            }
+            
+            return resultGoods;
         } catch (Exception e) {
             logger.error("价格范围查询失败: {}", e.getMessage());
             return new ArrayList<>();
@@ -753,6 +789,11 @@ public class LLMQAService {
             answer.append(String.format("   价格：¥%.2f\n", goods.getRetailPrice().doubleValue()));
             if (goods.getBrief() != null && !goods.getBrief().isEmpty()) {
                 answer.append(String.format("   简介：%s\n", goods.getBrief()));
+            }
+            // 添加过滤后的详情信息
+            if (goods.getDetail() != null && !goods.getDetail().isEmpty()) {
+                String filteredDetail = goodsDetailFilter.extractSummary(goods.getDetail(), 100);
+                answer.append(String.format("   详情：%s\n", filteredDetail));
             }
             answer.append("\n");
         }
