@@ -42,6 +42,9 @@ public class LLMQAService {
     @Autowired
     private LLMSessionManager sessionManager;
     
+    @Autowired
+    private BasicRecommendationAgent recommendationAgent;
+    
     /**
      * 处理商品问答请求
      * @param request 问答请求
@@ -55,13 +58,16 @@ public class LLMQAService {
         logger.info("开始处理商品问答请求，问题：{}，会话ID：{}", request.getQuestion(), request.getSessionId());
         
         try {
+            // 统计查询时间
+            long startTime = System.currentTimeMillis();
+            
             // 1. 验证请求
             validateRequest(request);
             System.out.println("请求验证通过");
             
-            // 2. 构建提示词
-            String prompt = buildPrompt(request);
-            System.out.println("构建的提示词：" + prompt);
+            // 2. 构建提示词（增强版，支持重新查询判断）
+            String prompt = buildEnhancedPrompt(request);
+            System.out.println("构建的增强提示词：" + prompt);
             
             // 3. 调用大模型
             System.out.println("准备调用Qwen3Service...");
@@ -69,7 +75,7 @@ public class LLMQAService {
             System.out.println("Qwen3Service返回结果：" + llmResponse);
             logger.debug("LLM响应：{}", llmResponse);
             
-            // 4. 解析LLM输出
+            // 4. 解析LLM输出（增强版，支持重新查询字段）
             QueryIntent queryIntent = llmOutputParser.parseQueryIntent(llmResponse);
             System.out.println("解析后的查询意图：" + queryIntent);
             logger.debug("解析后的查询意图：{}", queryIntent);
@@ -83,34 +89,34 @@ public class LLMQAService {
             
             System.out.println("查询意图验证通过");
             
-            // 6. 执行查询
-            System.out.println("开始执行查询...");
-            List<Map<String, Object>> results = executeQuery(queryIntent);
-            System.out.println("查询完成，结果数量：" + results.size());
+            // 6. 使用BasicRecommendationAgent处理（集成智能数量控制和个性化）
+            System.out.println("使用BasicRecommendationAgent处理...");
+            Map<String, Object> agentResult = recommendationAgent.processQuestion(
+                request.getSessionId(), request.getQuestion(), queryIntent);
             
-            // 7. 生成回答
-            System.out.println("生成回答...");
-            String answer = generateAnswer(queryIntent, results);
-            System.out.println("生成的回答：" + answer);
+            // 7. 提取结果
+            String answer = (String) agentResult.get("answer");
+            List<LitemallGoods> goodsList = (List<LitemallGoods>) agentResult.get("goodsList");
+            Integer suggestedQuantity = (Integer) agentResult.get("quantityUsed");
+            String quantityExplanation = (String) agentResult.get("quantityExplanation");
+            
+            System.out.println("Agent处理完成，商品数量：" + goodsList.size());
+            System.out.println("建议数量：" + suggestedQuantity);
+            System.out.println("数量说明：" + quantityExplanation);
             
             // 8. 构建响应
-            List<LitemallGoods> goodsList = convertToGoodsList(results);
             GoodsQAResponse response = GoodsQAResponse.success(answer, goodsList);
             response.setSessionId(request.getSessionId());
             response.setQueryTime(System.currentTimeMillis());
             response.setQueryIntent(queryIntent);
             
-            // 9. 更新会话
-            if (request.getSessionId() != null) {
-                Map<String, Object> context = new HashMap<>();
-                context.put("question", request.getQuestion());
-                context.put("answer", answer);
-                context.put("timestamp", LocalDateTime.now());
-                sessionManager.updateSessionContext(request.getSessionId(), context);
-            }
+            // 添加数量控制信息到响应中
+            response.setQueryTime(System.currentTimeMillis() - startTime);
+            // Note: addMetadata method not available in GoodsQAResponse
             
             System.out.println("=== LLMQAService 处理完成 ===");
-            logger.info("商品问答请求处理完成，问题：{}，结果数量：{}", request.getQuestion(), results.size());
+            logger.info("商品问答请求处理完成，问题：{}，结果数量：{}，建议数量：{}", 
+                       request.getQuestion(), goodsList.size(), suggestedQuantity);
             return response;
             
         } catch (LLMOutputParseException e) {
@@ -148,30 +154,79 @@ public class LLMQAService {
     }
     
     /**
-     * 构建提示词
+     * 构建增强版提示词，支持重新查询判断
      * @param request 问答请求
-     * @return 提示词
+     * @return 增强提示词
      */
-    private String buildPrompt(GoodsQARequest request) {
+    private String buildEnhancedPrompt(GoodsQARequest request) {
         StringBuilder prompt = new StringBuilder();
         
-        // 简化后的提示词
-        prompt.append("根据用户问题生成商品查询意图，输出JSON格式：\n");
+        // 获取会话上下文
+        Map<String, Object> sessionContext = getSessionContext(request.getSessionId());
+        
+        prompt.append("你是一个智能商品推荐助手，请分析用户问题并生成查询意图。\n\n");
+        
+        // 会话上下文
+        if (sessionContext != null && !sessionContext.isEmpty()) {
+            prompt.append("会话上下文信息：\n");
+            if (sessionContext.containsKey("preferences")) {
+                prompt.append("用户偏好：").append(sessionContext.get("preferences")).append("\n");
+            }
+            if (sessionContext.containsKey("queryCount")) {
+                prompt.append("查询次数：").append(sessionContext.get("queryCount")).append("\n");
+            }
+            prompt.append("\n");
+        }
+        
+        // 分析步骤
+        prompt.append("请按以下步骤分析：\n");
+        prompt.append("1. 理解用户查询意图\n");
+        prompt.append("2. 提取查询条件和参数\n");
+        prompt.append("3. 确定查询类型和排序方式\n");
+        prompt.append("4. 设置合适的数量限制\n");
+        prompt.append("5. 判断是否需要重新查询（如结果可能太少或条件太严格）\n");
+        prompt.append("6. 如果需要重新查询，说明重新查询的条件\n\n");
+        
+        // 输出格式
+        prompt.append("输出JSON格式：\n");
         prompt.append("{\n");
-        prompt.append("  \"query_type\": \"price_range|keyword_search|category_filter\",\n");
-        prompt.append("  \"conditions\": {条件对象},\n");
-        prompt.append("  \"sort\": \"排序字段\",\n");
-        prompt.append("  \"limit\": 10\n");
+        prompt.append("  \"query_type\": \"price_range|keyword_search|category_filter|recommendation\",\n");
+        prompt.append("  \"conditions\": {\n");
+        prompt.append("    \"min_price\": 最小价格（分）,\n");
+        prompt.append("    \"max_price\": 最大价格（分）,\n");
+        prompt.append("    \"keyword\": \"搜索关键词\",\n");
+        prompt.append("    \"category_id\": 分类ID,\n");
+        prompt.append("    \"brand\": \"品牌\"\n");
+        prompt.append("  },\n");
+        prompt.append("  \"sort\": \"retail_price|number|add_time\",\n");
+        prompt.append("  \"limit\": 建议数量,\n");
+        prompt.append("  \"needs_requery\": false|true,\n");
+        prompt.append("  \"requery_conditions\": \"重新查询条件说明\"\n");
         prompt.append("}\n\n");
         
-        // 简化查询类型说明
-        prompt.append("查询类型：price_range(价格范围), keyword_search(关键词), category_filter(分类)\n");
+        // 查询类型说明
+        prompt.append("查询类型说明：\n");
+        prompt.append("- price_range: 价格范围查询\n");
+        prompt.append("- keyword_search: 关键词搜索\n");
+        prompt.append("- category_filter: 分类筛选\n");
+        prompt.append("- recommendation: 个性化推荐\n\n");
         
-        // 简化条件说明
-        prompt.append("条件字段：min_price, max_price, keyword, category_id\n");
+        // 智能数量建议规则
+        prompt.append("数量建议规则：\n");
+        prompt.append("- 特定商品查询：3-8个\n");
+        prompt.append("- 价格范围查询：15-25个\n");
+        prompt.append("- 推荐类查询：20-30个\n");
+        prompt.append("- 类目浏览：30-50个\n");
+        prompt.append("- 关键词搜索：15-25个\n");
+        prompt.append("- 如果用户说\"最好的\"、\"推荐\"等，减少数量到5-10个\n");
+        prompt.append("- 如果用户说\"所有\"、\"列表\"等，增加数量到30-50个\n\n");
         
-        // 简化排序说明
-        prompt.append("排序字段：retail_price, number, add_time\n");
+        // 重新查询判断规则
+        prompt.append("重新查询判断：\n");
+        prompt.append("- 价格范围太窄（如只相差几十元）\n");
+        prompt.append("- 同时限制了太多条件（价格+类目+品牌+关键词）\n");
+        prompt.append("- 查询的是特定商品但可能不存在\n");
+        prompt.append("- 如果判断需要重新查询，设置needs_requery为true，并说明原因\n\n");
         
         // 用户问题
         prompt.append("用户问题：").append(request.getQuestion()).append("\n");
@@ -180,13 +235,71 @@ public class LLMQAService {
     }
     
     /**
+     * 构建提示词（兼容旧版本）
+     * @param request 问答请求
+     * @return 提示词
+     */
+    private String buildPrompt(GoodsQARequest request) {
+        return buildEnhancedPrompt(request); // 使用增强版提示词
+    }
+    
+    /**
      * 获取会话上下文
      * @param sessionId 会话ID
      * @return 会话上下文
      */
     private Map<String, Object> getSessionContext(String sessionId) {
-        // 暂时返回空上下文，后续可以实现从数据库或缓存获取
-        return new HashMap<>();
+        if (sessionId == null) {
+            return new HashMap<>();
+        }
+        
+        Map<String, Object> context = new HashMap<>();
+        
+        try {
+            // 从会话管理器获取会话
+            LLMSessionManager.Session session = sessionManager.getSession(sessionId);
+            if (session != null) {
+                // 获取已有的上下文数据
+                Map<String, Object> existingContext = session.getContext();
+                if (existingContext != null && !existingContext.isEmpty()) {
+                    context.putAll(existingContext);
+                }
+                
+                // 构建基础会话信息
+                BasicSessionInfo sessionInfo = new BasicSessionInfo(sessionId);
+                
+                // 从会话消息中提取查询历史
+                List<LLMSessionManager.Message> messages = session.getMessages();
+                for (LLMSessionManager.Message message : messages) {
+                    if ("user".equals(message.getType()) && message.getContent() != null) {
+                        sessionInfo.addQuery(message.getContent());
+                    }
+                }
+                
+                // 提取用户偏好
+                Map<String, Object> preferences = new HashMap<>();
+                if (sessionInfo.getPricePreference() != null) {
+                    preferences.put("price", sessionInfo.getPricePreference());
+                }
+                if (!sessionInfo.getPreferredCategories().isEmpty()) {
+                    preferences.put("category", sessionInfo.getPreferredCategories());
+                }
+                if (!sessionInfo.getPreferredBrands().isEmpty()) {
+                    preferences.put("brand", sessionInfo.getPreferredBrands());
+                }
+                
+                if (!preferences.isEmpty()) {
+                    context.put("preferences", preferences);
+                }
+                
+                context.put("queryCount", sessionInfo.getQueryCount());
+                context.put("sessionId", sessionId);
+            }
+        } catch (Exception e) {
+            logger.warn("获取会话上下文时发生异常：{}", e.getMessage());
+        }
+        
+        return context;
     }
     
     /**

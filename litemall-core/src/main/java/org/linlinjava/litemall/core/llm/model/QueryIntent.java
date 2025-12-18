@@ -56,6 +56,18 @@ public class QueryIntent {
     private String explanation;
     
     /**
+     * 是否需要重新查询
+     * 当查询条件过于严格或结果可能太少时设置为true
+     */
+    private boolean needsRequery;
+    
+    /**
+     * 重新查询条件说明
+     * 描述需要重新查询的具体原因和条件
+     */
+    private String requeryConditions;
+    
+    /**
      * 是否有效的查询意图
      * @return true表示有效，false表示无效
      */
@@ -129,6 +141,26 @@ public class QueryIntent {
     }
     
     /**
+     * 设置是否需要重新查询
+     * @param needsRequery 是否需要重新查询
+     * @return this
+     */
+    public QueryIntent withNeedsRequery(boolean needsRequery) {
+        this.needsRequery = needsRequery;
+        return this;
+    }
+    
+    /**
+     * 设置重新查询条件
+     * @param requeryConditions 重新查询条件说明
+     * @return this
+     */
+    public QueryIntent withRequeryConditions(String requeryConditions) {
+        this.requeryConditions = requeryConditions;
+        return this;
+    }
+    
+    /**
      * 获取指定条件的值
      * @param conditionName 条件名称
      * @return 条件值，如果不存在返回null
@@ -195,15 +227,33 @@ public class QueryIntent {
         this.explanation = explanation;
     }
     
+    public boolean isNeedsRequery() {
+        return needsRequery;
+    }
+    
+    public void setNeedsRequery(boolean needsRequery) {
+        this.needsRequery = needsRequery;
+    }
+    
+    public String getRequeryConditions() {
+        return requeryConditions;
+    }
+    
+    public void setRequeryConditions(String requeryConditions) {
+        this.requeryConditions = requeryConditions;
+    }
+    
     @Override
     public String toString() {
         return "QueryIntent{" +
                 "queryType='" + queryType + '\'' +
                 ", conditions=" + conditions +
-                ", sort=" + sort +
+                ", sort='" + sort + '\'' +
                 ", limit=" + limit +
                 ", confidence=" + confidence +
                 ", explanation='" + explanation + '\'' +
+                ", needsRequery=" + needsRequery +
+                ", requeryConditions='" + requeryConditions + '\'' +
                 '}';
     }
 }
