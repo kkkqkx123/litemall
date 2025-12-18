@@ -26,10 +26,11 @@
     <select id="statOrderEnhanced" resultType="java.util.HashMap">
         select
         <choose>
-            <when test="day != null">substr(o.add_time,1,10)</when>
-            <when test="month != null">substr(o.add_time,1,7)</when>
-            <when test="quarter != null">concat(year(o.add_time), '-Q', quarter(o.add_time))</when>
-            <when test="year != null">year(o.add_time)</when>
+            <when test="groupBy == 'day'">substr(o.add_time,1,10)</when>
+            <when test="groupBy == 'week'">date_format(o.add_time,'%Y-%u')</when>
+            <when test="groupBy == 'month'">substr(o.add_time,1,7)</when>
+            <when test="groupBy == 'quarter'">concat(year(o.add_time), '-Q', quarter(o.add_time))</when>
+            <when test="groupBy == 'year'">year(o.add_time)</when>
             <otherwise>substr(o.add_time,1,10)</otherwise>
         </choose> as period,
         count(o.id) as orders,
@@ -57,11 +58,11 @@
     <select id="statOrderEnhancedWithTimeRange" resultType="java.util.HashMap">
         select
         <choose>
-            <when test="timeDimension == 'day'">substr(o.add_time,1,10)</when>
-            <when test="timeDimension == 'week'">date_format(o.add_time,'%Y-%u')</when>
-            <when test="timeDimension == 'month'">substr(o.add_time,1,7)</when>
-            <when test="timeDimension == 'quarter'">concat(year(o.add_time), '-Q', quarter(o.add_time))</when>
-            <when test="timeDimension == 'year'">year(o.add_time)</when>
+            <when test="groupBy == 'day'">substr(o.add_time,1,10)</when>
+            <when test="groupBy == 'week'">date_format(o.add_time,'%Y-%u')</when>
+            <when test="groupBy == 'month'">substr(o.add_time,1,7)</when>
+            <when test="groupBy == 'quarter'">concat(year(o.add_time), '-Q', quarter(o.add_time))</when>
+            <when test="groupBy == 'year'">year(o.add_time)</when>
             <otherwise>substr(o.add_time,1,10)</otherwise>
         </choose> as period,
         count(distinct o.id) as orders,

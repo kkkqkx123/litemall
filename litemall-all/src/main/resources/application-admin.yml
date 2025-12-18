@@ -17,6 +17,7 @@ spring:
 app:
   jwt:
     secret: ${JWT_SECRET:APZvEuDRA9S2j2m9bpBKPPEiCbSRChKayBYEDc4RIK8=}
+    expiration: 86400000 # 24小时
 
 # 管理后台模块特定配置
 litemall:

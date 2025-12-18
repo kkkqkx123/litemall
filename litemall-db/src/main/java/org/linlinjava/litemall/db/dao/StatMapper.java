@@ -11,21 +11,21 @@ public interface StatMapper {
     
     /**
      * 增强版订单统计查询，支持时间维度和商品类别筛选
-     * @param timeDimension 时间维度：day/week/month
+     * @param groupBy 统计组织方式：year/quarter/month/day
      * @param categoryId 商品类别ID，可为null
      * @return 订单统计数据
      */
-    List<Map<String, Object>> statOrderEnhanced(@Param("timeDimension") String timeDimension, @Param("categoryId") Integer categoryId);
+    List<Map<String, Object>> statOrderEnhanced(@Param("groupBy") String groupBy, @Param("categoryId") Integer categoryId);
     
     /**
      * 增强版订单统计查询，支持时间范围和商品类别筛选
-     * @param timeDimension 时间维度：day/week/month/quarter/year
+     * @param groupBy 统计组织方式：year/quarter/month/day
      * @param categoryId 商品类别ID，可为null
      * @param startTime 开始时间
      * @param endTime 结束时间
      * @return 订单统计数据
      */
-    List<Map<String, Object>> statOrderEnhancedWithTimeRange(@Param("timeDimension") String timeDimension, 
+    List<Map<String, Object>> statOrderEnhancedWithTimeRange(@Param("groupBy") String groupBy, 
                                            @Param("categoryId") Integer categoryId,
                                            @Param("startTime") java.time.LocalDateTime startTime,
                                            @Param("endTime") java.time.LocalDateTime endTime);

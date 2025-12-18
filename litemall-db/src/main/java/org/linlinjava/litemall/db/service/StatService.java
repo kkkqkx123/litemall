@@ -26,7 +26,7 @@ public class StatService {
     /**
      * 增强版订单统计查询，支持时间筛选和商品类别筛选
      * 根据提供的具体参数构建时间范围，优先级：day > month > quarter > year
-     * @param timeDimension 时间维度：day/week/month/quarter/year
+     * @param groupBy 统计组织方式：year/quarter/month/day
      * @param categoryId 商品类别ID，可为null
      * @param year 年份，可为null
      * @param quarter 季度(1-4)，可为null
@@ -34,19 +34,19 @@ public class StatService {
      * @param day 日期(yyyy-MM-dd格式)，可为null
      * @return 订单统计数据
      */
-    public List<Map<String, Object>> statOrderEnhanced(String timeDimension, Integer categoryId, Integer year, Integer quarter, Integer month, String day) {
+    public List<Map<String, Object>> statOrderEnhanced(String groupBy, Integer categoryId, Integer year, Integer quarter, Integer month, String day) {
         // 构建时间范围参数
         Map<String, Object> timeParams = buildTimeRange(year, quarter, month, day);
         
         // 调试日志输出
         System.out.println("Debug: statOrderEnhanced called with params:");
-        System.out.println("  timeDimension=" + timeDimension + ", year=" + year + ", quarter=" + quarter + ", month=" + month + ", day=" + day);
+        System.out.println("  groupBy=" + groupBy + ", year=" + year + ", quarter=" + quarter + ", month=" + month + ", day=" + day);
         System.out.println("  startTime=" + timeParams.get("startTime"));
         System.out.println("  endTime=" + timeParams.get("endTime"));
         System.out.println("  categoryId=" + categoryId);
         
         // 调用Mapper进行查询
-        List<Map<String, Object>> result = statMapper.statOrderEnhancedWithTimeRange(timeDimension, categoryId, 
+        List<Map<String, Object>> result = statMapper.statOrderEnhancedWithTimeRange(groupBy, categoryId, 
             (java.time.LocalDateTime) timeParams.get("startTime"), 
             (java.time.LocalDateTime) timeParams.get("endTime"));
         

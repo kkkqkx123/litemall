@@ -60,7 +60,7 @@ public class AdminStatController {
     /**
      * 增强版订单统计接口，支持时间维度和商品类别筛选
      * 支持按年、季、月、日进行级联筛选，包含日期有效性验证
-     * @param timeDimension 时间维度：day/week/month/quarter/year
+     * @param groupBy 统计组织方式：year/quarter/month/day
      * @param categoryId 商品类别ID，可为null
      * @param year 年份，可为null
      * @param quarter 季度(1-4)，可为null
@@ -70,7 +70,7 @@ public class AdminStatController {
      */
     @PreAuthorize("hasPermission('admin:stat:order', 'admin')")
     @GetMapping("/order/enhanced")
-    public Object statOrderEnhanced(@RequestParam(value = "timeDimension", defaultValue = "day") String timeDimension,
+    public Object statOrderEnhanced(@RequestParam(value = "groupBy", defaultValue = "month") String groupBy,
                                   @RequestParam(value = "categoryId", required = false) Integer categoryId,
                                   @RequestParam(value = "year", required = false) Integer year,
                                   @RequestParam(value = "quarter", required = false) Integer quarter,
@@ -96,7 +96,7 @@ public class AdminStatController {
         }
         
         // 调用服务层进行统计
-        List<Map<String, Object>> rows = statService.statOrderEnhanced(timeDimension, categoryId, year, quarter, month, day);
+        List<Map<String, Object>> rows = statService.statOrderEnhanced(groupBy, categoryId, year, quarter, month, day);
         
         // 构建符合前端期望的数据结构
         Map<String, Object> result = new HashMap<>();

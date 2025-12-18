@@ -3,6 +3,14 @@
     <!-- 筛选条件区域 -->
     <el-card class="filter-container">
       <el-form :inline="true" :model="filterForm" size="small">
+        <el-form-item label="统计组织方式">
+          <el-select v-model="filterForm.groupBy" placeholder="选择统计组织方式" @change="handleGroupByChange">
+            <el-option label="按年统计" value="year" />
+            <el-option label="按季度统计" value="quarter" />
+            <el-option label="按月统计" value="month" />
+            <el-option label="按日统计" value="day" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="年份">
           <el-select v-model="filterForm.year" placeholder="选择年份" @change="handleYearChange">
             <el-option
@@ -131,6 +139,7 @@ export default {
       statisticsData: [],
       filterForm: {
         categoryId: null,
+        groupBy: 'month', // 默认按月统计
         year: null,
         quarter: null,
         month: null,
@@ -154,6 +163,15 @@ export default {
     this.loadData()
   },
   methods: {
+    handleGroupByChange() {
+      // 当统计组织方式改变时，重置时间筛选条件并加载数据
+      this.filterForm.quarter = null
+      this.filterForm.month = null
+      this.filterForm.day = null
+      this.updateAvailableMonths()
+      this.loadData()
+    },
+
     initAvailableYears() {
       const currentYear = new Date().getFullYear()
       // 生成从当前年份往前5年的选项
@@ -249,19 +267,21 @@ export default {
       // 构建查询参数
       const query = {
         categoryId: this.filterForm.categoryId,
+        groupBy: this.filterForm.groupBy, // 使用统计组织方式参数
         year: this.filterForm.year
       }
 
-      // 根据优先级设置参数：day > month > quarter > year
+      // 添加时间过滤条件（作为辅助筛选）
+      if (this.filterForm.quarter) {
+        query.quarter = this.filterForm.quarter
+      }
+      
+      if (this.filterForm.month) {
+        query.month = this.filterForm.month
+      }
+      
       if (this.filterForm.day) {
         query.day = this.filterForm.day
-        query.month = this.filterForm.month
-        query.quarter = this.filterForm.quarter
-      } else if (this.filterForm.month) {
-        query.month = this.filterForm.month
-        query.quarter = this.filterForm.quarter
-      } else if (this.filterForm.quarter) {
-        query.quarter = this.filterForm.quarter
       }
 
       console.log('查询参数:', query)
@@ -337,6 +357,7 @@ export default {
     handleReset() {
       this.filterForm = {
         categoryId: null,
+        groupBy: 'month', // 重置时保留默认按月统计
         year: new Date().getFullYear(), // 重置时使用当前年份
         quarter: null,
         month: null,
