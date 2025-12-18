@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.linlinjava.litemall.db.dao.CommentMapperExt">
+    <resultMap id="CommentVOMap" type="org.linlinjava.litemall.db.domain.CommentVO">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="user_id" property="userId" jdbcType="INTEGER"/>
+        <result column="value_id" property="valueId" jdbcType="INTEGER"/>
+        <result column="goods_name" property="goodsName" jdbcType="VARCHAR"/>
+        <result column="category_name" property="categoryName" jdbcType="VARCHAR"/>
+        <result column="star" property="star" jdbcType="TINYINT"/>
+        <result column="content" property="content" jdbcType="VARCHAR"/>
+        <result column="admin_content" property="adminContent" jdbcType="VARCHAR"/>
+        <result column="has_picture" property="hasPicture" jdbcType="BIT"/>
+        <result column="pic_urls" property="picUrls" jdbcType="VARCHAR"/>
+        <result column="add_time" property="addTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    
+    <select id="selectCommentVOSelective" resultMap="CommentVOMap">
+        SELECT 
+            c.id, c.user_id, c.value_id, c.star, c.content, c.admin_content, 
+            c.has_picture, c.pic_urls, c.add_time, c.update_time,
+            g.name AS goods_name,
+            cat.name AS category_name
+        FROM litemall_comment c
+        LEFT JOIN litemall_goods g ON c.value_id = g.id AND c.type = 0
+        LEFT JOIN litemall_category cat ON g.category_id = cat.id
+        WHERE c.deleted = 0 AND c.type != 2
+        <if test="userId != null">
+            AND c.user_id = #{userId}
+        </if>
+        <if test="goodsName != null and goodsName != ''">
+            AND g.name LIKE CONCAT('%', #{goodsName}, '%')
+        </if>
+        <if test="categoryId != null">
+            AND g.category_id = #{categoryId}
+        </if>
+        <if test="sort != null and order != null">
+            ORDER BY ${sort} ${order}
+        </if>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="countCommentVOSelective" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM litemall_comment c
+        LEFT JOIN litemall_goods g ON c.value_id = g.id AND c.type = 0
+        LEFT JOIN litemall_category cat ON g.category_id = cat.id
+        WHERE c.deleted = 0 AND c.type != 2
+        <if test="userId != null">
+            AND c.user_id = #{userId}
+        </if>
+        <if test="goodsName != null and goodsName != ''">
+            AND g.name LIKE CONCAT('%', #{goodsName}, '%')
+        </if>
+        <if test="categoryId != null">
+            AND g.category_id = #{categoryId}
+        </if>
+    </select>
+</mapper>

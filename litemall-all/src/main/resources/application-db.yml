@@ -16,7 +16,7 @@ spring:
 
 # MyBatis配置
 mybatis:
-  mapper-locations: classpath*:org/linlinjava/litemall/db/dao/*.xml
+  mapper-locations: classpath*:org/linlinjava/litemall/db/dao/*.xml,classpath*:mapper/*.xml
   type-aliases-package: org.linlinjava.litemall.db.domain
   configuration:
     map-underscore-to-camel-case: true

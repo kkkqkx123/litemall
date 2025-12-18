@@ -3,8 +3,10 @@
 
     <!-- 查询和其他操作 -->
     <div class="filter-container">
-      <el-input v-model="listQuery.userId" clearable class="filter-item" style="width: 200px;" :placeholder="$t('goods_comment.placeholder.filter_user_id')" />
-      <el-input v-model="listQuery.valueId" clearable class="filter-item" style="width: 200px;" :placeholder="$t('goods_comment.placeholder.filter_value_id')" />
+      <el-input v-model="listQuery.searchText" clearable class="filter-item" style="width: 200px;" placeholder="用户ID或商品名称" />
+      <el-select v-model="listQuery.categoryId" clearable class="filter-item" style="width: 200px;" placeholder="商品类别">
+        <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label" :value="item.value" />
+      </el-select>
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">{{ $t('app.button.search') }}</el-button>
       <el-button :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">{{ $t('app.button.download') }}</el-button>
     </div>
@@ -12,21 +14,27 @@
     <!-- 查询结果 -->
     <el-table v-loading="listLoading" :data="list" :element-loading-text="$t('app.message.list_loading')" border fit highlight-current-row>
 
-      <el-table-column align="center" :label="$t('goods_comment.table.user_id')" prop="userId" />
+      <el-table-column align="center" :label="$t('goods_comment.table.user_id')" prop="userId" width="80" />
 
-      <el-table-column align="center" :label="$t('goods_comment.table.value_id')" prop="valueId" />
+      <el-table-column align="center" label="商品名称" prop="goodsName" min-width="150" />
 
-      <el-table-column align="center" :label="$t('goods_comment.table.star')" prop="star" />
+      <el-table-column align="center" label="商品类别" prop="categoryName" width="120" />
 
-      <el-table-column align="center" :label="$t('goods_comment.table.content')" prop="content" />
-
-      <el-table-column align="center" :label="$t('goods_comment.table.pic_urls')" prop="picUrls">
+      <el-table-column align="center" sortable="custom" :label="$t('goods_comment.table.star')" prop="star" width="80">
         <template slot-scope="scope">
-          <el-image v-for="item in scope.row.picUrls" :key="item" :src="item" :preview-src-list="scope.row.picUrls" :lazy="true" style="width: 40px; height: 40px; margin-right: 5px;" />
+          <el-rate v-model="scope.row.star" disabled show-score text-color="#ff9900" />
         </template>
       </el-table-column>
 
-      <el-table-column align="center" :label="$t('goods_comment.table.add_time')" prop="addTime" />
+      <el-table-column align="center" :label="$t('goods_comment.table.content')" prop="content" min-width="200" show-overflow-tooltip />
+
+      <el-table-column align="center" label="管理员回复" prop="adminContent" min-width="150" show-overflow-tooltip />
+
+      <el-table-column align="center" :label="$t('goods_comment.table.add_time')" prop="addTime" width="160">
+        <template slot-scope="scope">
+          {{ parseTime(scope.row.addTime) }}
+        </template>
+      </el-table-column>
 
       <el-table-column align="center" :label="$t('goods_comment.table.actions')" width="200" class-name="small-padding fixed-width">
         <template slot-scope="scope">
@@ -36,7 +44,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" :page-sizes="[20, 50, 100]" @pagination="getList" />
 
     <!-- 评论回复 -->
     <el-dialog :visible.sync="replyFormVisible" :title="$t('goods_comment.dialog.reply')">
@@ -57,7 +65,9 @@
 <script>
 import { listComment, deleteComment } from '@/api/comment'
 import { replyComment } from '@/api/order'
+import { listCategory } from '@/api/category'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+import { parseTime } from '@/utils'
 
 export default {
   name: 'Comment',
@@ -70,8 +80,8 @@ export default {
       listQuery: {
         page: 1,
         limit: 20,
-        userId: undefined,
-        valueId: undefined,
+        searchText: undefined, // 合并的搜索文本，可能是用户ID或商品名称
+        categoryId: undefined,
         sort: 'add_time',
         order: 'desc'
       },
@@ -80,16 +90,42 @@ export default {
         commentId: 0,
         content: ''
       },
-      replyFormVisible: false
+      replyFormVisible: false,
+      categoryOptions: [] // 商品类别选项
     }
   },
   created() {
     this.getList()
+    this.getCategoryOptions()
   },
   methods: {
+    parseTime,
     getList() {
       this.listLoading = true
-      listComment(this.listQuery).then(response => {
+      
+      // 构建查询参数
+      const query = {
+        page: this.listQuery.page,
+        limit: this.listQuery.limit,
+        sort: this.listQuery.sort,
+        order: this.listQuery.order
+      }
+      
+      // 处理搜索文本，可能是用户ID或商品名称
+      if (this.listQuery.searchText) {
+        // 尝试转换为数字，如果成功则是用户ID，否则是商品名称
+        if (!isNaN(this.listQuery.searchText)) {
+          query.userId = this.listQuery.searchText
+        } else {
+          query.goodsName = this.listQuery.searchText
+        }
+      }
+      
+      if (this.listQuery.categoryId) {
+        query.categoryId = this.listQuery.categoryId
+      }
+      
+      listComment(query).then(response => {
         this.list = response.data.data.list
         this.total = response.data.data.total
         this.listLoading = false
@@ -97,6 +133,15 @@ export default {
         this.list = []
         this.total = 0
         this.listLoading = false
+      })
+    },
+    getCategoryOptions() {
+      listCategory({}).then(response => {
+        const categories = response.data.data.list || []
+        this.categoryOptions = categories.map(item => ({
+          value: item.id,
+          label: item.name
+        }))
       })
     },
     handleFilter() {
@@ -114,6 +159,7 @@ export default {
           title: '成功',
           message: '回复成功'
         })
+        this.getList()
       }).catch(response => {
         this.$notify.error({
           title: '失败',
@@ -135,8 +181,8 @@ export default {
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['评论ID', '用户ID', '商品ID', '评论', '评论图片列表', '评论时间']
-        const filterVal = ['id', 'userId', 'valueId', 'content', 'picUrls', 'addTime']
+        const tHeader = ['评论ID', '用户ID', '商品名称', '商品类别', '评分', '评论', '管理员回复', '评论时间']
+        const filterVal = ['id', 'userId', 'goodsName', 'categoryName', 'star', 'content', 'adminContent', 'addTime']
         excel.export_json_to_excel2(tHeader, this.list, filterVal, '商品评论信息')
         this.downloadLoading = false
       })
