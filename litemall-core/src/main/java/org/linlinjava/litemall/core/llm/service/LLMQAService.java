@@ -790,11 +790,7 @@ public class LLMQAService {
             if (goods.getBrief() != null && !goods.getBrief().isEmpty()) {
                 answer.append(String.format("   简介：%s\n", goods.getBrief()));
             }
-            // 添加过滤后的详情信息
-            if (goods.getDetail() != null && !goods.getDetail().isEmpty()) {
-                String filteredDetail = goodsDetailFilter.extractSummary(goods.getDetail(), 100);
-                answer.append(String.format("   详情：%s\n", filteredDetail));
-            }
+            // 完全移除详情信息，不再显示detail字段
             answer.append("\n");
         }
         
