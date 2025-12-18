@@ -28,32 +28,82 @@ public class LLMOutputParser {
     
     /**
      * 解析LLM输出为QueryIntent对象
-     * @param llmOutput LLM输出字符串
-     * @return QueryIntent对象
-     * @throws JSONParseException 当解析失败时抛出异常
+     * 仅支持JSON格式：{"type":"product","conditions":{"name":"手机"}}
+     * 
+     * @param llmOutput LLM输出内容
+     * @return QueryIntent对象，如果解析失败则返回null
      */
-    public QueryIntent parseQueryIntent(String llmOutput) throws JSONParseException {
+    public static QueryIntent parseLLMOutput(String llmOutput) {
+        return parseLLMOutput(llmOutput, null);
+    }
+    
+    /**
+     * 解析LLM输出为QueryIntent对象（支持外部数量建议）
+     * 仅支持JSON格式：{"type":"product","conditions":{"name":"手机"}}
+     * 
+     * @param llmOutput LLM输出内容
+     * @param suggestedLimit 外部建议的查询数量，如果为null则由LLM决定
+     * @return QueryIntent对象，如果解析失败则返回null
+     */
+    public static QueryIntent parseLLMOutput(String llmOutput, Integer suggestedLimit) {
         if (llmOutput == null || llmOutput.trim().isEmpty()) {
-            throw new JSONParseException("LLM输出为空");
-        }
-        
-        // 提取JSON内容
-        String jsonContent = jsonExtractor.extractJSON(llmOutput);
-        if (jsonContent == null) {
-            throw new JSONParseException("无法提取有效的JSON格式");
+            logger.warn("LLM输出为空");
+            return null;
         }
         
         try {
+            String cleanedOutput = cleanOutput(llmOutput);
+            
+            // 仅尝试JSON解析
+            if (isJSONFormat(cleanedOutput)) {
+                return parseJSONOutput(cleanedOutput, suggestedLimit);
+            }
+            
+            logger.warn("LLM输出不是有效的JSON格式，解析失败");
+            return null;
+            
+        } catch (Exception e) {
+            logger.error("解析LLM输出失败: {}", llmOutput, e);
+            return null;
+        }
+    }
+    
+    /**
+     * 清理LLM输出
+     */
+    private static String cleanOutput(String output) {
+        if (output == null) {
+            return "";
+        }
+        
+        // 移除AI回复前缀
+        String cleaned = output.replaceAll("^(AI|助手|Assistant)[:：]\\s*", "");
+        
+        // 移除Markdown代码块标记
+        cleaned = cleaned.replaceAll("```[\\s\\S]*?```", "");
+        cleaned = cleaned.replaceAll("`", "");
+        
+        return cleaned.trim();
+    }
+    
+    /**
+     * 解析JSON格式的LLM输出（支持外部数量建议）
+     * 示例格式：{"type":"product","conditions":{"name":"手机"},"limit":20}
+     */
+    private static QueryIntent parseJSONOutput(String jsonOutput, Integer suggestedLimit) {
+        try {
+            // 创建ObjectMapper实例
+            ObjectMapper mapper = new ObjectMapper();
             // 解析JSON为Map
             @SuppressWarnings("unchecked")
-            Map<String, Object> jsonMap = objectMapper.readValue(jsonContent, Map.class);
-            
+            Map<String, Object> jsonMap = mapper.readValue(jsonOutput, Map.class);
+
             // 创建QueryIntent对象
             QueryIntent queryIntent = new QueryIntent();
-            
+
             // 设置查询类型
             queryIntent.setQueryType((String) jsonMap.getOrDefault("query_type", "keyword_search"));
-            
+
             // 设置查询条件
             Object conditionsObj = jsonMap.get("conditions");
             if (conditionsObj instanceof Map) {
@@ -61,22 +111,198 @@ public class LLMOutputParser {
                 Map<String, Object> conditions = (Map<String, Object>) conditionsObj;
                 queryIntent.setConditions(conditions);
             }
-            
+
             // 设置排序（进行字段映射）
             String sort = (String) jsonMap.getOrDefault("sort", "retail_price ASC");
-            queryIntent.setSort(mapSortField(sort));
-            
-            // 设置限制数量
-            queryIntent.setLimit((Integer) jsonMap.getOrDefault("limit", 10));
-            
+            queryIntent.setSort("retail_price ASC");
+
+            // 设置查询数量（优先使用外部建议，否则使用LLM决策）
+            if (suggestedLimit != null && suggestedLimit > 0) {
+                queryIntent.setLimit(suggestedLimit);
+            } else {
+                Integer limit = (Integer) jsonMap.get("limit");
+                if (limit != null && limit > 0) {
+                    queryIntent.setLimit(limit);
+                }
+            }
+
             logger.debug("解析LLM输出为QueryIntent: {}", queryIntent);
             return queryIntent;
-            
+
         } catch (Exception e) {
-            throw new JSONParseException("JSON解析失败: " + e.getMessage());
+            logger.error("JSON解析失败: {}", e.getMessage());
+            return null;
         }
     }
-    
+
+    /**
+     * 检查是否为JSON格式
+     */
+    private static boolean isJSONFormat(String output) {
+        if (output == null || output.trim().isEmpty()) {
+            return false;
+        }
+        
+        String trimmed = output.trim();
+        return (trimmed.startsWith("{") && trimmed.endsWith("}")) || 
+               (trimmed.startsWith("[") && trimmed.endsWith("]"));
+    }
+
+    /**
+     * 验证查询意图的基本结构
+     */
+    public boolean validateQueryIntent(QueryIntent queryIntent) {
+        if (queryIntent == null) {
+            logger.warn("查询意图为空");
+            return false;
+        }
+        
+        // 验证查询类型
+        if (!isValidQueryType(queryIntent.getQueryType())) {
+            logger.warn("无效的查询类型: {}", queryIntent.getQueryType());
+            return false;
+        }
+        
+        // 验证查询条件
+        if (!validateConditions(queryIntent)) {
+            logger.warn("查询条件验证失败");
+            return false;
+        }
+        
+        return true;
+    }
+
+    /**
+     * 验证查询类型
+     */
+    private boolean isValidQueryType(String queryType) {
+        if (queryType == null || queryType.trim().isEmpty()) {
+            return false;
+        }
+        
+        String[] validTypes = {
+            "keyword_search", "category_filter", "brand_filter", 
+            "price_range", "recommendation", "similar_products"
+        };
+        
+        for (String validType : validTypes) {
+            if (validType.equals(queryType)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * 验证查询条件
+     */
+    private boolean validateConditions(QueryIntent queryIntent) {
+        Map<String, Object> conditions = queryIntent.getConditions();
+        String queryType = queryIntent.getQueryType();
+        
+        if (conditions == null || conditions.isEmpty()) {
+            logger.warn("查询条件为空");
+            return false;
+        }
+        
+        // 根据查询类型验证特定条件
+        switch (queryType) {
+            case "keyword_search":
+                return conditions.containsKey("keyword") && 
+                       conditions.get("keyword") != null &&
+                       !conditions.get("keyword").toString().trim().isEmpty();
+                       
+            case "category_filter":
+                return conditions.containsKey("category") &&
+                       conditions.get("category") != null;
+                       
+            case "brand_filter":
+                return conditions.containsKey("brand") &&
+                       conditions.get("brand") != null;
+                       
+            case "price_range":
+                return conditions.containsKey("minPrice") &&
+                       conditions.containsKey("maxPrice") &&
+                       conditions.get("minPrice") != null &&
+                       conditions.get("maxPrice") != null;
+                       
+            default:
+                return true; // 其他类型不强制验证
+        }
+    }
+
+    /**
+     * 验证名称匹配模式
+     */
+    public boolean isValidNamePatternMode(String mode) {
+        if (mode == null || mode.trim().isEmpty()) {
+            return false;
+        }
+        
+        String[] validModes = {"exact", "like", "prefix", "suffix", "fuzzy"};
+        for (String validMode : validModes) {
+            if (validMode.equals(mode)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * 将LLM生成的排序字段映射为数据库实际字段名
+     * @param llmSortField LLM生成的排序字段
+     * @return 数据库实际字段名
+     */
+    public String mapSortField(String llmSortField) {
+        if (llmSortField == null || llmSortField.trim().isEmpty()) {
+            return "retail_price ASC";
+        }
+        
+        // 移除多余空格并转换为大写
+        llmSortField = llmSortField.trim().toUpperCase();
+        
+        // 分离字段名和排序方向
+        String[] parts = llmSortField.split("\\s+");
+        String field = parts[0];
+        String direction = parts.length > 1 ? parts[1] : "ASC";
+        
+        // 字段映射
+        String mappedField;
+        switch (field) {
+            case "PRICE":
+            case "价格":
+                mappedField = "retail_price";
+                break;
+            case "NAME":
+            case "名称":
+                mappedField = "name";
+                break;
+            case "SALES":
+            case "销量":
+                mappedField = "number_sold";
+                break;
+            case "ADD_TIME":
+            case "添加时间":
+                mappedField = "add_time";
+                break;
+            case "UPDATE_TIME":
+            case "更新时间":
+                mappedField = "update_time";
+                break;
+            default:
+                mappedField = "retail_price"; // 默认按价格排序
+        }
+        
+        // 确保排序方向有效
+        if (!"DESC".equals(direction)) {
+            direction = "ASC";
+        }
+        
+        return mappedField + " " + direction;
+    }
+
     /**
      * 解析LLM输出为字符串（用于回答生成）
      * @param llmOutput LLM输出文本
@@ -172,202 +398,5 @@ public class LLMOutputParser {
         }
         
         return null;
-    }
-
-    /**
-     * 清理输出文本，移除常见的标记和前缀
-     * @param output 原始输出
-     * @return 清理后的文本
-     */
-    public String cleanOutput(String output) {
-        if (output == null) {
-            return "";
-        }
-        
-        String cleaned = output;
-        
-        // 移除常见的AI回复前缀
-        String[] prefixes = {
-            "根据以上信息，",
-            "根据您的查询，",
-            "以下是查询结果：",
-            "查询结果：",
-            "结果：",
-            "Answer:",
-            "回复：",
-            "回答：",
-            "```json",
-            "```"
-        };
-        
-        for (String prefix : prefixes) {
-            if (cleaned.startsWith(prefix)) {
-                cleaned = cleaned.substring(prefix.length()).trim();
-            }
-        }
-        
-        return cleaned.trim();
-    }
-    
-    /**
-     * 验证查询意图是否有效（增强版）
-     * @param queryIntent 查询意图
-     * @throws LLMOutputParseException 当验证失败时抛出此异常
-     */
-    private void validateQueryIntent(QueryIntent queryIntent) throws LLMOutputParseException {
-        if (queryIntent == null) {
-            throw new LLMOutputParseException("查询意图为空");
-        }
-        
-        // 基本结构验证
-        if (!queryIntent.isValid()) {
-            throw new LLMOutputParseException("查询意图基本结构无效: " + queryIntent);
-        }
-        
-        // 验证查询类型
-        String queryType = queryIntent.getQueryType();
-        if (!isValidQueryType(queryType)) {
-            throw new LLMOutputParseException("无效的查询类型: " + queryType);
-        }
-        
-        // 验证查询条件
-        Map<String, Object> conditions = queryIntent.getConditions();
-        if (conditions != null) {
-            validateConditions(conditions, queryType);
-        }
-    }
-    
-    /**
-     * 验证查询类型是否有效
-     * @param queryType 查询类型
-     * @return true表示有效，false表示无效
-     */
-    private boolean isValidQueryType(String queryType) {
-        if (queryType == null) {
-            return false;
-        }
-        
-        // 验证是否为支持的查询类型
-        return "price_range".equals(queryType) ||
-               "stock_check".equals(queryType) ||
-               "category_filter".equals(queryType) ||
-               "keyword_search".equals(queryType) ||
-               "name_pattern".equals(queryType) ||
-               "specific_product".equals(queryType) ||
-               "statistical".equals(queryType);
-    }
-    
-    /**
-     * 验证查询条件
-     * @param conditions 查询条件
-     * @param queryType 查询类型
-     * @throws LLMOutputParseException 验证失败时抛出此异常
-     */
-    private void validateConditions(Map<String, Object> conditions, String queryType) throws LLMOutputParseException {
-        // 验证名称模式匹配的条件
-        if ("name_pattern".equals(queryType)) {
-            Object nameCondition = conditions.get("name");
-            if (!(nameCondition instanceof Map<?, ?>)) {
-                throw new LLMOutputParseException("名称模式匹配查询需要name条件为Map类型");
-            }
-            
-            @SuppressWarnings("unchecked")
-            Map<String, Object> nameMap = (Map<String, Object>) nameCondition;
-            Object patternObj = nameMap.get("pattern");
-            String pattern = null;
-            if (patternObj instanceof String) {
-                pattern = (String) patternObj;
-            }
-            Object modeObj = nameMap.get("mode");
-            String mode = modeObj instanceof String ? (String) modeObj : "contains";
-            
-            if (pattern == null || pattern.trim().isEmpty()) {
-                throw new LLMOutputParseException("名称模式匹配的pattern不能为空");
-            }
-            
-            if (!isValidNamePatternMode(mode)) {
-                throw new LLMOutputParseException("无效的名称匹配模式: " + mode);
-            }
-        }
-        
-        // 验证价格范围查询的条件
-        if ("price_range".equals(queryType)) {
-            Object minPrice = conditions.get("min_price");
-            Object maxPrice = conditions.get("max_price");
-            
-            if (minPrice == null && maxPrice == null) {
-                throw new LLMOutputParseException("价格范围查询至少需要指定min_price或max_price之一");
-            }
-            
-            if (minPrice != null && !(minPrice instanceof Number)) {
-                throw new LLMOutputParseException("min_price必须是数字类型");
-            }
-            
-            if (maxPrice != null && !(maxPrice instanceof Number)) {
-                throw new LLMOutputParseException("max_price必须是数字类型");
-            }
-        }
-        
-        // 验证关键词搜索的条件
-        if ("keyword_search".equals(queryType)) {
-            String keyword = (String) conditions.get("keyword");
-            if (keyword == null || keyword.trim().isEmpty()) {
-                throw new LLMOutputParseException("关键词搜索的keyword不能为空");
-            }
-        }
-    }
-    
-    /**
-     * 验证名称匹配模式是否有效
-     * @param mode 匹配模式
-     * @return true表示有效，false表示无效
-     */
-    private boolean isValidNamePatternMode(String mode) {
-        if (mode == null) {
-            return false;
-        }
-        
-        return "exact".equals(mode) ||
-               "contains".equals(mode) ||
-               "starts_with".equals(mode) ||
-               "ends_with".equals(mode) ||
-               "regex".equals(mode);
-    }
-    
-    /**
-     * 映射排序字段
-     * 将LLM生成的字段名映射为数据库中的实际字段名
-     * @param sortField 原始排序字段
-     * @return 映射后的排序字段
-     */
-    private String mapSortField(String sortField) {
-        if (sortField == null || sortField.trim().isEmpty()) {
-            return "retail_price ASC";
-        }
-        
-        String[] parts = sortField.split("\\s+");
-        String field = parts[0];
-        String direction = parts.length > 1 ? parts[1] : "ASC";
-        
-        // 字段映射
-        switch (field.toLowerCase()) {
-            case "price":
-                field = "retail_price";
-                break;
-            case "name":
-                field = "name";
-                break;
-            case "stock":
-                field = "number";
-                break;
-            case "sales":
-                field = "sales";
-                break;
-            default:
-                // 如果字段不在映射列表中，使用原字段
-                break;
-        }
-        
-        return field + " " + direction;
     }
 }

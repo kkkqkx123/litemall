@@ -76,7 +76,7 @@ public class LLMQAService {
             logger.debug("LLM响应：{}", llmResponse);
             
             // 4. 解析LLM输出（增强版，支持重新查询字段）
-            QueryIntent queryIntent = llmOutputParser.parseQueryIntent(llmResponse);
+            QueryIntent queryIntent = llmOutputParser.parseLLMOutput(llmResponse);
             System.out.println("解析后的查询意图：" + queryIntent);
             logger.debug("解析后的查询意图：{}", queryIntent);
             

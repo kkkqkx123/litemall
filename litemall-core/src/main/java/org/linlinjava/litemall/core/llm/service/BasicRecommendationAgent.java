@@ -48,7 +48,7 @@ public class BasicRecommendationAgent {
             
             // 3. 智能数量建议
             int suggestedQuantity = IntelligentQuantityAdvisor.suggestQuantity(
-                intent.getQueryType(), question);
+                intent.getQueryType(), question, null, null).getFinalQuantity();
             
             // 4. 个性化偏好增强
             logger.debug("会话 {} 的查询意图为：{}", sessionId, intent);

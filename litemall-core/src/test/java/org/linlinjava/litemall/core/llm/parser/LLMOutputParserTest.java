@@ -38,7 +38,7 @@ class LLMOutputParserTest {
             "    \"explanation\": \"用户搜索价格在1000-5000元之间的电子产品\"\n" +
             "}";
         
-        QueryIntent result = parser.parseQueryIntent(llmOutput);
+        QueryIntent result = parser.parseLLMOutput(llmOutput);
         
         assertNotNull(result);
         assertEquals("product_search", result.getQueryType());
@@ -71,7 +71,7 @@ class LLMOutputParserTest {
             "    \"limit\": 10\n" +
             "}";
         
-        QueryIntent result = parser.parseQueryIntent(llmOutput);
+        QueryIntent result = parser.parseLLMOutput(llmOutput);
         
         assertNotNull(result);
         assertEquals("price_range", result.getQueryType());
@@ -94,17 +94,17 @@ class LLMOutputParserTest {
             "    \"confidence\": 0.88\n" +
             "}";
         
-        QueryIntent result = parser.parseQueryIntent(llmOutput);
-        
+        QueryIntent result = parser.parseLLMOutput(llmOutput);
+
         assertNotNull(result);
         assertEquals("stock_check", result.getQueryType());
         assertEquals(0.88, result.getConfidence());
-        
+
         assertNotNull(result.getConditions());
         assertEquals(123, result.getConditions().get("product_id"));
         assertEquals(10, result.getConditions().get("stock_threshold"));
     }
-    
+
     @Test
     @DisplayName("测试统计查询解析")
     void testParseStatisticalQuery() throws JSONParseException {
@@ -120,27 +120,27 @@ class LLMOutputParserTest {
             "    \"confidence\": 0.91,\n" +
             "    \"explanation\": \"统计2024年服装类别的销售数据\"\n" +
             "}";
-        
-        QueryIntent result = parser.parseQueryIntent(llmOutput);
-        
+
+        QueryIntent result = parser.parseLLMOutput(llmOutput);
+
         assertNotNull(result);
         assertEquals("statistical_query", result.getQueryType());
         assertEquals(0.91, result.getConfidence());
         assertEquals("统计2024年服装类别的销售数据", result.getExplanation());
     }
-    
+
     @Test
     @DisplayName("测试空输出抛出异常")
     void testParseEmptyOutputThrowsException() {
         String llmOutput = "";
-        
+
         JSONParseException exception = assertThrows(JSONParseException.class, () -> {
-            parser.parseQueryIntent(llmOutput);
+            parser.parseLLMOutput(llmOutput);
         });
-        
+
         assertTrue(exception.getMessage().contains("LLM输出为空"));
     }
-    
+
     @Test
     @DisplayName("测试无效JSON抛出异常")
     void testParseInvalidJSONThrowsException() {
@@ -149,14 +149,14 @@ class LLMOutputParserTest {
             "    \"conditions\": {\n" +
             "        \"category\": \"电子产品\"\n" +
             "    // 缺少闭合括号";
-        
+
         JSONParseException exception = assertThrows(JSONParseException.class, () -> {
-            parser.parseQueryIntent(llmOutput);
+            parser.parseLLMOutput(llmOutput);
         });
-        
+
         assertTrue(exception.getMessage().contains("JSON格式解析失败"));
     }
-    
+
     @Test
     @DisplayName("测试缺少query_type抛出异常")
     void testParseMissingQueryTypeThrowsException() {
@@ -166,9 +166,9 @@ class LLMOutputParserTest {
             "    },\n" +
             "    \"confidence\": 0.85\n" +
             "}";
-        
+
         JSONParseException exception = assertThrows(JSONParseException.class, () -> {
-            parser.parseQueryIntent(llmOutput);
+            parser.parseLLMOutput(llmOutput);
         });
         
         assertTrue(exception.getMessage().contains("缺少必需的query_type字段"));

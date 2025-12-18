@@ -109,7 +109,7 @@ public class LLMServiceManager {
         try {
             logger.debug("[{}] 开始解析LLM输出 - response: {}", requestId, llmResponse);
             
-            QueryIntent queryIntent = llmOutputParser.parseQueryIntent(llmResponse);
+            QueryIntent queryIntent = llmOutputParser.parseLLMOutput(llmResponse);
             
             if (queryIntent == null) {
                 throw new LLMServiceException("无法解析LLM输出为有效的查询意图");
