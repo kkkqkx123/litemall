@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -346,5 +347,50 @@ public class LLMSessionManager {
                    ", timestamp=" + timestamp +
                    '}';
         }
+    }
+    
+    /**
+     * 获取最后一条消息
+     * @param sessionId 会话ID
+     * @return 最后一条消息，如果没有返回null
+     */
+    public Message getLastMessage(String sessionId) {
+        Session session = getSession(sessionId);
+        if (session != null && !session.getMessages().isEmpty()) {
+            List<Message> messages = session.getMessages();
+            return messages.get(messages.size() - 1);
+        }
+        return null;
+    }
+    
+    /**
+     * 获取用户偏好设置
+     * @param sessionId 会话ID
+     * @return 用户偏好映射
+     */
+    public Map<String, Object> getPreferences(String sessionId) {
+        Session session = getSession(sessionId);
+        if (session != null) {
+            return new HashMap<>(session.getContext());
+        }
+        return new HashMap<>();
+    }
+    
+    /**
+     * 创建指定ID的会话（用于测试和修复）
+     * @param userId 用户ID
+     * @param sessionId 指定的会话ID
+     * @return 会话ID
+     */
+    public String createSession(Integer userId, String sessionId) {
+        if (sessionId == null || sessionId.trim().isEmpty()) {
+            return createSession(userId);
+        }
+        
+        Session session = new Session(sessionId, userId);
+        sessions.put(sessionId, session);
+        
+        logger.info("创建指定ID的会话：sessionId={}, userId={}", sessionId, userId);
+        return sessionId;
     }
 }

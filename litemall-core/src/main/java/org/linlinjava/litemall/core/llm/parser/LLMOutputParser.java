@@ -181,8 +181,9 @@ public class LLMOutputParser {
         }
         
         String[] validTypes = {
-            "keyword_search", "category_filter", "brand_filter", 
-            "price_range", "recommendation", "similar_products"
+            "product_search", "keyword_search", "category_filter", "brand_filter", 
+            "price_range", "stock_check", "statistical_query", "total_count",
+            "price_stats", "stock_stats", "category_stats", "recommendation", "similar_products"
         };
         
         for (String validType : validTypes) {
@@ -209,6 +210,7 @@ public class LLMOutputParser {
         // 根据查询类型验证特定条件
         switch (queryType) {
             case "keyword_search":
+            case "product_search":
                 return conditions.containsKey("keyword") && 
                        conditions.get("keyword") != null &&
                        !conditions.get("keyword").toString().trim().isEmpty();
@@ -222,10 +224,25 @@ public class LLMOutputParser {
                        conditions.get("brand") != null;
                        
             case "price_range":
-                return conditions.containsKey("minPrice") &&
-                       conditions.containsKey("maxPrice") &&
-                       conditions.get("minPrice") != null &&
-                       conditions.get("maxPrice") != null;
+                return (conditions.containsKey("minPrice") || conditions.containsKey("maxPrice")) &&
+                       (conditions.get("minPrice") != null || conditions.get("maxPrice") != null);
+                       
+            case "stock_check":
+                return conditions.containsKey("stockStatus") &&
+                       conditions.get("stockStatus") != null;
+                       
+            case "statistical_query":
+            case "total_count":
+            case "price_stats":
+            case "stock_stats":
+            case "category_stats":
+                // 统计查询可以没有特定条件
+                return true;
+                       
+            case "recommendation":
+            case "similar_products":
+                // 推荐查询可以没有特定条件，支持上下文推荐
+                return true;
                        
             default:
                 return true; // 其他类型不强制验证
