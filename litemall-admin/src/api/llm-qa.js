@@ -13,7 +13,8 @@ export function askQuestion(data) {
   return request({
     url: '/llm/qa/ask',
     method: 'post',
-    data: data
+    data: data,
+    timeout: 45000 // LLM问答专用超时设置 - 45秒
   })
 }
 

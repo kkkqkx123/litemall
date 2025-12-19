@@ -5,15 +5,35 @@ export function validateLLMResponse(response) {
     return { valid: false, error: '无效的响应格式' }
   }
   
+  // 检查外层结构
   if (response.errno !== 0) {
     return { valid: false, error: response.errmsg || '请求失败' }
   }
   
-  if (!response.data || typeof response.data.answer !== 'string') {
+  // 检查data结构
+  if (!response.data || typeof response.data !== 'object') {
     return { valid: false, error: '服务器返回数据格式错误' }
   }
   
-  return { valid: true, data: response.data }
+  // 后端返回的格式是 { errno: 0, errmsg: "成功", data: { code: 0, message: "成功", answer: "...", goods: [...], sessionId: "..." } }
+  // 提取answer和goods字段
+  const answer = response.data.answer
+  const goods = response.data.goods || []
+  const sessionId = response.data.sessionId
+  
+  if (!answer || typeof answer !== 'string') {
+    console.error('响应数据结构:', JSON.stringify(response, null, 2))
+    return { valid: false, error: '服务器返回数据格式错误：缺少answer字段' }
+  }
+  
+  return { 
+    valid: true, 
+    data: { 
+      answer: answer.trim(),
+      goods: goods,
+      sessionId: sessionId
+    } 
+  }
 }
 
 export function validateQuestion(question) {

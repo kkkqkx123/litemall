@@ -17,7 +17,8 @@
               v-for="year in availableYears"
               :key="year"
               :label="year + '年'"
-              :value="year" />
+              :value="year"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="季度">
@@ -25,7 +26,8 @@
             v-model="filterForm.quarter"
             placeholder="选择季度"
             clearable
-            @change="handleQuarterChange">
+            @change="handleQuarterChange"
+          >
             <el-option label="全年" :value="null" />
             <el-option label="第一季度" :value="1" />
             <el-option label="第二季度" :value="2" />
@@ -38,14 +40,16 @@
             v-model="filterForm.month"
             placeholder="选择月份"
             clearable
+            :disabled="!filterForm.year"
             @change="handleMonthChange"
-            :disabled="!filterForm.year">
+          >
             <el-option label="全季度/全年" :value="null" />
             <el-option
               v-for="month in availableMonths"
               :key="month"
               :label="month + '月'"
-              :value="month" />
+              :value="month"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="日期">
@@ -53,13 +57,15 @@
             v-model="filterForm.day"
             placeholder="选择日期"
             clearable
-            :disabled="!filterForm.month">
+            :disabled="!filterForm.month"
+          >
             <el-option label="全月" :value="null" />
             <el-option
               v-for="day in 31"
               :key="day"
               :label="day + '日'"
-              :value="day" />
+              :value="day"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="商品类别">
@@ -67,12 +73,14 @@
             v-model="filterForm.categoryId"
             placeholder="选择商品类别"
             clearable
-            @change="handleFilterChange">
+            @change="handleFilterChange"
+          >
             <el-option
               v-for="item in categoryOptions"
               :key="item.value"
               :label="item.label"
-              :value="item.value" />
+              :value="item.value"
+            />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -105,7 +113,8 @@
         v-loading="loading"
         element-loading-text="加载中..."
         :data="statisticsData"
-        style="width: 100%">
+        style="width: 100%"
+      >
         <el-table-column prop="timeLabel" label="时间" width="180" />
         <el-table-column prop="orderCount" label="订单数量" width="120" />
         <el-table-column prop="orderAmount" label="订单金额">
@@ -275,11 +284,11 @@ export default {
       if (this.filterForm.quarter) {
         query.quarter = this.filterForm.quarter
       }
-      
+
       if (this.filterForm.month) {
         query.month = this.filterForm.month
       }
-      
+
       if (this.filterForm.day) {
         query.day = this.filterForm.day
       }

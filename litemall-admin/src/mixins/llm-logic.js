@@ -48,18 +48,37 @@ export default {
     
     // 处理API响应
     processApiResponse(response) {
-      const validation = validateLLMResponse(response)
-      
-      if (!validation.valid) {
-        return { success: false, error: validation.error }
+      try {
+        // 使用验证工具函数检查响应
+        const validation = validateLLMResponse(response)
+        
+        if (!validation.valid) {
+          console.error('API响应验证失败:', validation.error)
+          console.error('完整响应:', response)
+          return { success: false, error: validation.error }
+        }
+        
+        // 从验证结果中获取数据
+        const answer = validation.data.answer
+        const goods = validation.data.goods || []
+        const sessionId = validation.data.sessionId
+        
+        // 检查answer是否为空
+        if (!answer || answer.trim() === '') {
+          return { success: false, error: 'AI暂时无法回答您的问题，请稍后再试' }
+        }
+        
+        return { 
+          success: true, 
+          answer: answer.trim(),
+          goods: goods,
+          sessionId: sessionId // 确保返回sessionId
+        }
+        
+      } catch (error) {
+        console.error('处理API响应时出错:', error)
+        return { success: false, error: '处理响应数据时出错' }
       }
-      
-      const answer = validation.data.answer.trim()
-      if (!answer) {
-        return { success: false, error: 'AI暂时无法回答您的问题' }
-      }
-      
-      return { success: true, answer: answer }
     },
     
     // 智能判断是否自动滚动
