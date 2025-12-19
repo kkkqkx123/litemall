@@ -19,7 +19,24 @@ public class JacksonUtil {
     
     static {
         // 配置ObjectMapper以支持Java 8时间类型
-        objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+        com.fasterxml.jackson.datatype.jsr310.JavaTimeModule javaTimeModule = new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule();
+        
+        // 添加日期序列化器和反序列化器，与JacksonConfig保持一致
+        javaTimeModule.addSerializer(java.time.LocalDateTime.class, 
+            new com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        javaTimeModule.addSerializer(java.time.LocalDate.class, 
+            new com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        javaTimeModule.addSerializer(java.time.LocalTime.class, 
+            new com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss")));
+        
+        javaTimeModule.addDeserializer(java.time.LocalDateTime.class, 
+            new com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        javaTimeModule.addDeserializer(java.time.LocalDate.class, 
+            new com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        javaTimeModule.addDeserializer(java.time.LocalTime.class, 
+            new com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss")));
+        
+        objectMapper.registerModule(javaTimeModule);
         // 禁用将日期写为时间戳，保持ISO格式
         objectMapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }

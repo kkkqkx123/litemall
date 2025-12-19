@@ -21,7 +21,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        // 配置StringHttpMessageConverter使用UTF-8编码
+        // 仅配置StringHttpMessageConverter使用UTF-8编码
         StringHttpMessageConverter stringConverter = new StringHttpMessageConverter(StandardCharsets.UTF_8);
         stringConverter.setWriteAcceptCharset(false);
         
@@ -29,7 +29,7 @@ public class WebConfig implements WebMvcConfigurer {
         converters.removeIf(converter -> converter instanceof StringHttpMessageConverter);
         converters.add(stringConverter);
         
-        // 不再配置MappingJackson2HttpMessageConverter，使用Spring Boot默认配置
-        // 这样会自动使用litemall-core模块中配置的ObjectMapper
+        // 不再配置MappingJackson2HttpMessageConverter
+        // 让Spring Boot使用默认配置，自动使用core模块的ObjectMapper
     }
 }
