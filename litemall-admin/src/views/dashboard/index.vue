@@ -85,7 +85,7 @@ export default {
       this.$router.push('/goods/list')
     },
     goToProductManagement() {
-      this.$router.push('/goods/create')
+      this.$router.push('/goods/list')
     },
     goToOrderManagement() {
       this.$router.push('/mall/order')

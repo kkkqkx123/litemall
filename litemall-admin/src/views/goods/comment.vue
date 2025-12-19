@@ -32,7 +32,7 @@
 
       <el-table-column align="center" :label="$t('goods_comment.table.add_time')" prop="addTime" width="160">
         <template slot-scope="scope">
-          {{ parseTime(scope.row.addTime) }}
+          {{ parseTime(scope.row.addTime, '{y}-{m}-{d}') }}
         </template>
       </el-table-column>
 
