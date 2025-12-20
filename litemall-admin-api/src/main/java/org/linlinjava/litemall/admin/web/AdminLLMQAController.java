@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -67,14 +68,17 @@ public class AdminLLMQAController {
             Map<String, Object> result = new HashMap<>();
             result.put("errno", 0);
             result.put("errmsg", "success");
-            result.put("data", Map.of(
-                "answer", response.getAnswer(),
-                "goods", response.getGoods() != null ? response.getGoods() : List.of(),
-                "sessionId", response.getSessionId(),
-                "queryTime", response.getQueryTime(),
-                "fromCache", response.isFromCache(),
-                "timestamp", response.getTimestamp()
-            ));
+            
+            // 创建数据Map，避免使用Map.of()因为不允许null值
+            Map<String, Object> dataMap = new HashMap<>();
+            dataMap.put("answer", response.getAnswer());
+            dataMap.put("goods", response.getGoods() != null ? response.getGoods() : List.of());
+            dataMap.put("sessionId", response.getSessionId());
+            dataMap.put("queryTime", response.getQueryTime());
+            dataMap.put("fromCache", response.isFromCache());
+            dataMap.put("timestamp", response.getTimestamp() != null ? response.getTimestamp() : LocalDateTime.now());
+            
+            result.put("data", dataMap);
             return result;
             
         } catch (Exception e) {

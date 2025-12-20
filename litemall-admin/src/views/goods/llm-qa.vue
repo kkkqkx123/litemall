@@ -53,14 +53,7 @@
           </div>
         </div>
 
-        <div v-if="isLoading" class="loading-indicator">
-          <i class="el-icon-loading" />
-          <span>{{ loadingMessage }}</span>
-          <div v-if="loadingProgress" class="loading-progress">
-            <el-progress :percentage="loadingProgress.percentage" :status="loadingProgress.status" />
-            <div class="progress-text">{{ loadingProgress.text }}</div>
-          </div>
-        </div>
+
       </div>
 
       <!-- 快速提问按钮 -->
@@ -70,7 +63,7 @@
           :key="question"
           size="small"
           plain
-          :disabled="isLoading || !isServiceAvailable"
+          :disabled="!isServiceAvailable"
           @click="sendQuickQuestion(question)"
         >
           {{ question }}
@@ -85,19 +78,18 @@
           type="textarea"
           :rows="2"
           placeholder="请输入您的问题..."
-          :disabled="isLoading || !isServiceAvailable"
+          :disabled="!isServiceAvailable"
           @keyup.enter.native="handleEnterKey"
         />
         <div class="input-actions">
           <el-button
             type="primary"
-            :loading="isLoading"
             :disabled="!inputQuestion.trim() || !isServiceAvailable"
             @click="sendQuestion"
           >
             发送
           </el-button>
-          <el-button v-if="messages.length > 0" :disabled="isLoading" @click="clearConversation">
+          <el-button v-if="messages.length > 0" @click="clearConversation">
             清空对话
           </el-button>
         </div>
@@ -122,12 +114,7 @@ export default {
       inputQuestion: '',
       // 消息列表
       messages: [],
-      // 是否正在加载
-      isLoading: false,
-      // 加载消息
-      loadingMessage: 'AI正在思考中...',
-      // 加载进度
-      loadingProgress: null,
+
       // 会话ID
       sessionId: '',
       // 上下文历史
@@ -216,9 +203,6 @@ export default {
       // 添加用户消息
       this.addUserMessage(content)
 
-      // 显示加载状态
-      this.setLoadingState('initial')
-
       try {
         // 构建请求数据
         const requestData = {
@@ -258,40 +242,6 @@ export default {
         const errorMessage = this.getDetailedErrorMessage(error)
         this.showError(errorMessage)
         return false
-      } finally {
-        this.isLoading = false
-      }
-    },
-
-    // 设置加载状态
-    setLoadingState(stage) {
-      this.isLoading = true
-
-      switch (stage) {
-        case 'initial':
-          this.loadingMessage = 'AI正在理解您的问题...'
-          this.loadingProgress = { percentage: 20, status: null, text: '分析问题中' }
-          break
-        case 'thinking':
-          this.loadingMessage = 'AI正在思考...'
-          this.loadingProgress = { percentage: 40, status: null, text: '生成回答中' }
-          break
-        case 'querying':
-          this.loadingMessage = '正在查询商品信息...'
-          this.loadingProgress = { percentage: 70, status: null, text: '数据库查询中' }
-          break
-        case 'finalizing':
-          this.loadingMessage = '正在整理回答...'
-          this.loadingProgress = { percentage: 90, status: null, text: '即将完成' }
-          break
-      }
-
-      // 模拟进度更新
-      if (stage !== 'finalizing') {
-        const nextStage = stage === 'initial' ? 'thinking'
-          : stage === 'thinking' ? 'querying'
-            : 'finalizing'
-        setTimeout(() => this.setLoadingState(nextStage), 3000)
       }
     },
 
@@ -648,34 +598,6 @@ export default {
               }
             }
           }
-        }
-      }
-    }
-
-    .loading-indicator {
-      text-align: center;
-      color: #909399;
-      padding: 20px;
-
-      i {
-        margin-right: 8px;
-        font-size: 16px;
-      }
-
-      span {
-        font-size: 14px;
-      }
-
-      .loading-progress {
-        margin-top: 12px;
-        width: 80%;
-        margin-left: auto;
-        margin-right: auto;
-
-        .progress-text {
-          font-size: 12px;
-          margin-top: 6px;
-          color: #606266;
         }
       }
     }

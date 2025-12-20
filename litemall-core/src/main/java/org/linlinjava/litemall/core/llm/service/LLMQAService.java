@@ -399,9 +399,9 @@ public class LLMQAService {
             return false;
         }
         
-        // 检查是否包含JSON格式的查询意图（包含query_type和conditions字段）
-        // 同时检查是否包含"query_type"字段，这表示需要查询数据库
-        return llmResponse.contains("\"query_type\"") && llmResponse.contains("\"conditions\"");
+        // 检查是否包含JSON格式的查询意图（包含query_type字段即可）
+        // 只要有query_type字段就表示需要查询数据库，conditions字段可能在后续解析中添加默认值
+        return llmResponse.contains("\"query_type\"");
     }
     
     /**

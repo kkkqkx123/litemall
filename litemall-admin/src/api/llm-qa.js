@@ -43,7 +43,7 @@ export function getLLMServiceStatus() {
  */
 export function getSessionHistory(sessionId, params) {
   return request({
-    url: `/admin/llm/qa/session/${sessionId}/history`,
+    url: `/llm/qa/session/${sessionId}/history`,
     method: 'get',
     params: params
   })
