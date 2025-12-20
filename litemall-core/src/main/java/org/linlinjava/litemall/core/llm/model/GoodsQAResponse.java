@@ -13,14 +13,14 @@ public class GoodsQAResponse {
     
     /**
      * 响应状态码
-     * 200: 成功, 400: 参数错误, 500: 服务器错误
+     * 0: 成功, 400: 参数错误, 502: 服务器错误
      */
-    private int code;
+    private int errno;
     
     /**
      * 响应消息
      */
-    private String message;
+    private String errmsg;
     
     /**
      * 自然语言回答
@@ -73,8 +73,8 @@ public class GoodsQAResponse {
      */
     public static GoodsQAResponse success(String answer, List<LitemallGoods> goods) {
         GoodsQAResponse response = new GoodsQAResponse();
-        response.setCode(200);
-        response.setMessage("success");
+        response.setErrno(0);
+        response.setErrmsg("success");
         response.setAnswer(answer);
         response.setGoods(goods);
         return response;
@@ -82,15 +82,15 @@ public class GoodsQAResponse {
     
     /**
      * 错误响应的工厂方法
-     * @param code 错误码
-     * @param message 错误消息
+     * @param errno 错误码
+     * @param errmsg 错误消息
      * @return 错误响应对象
      */
-    public static GoodsQAResponse error(int code, String message) {
+    public static GoodsQAResponse error(int errno, String errmsg) {
         GoodsQAResponse response = new GoodsQAResponse();
-        response.setCode(code);
-        response.setMessage(message);
-        response.setAnswer("抱歉，我无法处理您的请求。" + message);
+        response.setErrno(errno);
+        response.setErrmsg(errmsg);
+        response.setAnswer("抱歉，我无法处理您的请求。" + errmsg);
         return response;
     }
     
@@ -109,24 +109,24 @@ public class GoodsQAResponse {
      * @return 服务器错误响应对象
      */
     public static GoodsQAResponse serverError(String message) {
-        return error(500, message);
+        return error(502, message);
     }
     
     // Getters and Setters
-    public int getCode() {
-        return code;
+    public int getErrno() {
+        return errno;
     }
     
-    public void setCode(int code) {
-        this.code = code;
+    public void setErrno(int errno) {
+        this.errno = errno;
     }
     
-    public String getMessage() {
-        return message;
+    public String getErrmsg() {
+        return errmsg;
     }
     
-    public void setMessage(String message) {
-        this.message = message;
+    public void setErrmsg(String errmsg) {
+        this.errmsg = errmsg;
     }
     
     public String getAnswer() {
@@ -188,8 +188,8 @@ public class GoodsQAResponse {
     @Override
     public String toString() {
         return "GoodsQAResponse{" +
-                "code=" + code +
-                ", message='" + message + '\'' +
+                "errno=" + errno +
+                ", errmsg='" + errmsg + '\'' +
                 ", answer='" + answer + '\'' +
                 ", goods=" + (goods != null ? goods.size() : 0) +
                 ", sessionId='" + sessionId + '\'' +

@@ -16,25 +16,11 @@
         <div v-if="messages.length === 0" class="welcome-message">
           <p>欢迎使用智能商品问答系统！</p>
           <p>您可以询问价格、库存、分类等相关问题。</p>
-          <div v-if="hotQuestions.length > 0" class="hot-questions-welcome">
-            <p class="hot-questions-title">热门问题：</p>
-            <div class="hot-questions-list">
-              <el-tag
-                v-for="question in hotQuestions.slice(0, 3)"
-                :key="question"
-                size="small"
-                @click="sendQuickQuestion(question)"
-                class="hot-question-tag"
-              >
-                {{ question }}
-              </el-tag>
-            </div>
-          </div>
         </div>
 
         <div
-          v-for="(message, index) in messages"
-          :key="message.id || index"
+          v-for="(message, messageIndex) in messages"
+          :key="message.id || messageIndex"
           :class="['message', message.type]"
         >
           <!-- 用户消息 -->
@@ -42,29 +28,27 @@
             <div class="message-text">{{ message.content }}</div>
             <div class="message-time">{{ formatTime(message.timestamp, { showRelative: true }) }}</div>
           </div>
-          
+
           <!-- 助手消息 -->
           <div v-else-if="message.type === 'assistant'" class="message-content">
             <div class="message-text">{{ message.content }}</div>
             <div class="message-time">{{ formatTime(message.timestamp, { showRelative: true }) }}</div>
           </div>
-          
+
           <!-- 商品消息 -->
           <div v-else-if="message.type === 'goods'" class="message-content">
             <div class="goods-list">
-              <div v-for="(item, index) in message.content" :key="index" class="goods-item" @click="viewGoodsDetail(item.id)">
+              <div v-for="(item, itemIndex) in message.content" :key="itemIndex" class="goods-item" @click="viewGoodsDetail(item.id)">
                 <div class="goods-image">
                   <img :src="item.imageUrl || '/static/img/default-goods.png'" :alt="item.name">
                 </div>
                 <div class="goods-info">
                   <div class="goods-name">{{ item.name }}</div>
                   <div class="goods-price">¥{{ item.price }}</div>
-                  <div class="goods-brief" v-if="item.brief">{{ item.brief }}</div>
+                  <div v-if="item.brief" class="goods-brief">{{ item.brief }}</div>
                 </div>
               </div>
             </div>
-            <div class="message-time">{{ formatTime(message.timestamp, { showRelative: true }) }}</div>
-          </div>
             <div class="message-time">{{ formatTime(message.timestamp, { showRelative: true }) }}</div>
           </div>
         </div>
@@ -86,8 +70,8 @@
           :key="question"
           size="small"
           plain
-          @click="sendQuickQuestion(question)"
           :disabled="isLoading || !isServiceAvailable"
+          @click="sendQuickQuestion(question)"
         >
           {{ question }}
         </el-button>
@@ -96,13 +80,13 @@
       <!-- 输入区域 -->
       <div class="input-area">
         <el-input
+          ref="questionInput"
           v-model="inputQuestion"
           type="textarea"
           :rows="2"
           placeholder="请输入您的问题..."
           :disabled="isLoading || !isServiceAvailable"
           @keyup.enter.native="handleEnterKey"
-          ref="questionInput"
         />
         <div class="input-actions">
           <el-button
@@ -113,7 +97,7 @@
           >
             发送
           </el-button>
-          <el-button v-if="messages.length > 0" @click="clearConversation" :disabled="isLoading">
+          <el-button v-if="messages.length > 0" :disabled="isLoading" @click="clearConversation">
             清空对话
           </el-button>
         </div>
@@ -123,7 +107,7 @@
 </template>
 
 <script>
-import { askQuestion, getLLMServiceStatus, getHotQuestions } from '@/api/llm-qa'
+import { askQuestion, getLLMServiceStatus } from '@/api/llm-qa'
 import llmLogicMixin from '@/mixins/llm-logic'
 import llmUiMixin from '@/mixins/llm-ui'
 import llmConfigMixin from '@/mixins/llm-config'
@@ -160,8 +144,7 @@ export default {
       // 服务状态
       isServiceAvailable: true,
       serviceStatus: null,
-      // 热门问题
-      hotQuestions: [],
+
       // 自动滚动
       autoScroll: true
     }
@@ -173,9 +156,6 @@ export default {
       // 1. 检查服务状态
       await this.initializeService()
 
-      // 2. 加载热门问题
-      await this.loadHotQuestions()
-
       // 3. 初始化会话ID
       if (!this.sessionId) {
         this.sessionId = this.generateSessionId()
@@ -185,7 +165,6 @@ export default {
       this.$nextTick(() => {
         this.focusInput()
       })
-
     } catch (error) {
       console.error('组件初始化失败:', error)
       this.showError('组件初始化失败，请刷新页面重试')
@@ -217,26 +196,6 @@ export default {
       }
     },
 
-    // 加载热门问题
-    async loadHotQuestions() {
-      if (!this.getConfig('features.enableHotQuestions', true)) {
-        return
-      }
-
-      try {
-        const response = await getHotQuestions()
-        if (response.errno === 0 && response.data) {
-          this.hotQuestions = response.data.questions || []
-          // 更新快速提问按钮
-          if (this.hotQuestions.length > 0) {
-            this.quickQuestions = [...this.hotQuestions.slice(0, 6)]
-          }
-        }
-      } catch (error) {
-        console.error('获取热门问题失败:', error)
-      }
-    },
-
     // 处理回车键
     handleEnterKey(event) {
       // 如果按下的是Ctrl+Enter，则换行；否则发送消息
@@ -253,51 +212,51 @@ export default {
         this.$message.warning('请输入问题')
         return false
       }
-      
+
       // 添加用户消息
       this.addUserMessage(content)
-      
+
       // 显示加载状态
       this.setLoadingState('initial')
-      
+
       try {
         // 构建请求数据
         const requestData = {
           question: content,
           sessionId: this.sessionId
         }
-        
+
         // 调用API
         const response = await askQuestion(requestData)
-        
+
         // 处理响应
         const result = this.processApiResponse(response)
         if (!result.success) {
           this.showError(result.error)
           return false
         }
-        
+
         // 添加助手消息
         this.addAssistantMessage(result.answer)
-        
+
         // 如果有商品数据，处理商品信息
         if (result.goods && result.goods.length > 0) {
           this.addGoodsMessage(result.goods)
         }
-        
+
         // 更新上下文历史
         this.updateContextHistory(content, result.answer)
-        
+
         // 更新会话ID（如果后端返回了新的sessionId）
         if (result.sessionId) {
           this.sessionId = result.sessionId
         }
-        
+
         return true
-        
       } catch (error) {
         console.error('发送消息失败:', error)
-        this.showError('网络请求失败，请检查网络连接后重试')
+        const errorMessage = this.getDetailedErrorMessage(error)
+        this.showError(errorMessage)
         return false
       } finally {
         this.isLoading = false
@@ -307,31 +266,31 @@ export default {
     // 设置加载状态
     setLoadingState(stage) {
       this.isLoading = true
-      
+
       switch (stage) {
         case 'initial':
           this.loadingMessage = 'AI正在理解您的问题...'
-          this.loadingProgress = { percentage: 20, status: '', text: '分析问题中' }
+          this.loadingProgress = { percentage: 20, status: null, text: '分析问题中' }
           break
         case 'thinking':
           this.loadingMessage = 'AI正在思考...'
-          this.loadingProgress = { percentage: 40, status: '', text: '生成回答中' }
+          this.loadingProgress = { percentage: 40, status: null, text: '生成回答中' }
           break
         case 'querying':
           this.loadingMessage = '正在查询商品信息...'
-          this.loadingProgress = { percentage: 70, status: '', text: '数据库查询中' }
+          this.loadingProgress = { percentage: 70, status: null, text: '数据库查询中' }
           break
         case 'finalizing':
           this.loadingMessage = '正在整理回答...'
-          this.loadingProgress = { percentage: 90, status: '', text: '即将完成' }
+          this.loadingProgress = { percentage: 90, status: null, text: '即将完成' }
           break
       }
-      
+
       // 模拟进度更新
       if (stage !== 'finalizing') {
-        const nextStage = stage === 'initial' ? 'thinking' : 
-                         stage === 'thinking' ? 'querying' : 
-                         'finalizing'
+        const nextStage = stage === 'initial' ? 'thinking'
+          : stage === 'thinking' ? 'querying'
+            : 'finalizing'
         setTimeout(() => this.setLoadingState(nextStage), 3000)
       }
     },
@@ -343,7 +302,7 @@ export default {
         this.$message.warning('请输入问题')
         return
       }
-      
+
       this.inputQuestion = ''
       const success = await this.sendMessage(content)
       if (success) {
@@ -361,7 +320,7 @@ export default {
           '将替换您当前的输入内容，是否继续？',
           '提示'
         )
-        
+
         if (!confirmed) return
       }
 
@@ -389,11 +348,11 @@ export default {
     formatTime(timestamp, options = {}) {
       return formatTime(timestamp, options)
     },
-    
+
     // 添加商品消息
     addGoodsMessage(goods) {
       if (!Array.isArray(goods) || goods.length === 0) return
-      
+
       // 确保每个商品对象都有必要的字段
       const processedGoods = goods.map(item => ({
         id: item.id || item.goodsId || '',
@@ -403,31 +362,31 @@ export default {
         imageUrl: item.imageUrl || item.picUrl || '',
         unit: item.unit || '件'
       }))
-      
+
       const goodsMessage = {
         id: this.generateMessageId(),
         type: 'goods',
         content: processedGoods,
         timestamp: Date.now()
       }
-      
+
       this.messages.push(goodsMessage)
-      
+
       // 滚动到底部
       this.$nextTick(() => {
         this.scrollToBottom()
       })
     },
-    
+
     // 生成消息ID
     generateMessageId() {
       return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     },
-    
+
     // 查看商品详情
     viewGoodsDetail(goodsId) {
       if (!goodsId) return
-      
+
       // 使用Vue Router跳转到商品详情页
       this.$router.push({
         path: '/goods/list',
@@ -437,10 +396,76 @@ export default {
         this.$message.error('跳转商品详情失败')
       })
     },
+
+    // 获取详细错误信息
+    getDetailedErrorMessage(error) {
+      console.error('错误详情:', error)
+
+      // 处理null或undefined错误
+      if (!error) {
+        return '发生未知错误，请稍后重试'
+      }
+
+      // 如果错误对象已经有errno和errmsg，直接返回
+      if (typeof error === 'object' && 'errno' in error && 'errmsg' in error) {
+        return `请求失败 (错误码: ${error.errno}) - ${error.errmsg}`
+      }
+
+      // 如果错误对象是Axios响应对象
+      if (error.response) {
+        const status = error.response.status
+        const errorData = error.response.data
+
+        // 首先检查响应数据中的errno和errmsg
+        if (errorData && typeof errorData === 'object' && 'errno' in errorData && 'errmsg' in errorData) {
+          return `请求失败 (错误码: ${errorData.errno}) - ${errorData.errmsg}`
+        }
+
+        // 根据HTTP状态码返回更具体的错误信息
+        const statusMessages = {
+          400: '请求参数错误',
+          401: '未授权，请重新登录',
+          403: '拒绝访问',
+          404: '请求的资源不存在',
+          408: '请求超时',
+          429: '请求过于频繁，请稍后重试',
+          500: '服务器内部错误',
+          502: '网关错误',
+          503: '服务暂时不可用',
+          504: '网关超时'
+        }
+
+        const statusMessage = statusMessages[status] || `HTTP ${status}`
+        const detailMessage = errorData?.errmsg || errorData?.message || ''
+
+        return detailMessage ? `请求失败 (${statusMessage}) - ${detailMessage}` : `请求失败 (${statusMessage})`
+      }
+
+      // 如果是网络错误
+      if (error.code === 'ECONNABORTED') {
+        return '请求超时，请检查网络连接'
+      }
+
+      if (error.code === 'NETWORK_ERROR') {
+        return '网络连接失败，请检查网络设置'
+      }
+
+      // 如果是其他类型的错误
+      if (error.message) {
+        return error.message
+      }
+
+      // 如果错误是字符串类型
+      if (typeof error === 'string') {
+        return error
+      }
+
+      // 默认错误信息
+      return '未知错误，请稍后重试'
+    }
   }
 }
 </script>
-
 
 <style lang="scss" scoped>
 .llm-qa-container {
@@ -550,11 +575,11 @@ export default {
           margin-top: 6px;
           text-align: right;
         }
-        
+
         // 商品消息样式
         .goods-list {
           margin-top: 8px;
-          
+
           .goods-item {
             display: flex;
             padding: 8px;
@@ -563,22 +588,22 @@ export default {
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.3s;
-            
+
             &:hover {
               border-color: #409eff;
               box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             }
-            
+
             &:last-child {
               margin-bottom: 0;
             }
-            
+
             .goods-image {
               width: 60px;
               height: 60px;
               margin-right: 12px;
               flex-shrink: 0;
-              
+
               img {
                 width: 100%;
                 height: 100%;
@@ -586,13 +611,13 @@ export default {
                 border-radius: 4px;
               }
             }
-            
+
             .goods-info {
               flex: 1;
               display: flex;
               flex-direction: column;
               justify-content: space-between;
-              
+
               .goods-name {
                 font-size: 14px;
                 font-weight: 500;
@@ -604,14 +629,14 @@ export default {
                 -webkit-line-clamp: 2;
                 -webkit-box-orient: vertical;
               }
-              
+
               .goods-price {
                 font-size: 16px;
                 font-weight: 600;
                 color: #f56c6c;
                 margin-bottom: 4px;
               }
-              
+
               .goods-brief {
                 font-size: 12px;
                 color: #909399;

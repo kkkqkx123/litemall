@@ -90,7 +90,7 @@
                 v-if="!scope.row.showFullDesc"
               >{{ scope.row.desc.substring(0, 100) }}...</span>
               <span v-else>{{ scope.row.desc }}</span>
-              <el-button type="text" size="mini" @click="toggleDesc(scope.row)" style="display: block; text-align: right; margin-top: 4px;">
+              <el-button type="text" size="mini" style="display: block; text-align: right; margin-top: 4px;" @click="toggleDesc(scope.row)">
                 {{ scope.row.showFullDesc ? "收起" : "展开" }}
               </el-button>
             </div>

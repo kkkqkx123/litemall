@@ -31,7 +31,15 @@ service.interceptors.request.use(
 // response interceptor
 service.interceptors.response.use(
   response => {
+    console.log('=== 请求响应拦截器开始 ===')
+    console.log('完整响应对象:', response)
+    console.log('响应状态码:', response.status)
+    console.log('响应状态文本:', response.statusText)
+
     const res = response.data
+    console.log('响应数据:', res)
+    console.log('errno值:', res.errno)
+    console.log('errmsg值:', res.errmsg)
 
     if (res.errno === 501) {
       MessageBox.alert('系统未登录，请重新登录', '错误', {
@@ -75,7 +83,7 @@ service.interceptors.response.use(
       return Promise.reject('error')
     } else if (res.errno !== 0) {
       // 非5xx的错误属于业务错误，留给具体页面处理
-      return Promise.reject(response)
+      return Promise.reject(res)
     } else {
       return response
     }

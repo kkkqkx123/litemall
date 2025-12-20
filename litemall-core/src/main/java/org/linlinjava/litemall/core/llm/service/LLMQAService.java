@@ -154,8 +154,8 @@ public class LLMQAService {
             
             // 构建响应
             GoodsQAResponse response = new GoodsQAResponse();
-            response.setCode(200);
-            response.setMessage("success");
+            response.setErrno(0);
+            response.setErrmsg("success");
             response.setAnswer(answer);
             response.setGoods(goodsList);
             
@@ -890,8 +890,8 @@ public class LLMQAService {
      */
     private GoodsQAResponse createErrorResponse(String message) {
         GoodsQAResponse response = new GoodsQAResponse();
-        response.setCode(500);
-        response.setMessage(message);
+        response.setErrno(502);
+        response.setErrmsg(message);
         response.setAnswer("抱歉，处理您的请求时出现错误。");
         response.setGoods(new ArrayList<>());
         return response;

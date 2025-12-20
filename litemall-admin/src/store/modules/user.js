@@ -101,23 +101,23 @@ const user = {
 
     // 动态修改权限
     ChangeRoles({ commit, dispatch }, role) {
-      return new Promise(async resolve => {
+      return new Promise(resolve => {
         commit('SET_TOKEN', role)
         setToken(role)
 
-        const { roles } = await dispatch('GetUserInfo')
+        dispatch('GetUserInfo').then(({ roles }) => {
+          resetRouter()
 
-        resetRouter()
+          dispatch('permission/generateRoutes', roles, { root: true }).then(accessRoutes => {
+            // dynamically add accessible routes
+            router.addRoutes(accessRoutes)
 
-        const accessRoutes = await dispatch('permission/generateRoutes', roles, { root: true })
+            // reset visited views and cached views
+            dispatch('tagsView/delAllViews', null, { root: true })
 
-        // dynamically add accessible routes
-        router.addRoutes(accessRoutes)
-
-        // reset visited views and cached views
-        dispatch('tagsView/delAllViews', null, { root: true })
-
-        resolve()
+            resolve()
+          })
+        })
       })
     }
   }

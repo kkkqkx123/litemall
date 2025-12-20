@@ -27,7 +27,6 @@ export const LLM_CONFIG_KEYS = {
   MAX_HISTORY_LENGTH: 'context.maxHistoryLength',
   MAX_MESSAGE_LENGTH: 'context.maxMessageLength',
   TIMEOUT: 'request.timeout',
-  ENABLE_HOT_QUESTIONS: 'features.enableHotQuestions',
   ENABLE_SERVICE_CHECK: 'features.enableServiceCheck',
   MAX_ERROR_MESSAGES: 'ui.maxErrorMessages',
   AUTO_SCROLL_THRESHOLD: 'ui.autoScrollThreshold',

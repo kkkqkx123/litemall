@@ -102,7 +102,7 @@ export default {
     parseTime,
     getList() {
       this.listLoading = true
-      
+
       // 构建查询参数
       const query = {
         page: this.listQuery.page,
@@ -110,7 +110,7 @@ export default {
         sort: this.listQuery.sort,
         order: this.listQuery.order
       }
-      
+
       // 处理搜索文本，可能是用户ID或商品名称
       if (this.listQuery.searchText) {
         // 尝试转换为数字，如果成功则是用户ID，否则是商品名称
@@ -120,11 +120,11 @@ export default {
           query.goodsName = this.listQuery.searchText
         }
       }
-      
+
       if (this.listQuery.categoryId) {
         query.categoryId = this.listQuery.categoryId
       }
-      
+
       listComment(query).then(response => {
         this.list = response.data.data.list
         this.total = response.data.data.total

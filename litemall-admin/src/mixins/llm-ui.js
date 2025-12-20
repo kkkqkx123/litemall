@@ -6,22 +6,22 @@ export default {
     showLoading() {
       this.isLoading = true
     },
-    
+
     // 隐藏加载状态
     hideLoading() {
       this.isLoading = false
     },
-    
+
     // 显示错误提示
     showError(message) {
       this.$message.error(message)
     },
-    
+
     // 显示成功提示
     showSuccess(message) {
       this.$message.success(message)
     },
-    
+
     // 聚焦输入框
     focusInput() {
       this.$nextTick(() => {
@@ -33,7 +33,7 @@ export default {
         }
       })
     },
-    
+
     // 确认对话框
     async showConfirm(message, title = '提示') {
       try {
@@ -47,7 +47,7 @@ export default {
         return false
       }
     },
-    
+
     // 统一的消息添加方法
     addMessage(type, content, options = {}) {
       const message = {
@@ -57,33 +57,33 @@ export default {
         timestamp: Date.now(),
         ...options
       }
-      
+
       this.messages.push(message)
-      
+
       // 智能判断是否自动滚动
       if (this.shouldAutoScroll() || options.forceScroll) {
         this.$nextTick(() => {
           this.scrollToBottom({ smooth: true })
         })
       }
-      
+
       return message
     },
-    
+
     // 添加用户消息
     addUserMessage(content) {
       return this.addMessage('user', content, {
         forceScroll: true
       })
     },
-    
+
     // 添加AI回复消息
     addAssistantMessage(content) {
       return this.addMessage('assistant', content, {
         forceScroll: true
       })
     },
-    
+
     // 添加错误消息
     addErrorMessage(content) {
       // 限制错误消息数量
@@ -95,19 +95,19 @@ export default {
           this.messages.splice(firstErrorIndex, 1)
         }
       }
-      
+
       return this.addMessage('error', content, {
         isError: true,
         forceScroll: true
       })
     },
-    
+
     // 统一的错误处理
     handleRequestError(error) {
       console.error('LLM请求失败:', error)
-      
+
       let errorMessage = '发送失败，请稍后重试'
-      
+
       // 分类处理不同类型的错误
       if (error.code === 'ECONNABORTED') {
         errorMessage = '请求超时，请检查网络连接'
@@ -121,12 +121,14 @@ export default {
           errorMessage = '服务器错误，请稍后再试'
         } else {
           const errorData = error.response.data
-          errorMessage = errorData?.errmsg || errorData?.message || '请求失败'
+          const status = error.response.status
+          errorMessage = `请求失败 (HTTP ${status}) - ${errorData?.errmsg || errorData?.message || '未知错误'}`
+          console.error('HTTP错误详情:', error.response)
         }
       } else if (error.request) {
         errorMessage = '网络连接失败，请检查网络'
       }
-      
+
       this.addErrorMessage(errorMessage)
     }
   }

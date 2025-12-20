@@ -8,7 +8,8 @@
         clearable
         class="filter-item"
         style="width: 200px;"
-        :placeholder="$t('sys_log.placeholder.filter_name')" />
+        :placeholder="$t('sys_log.placeholder.filter_name')"
+      />
 
       <el-date-picker
         v-model="listQuery.timeRange"
@@ -18,14 +19,16 @@
         end-placeholder="结束时间"
         class="filter-item"
         style="width: 350px;"
-        value-format="yyyy-MM-dd HH:mm:ss" />
+        value-format="yyyy-MM-dd HH:mm:ss"
+      />
 
       <el-select
         v-model="listQuery.status"
         clearable
         placeholder="操作状态"
         class="filter-item"
-        style="width: 120px;">
+        style="width: 120px;"
+      >
         <el-option label="成功" :value="true" />
         <el-option label="失败" :value="false" />
       </el-select>
@@ -35,7 +38,8 @@
         class="filter-item"
         type="primary"
         icon="el-icon-search"
-        @click="handleFilter">{{ $t('app.button.search') }}</el-button>
+        @click="handleFilter"
+      >{{ $t('app.button.search') }}</el-button>
     </div>
 
     <!-- 查询结果 -->
@@ -45,7 +49,8 @@
       :element-loading-text="$t('app.message.list_loading')"
       border
       fit
-      highlight-current-row>
+      highlight-current-row
+    >
       <el-table-column align="center" :label="$t('sys_log.table.admin')" prop="admin" />
       <el-table-column align="center" :label="$t('sys_log.table.ip')" prop="ip" />
       <el-table-column align="center" :label="$t('sys_log.table.add_time')" prop="addTime" />

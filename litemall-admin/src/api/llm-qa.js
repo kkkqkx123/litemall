@@ -10,11 +10,15 @@ import request from '@/utils/request'
  * @returns {Promise} - 返回Promise对象
  */
 export function askQuestion(data) {
+  console.log('=== askQuestion函数调用开始 ===')
+  console.log('请求数据:', data)
+  console.log('请求URL:', '/llm/qa/ask')
+
   return request({
     url: '/llm/qa/ask',
     method: 'post',
-    data: data,
-    timeout: 45000 // LLM问答专用超时设置 - 45秒
+    data,
+    timeout: 45000 // 45秒超时，适应LLM处理时间
   })
 }
 
@@ -30,21 +34,6 @@ export function getLLMServiceStatus() {
 }
 
 /**
- * 获取热门问题
- * @param {Object} params - 查询参数
- * @param {number} params.limit - 返回问题数量限制
- * @param {string} params.category - 问题分类
- * @returns {Promise} - 返回Promise对象
- */
-export function getHotQuestions(params) {
-  return request({
-    url: '/llm/qa/hot-questions',
-    method: 'get',
-    params: params
-  })
-}
-
-/**
  * 获取会话历史记录
  * @param {string} sessionId - 会话ID
  * @param {Object} params - 查询参数
@@ -54,7 +43,7 @@ export function getHotQuestions(params) {
  */
 export function getSessionHistory(sessionId, params) {
   return request({
-    url: `/llm/qa/session/${sessionId}/history`,
+    url: `/admin/llm/qa/session/${sessionId}/history`,
     method: 'get',
     params: params
   })

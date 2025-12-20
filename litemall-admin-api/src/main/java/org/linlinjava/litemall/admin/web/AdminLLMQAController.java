@@ -5,7 +5,6 @@ import org.apache.commons.logging.LogFactory;
 import org.linlinjava.litemall.core.llm.model.GoodsQARequest;
 import org.linlinjava.litemall.core.llm.model.GoodsQAResponse;
 import org.linlinjava.litemall.core.llm.service.LLMQAService;
-import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +13,7 @@ import jakarta.validation.Valid;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,12 +36,16 @@ public class AdminLLMQAController {
      * @return 问答响应
      */
     @PostMapping("/ask")
-    public Object ask(@RequestBody Map<String, String> body) {
+    public Map<String, Object> ask(@RequestBody Map<String, String> body) {
         String question = body.get("question");
         String sessionId = body.get("sessionId");
         
         if (question == null || question.trim().isEmpty()) {
-            return ResponseUtil.badArgument();
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("errno", 400);
+            errorResponse.put("errmsg", "问题不能为空");
+            errorResponse.put("data", null);
+            return errorResponse;
         }
         
         try {
@@ -50,38 +54,75 @@ public class AdminLLMQAController {
             request.setSessionId(sessionId);
             GoodsQAResponse response = llmqaService.processQuestion(request);
             
-            if (response.getCode() == 200) {
-                return ResponseUtil.ok(response);
-            } else {
-                return ResponseUtil.fail(response.getCode(), response.getMessage());
+            // 检查服务响应是否成功
+            if (response.getErrno() != 0) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("errno", response.getErrno());
+                errorResponse.put("errmsg", response.getErrmsg());
+                errorResponse.put("data", null);
+                return errorResponse;
             }
+            
+            // 直接返回业务数据，不再嵌套
+            Map<String, Object> result = new HashMap<>();
+            result.put("errno", 0);
+            result.put("errmsg", "success");
+            result.put("data", Map.of(
+                "answer", response.getAnswer(),
+                "goods", response.getGoods() != null ? response.getGoods() : List.of(),
+                "sessionId", response.getSessionId(),
+                "queryTime", response.getQueryTime(),
+                "fromCache", response.isFromCache(),
+                "timestamp", response.getTimestamp()
+            ));
+            return result;
             
         } catch (Exception e) {
             logger.error("处理商品问答请求失败", e);
-            return ResponseUtil.fail(500, "处理请求时发生错误：" + e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("errno", 502);
+            errorResponse.put("errmsg", "处理请求时发生错误：" + e.getMessage());
+            errorResponse.put("data", null);
+            return errorResponse;
         }
     }
 
     /**
      * 创建新的问答会话
      *
-     * @param body 包含会话标题的请求体
+     * @param body 包含用户ID的请求体
      * @return 会话ID
      */
     @PostMapping("/session/create")
-    public Object createSession(@RequestBody Map<String, String> body) {
-        String title = body.get("title");
-        if (title == null || title.trim().isEmpty()) {
-            return ResponseUtil.badArgument();
+    public Map<String, Object> createSession(@RequestBody Map<String, String> body) {
+        String userIdStr = body.get("userId");
+        if (userIdStr == null || userIdStr.trim().isEmpty()) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("errno", 400);
+            errorResponse.put("errmsg", "用户ID不能为空");
+            return errorResponse;
         }
         
         try {
-            String sessionId = llmqaService.createSession(Integer.valueOf(title));
-            return ResponseUtil.ok(Map.of("sessionId", sessionId));
+            Integer userId = Integer.valueOf(userIdStr);
+            String sessionId = llmqaService.createSession(userId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("errno", 0);
+            response.put("errmsg", "会话创建成功");
+            response.put("data", Map.of("sessionId", sessionId));
+            return response;
             
+        } catch (NumberFormatException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("errno", 400);
+            errorResponse.put("errmsg", "用户ID格式不正确");
+            return errorResponse;
         } catch (Exception e) {
             logger.error("创建问答会话失败", e);
-            return ResponseUtil.fail(500, "创建会话失败：" + e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("errno", 502);
+            errorResponse.put("errmsg", "创建会话失败：" + e.getMessage());
+            return errorResponse;
         }
     }
 
@@ -93,15 +134,22 @@ public class AdminLLMQAController {
      * @return 会话历史
      */
     @GetMapping("/session/{sessionId}/history")
-    public Object getHistory(@PathVariable String sessionId,
+    public Map<String, Object> getHistory(@PathVariable String sessionId,
                              @RequestParam(defaultValue = "1") Integer page,
                              @RequestParam(defaultValue = "10") Integer limit) {
         try {
             Object history = llmqaService.getSessionHistory(sessionId);
-            return ResponseUtil.ok(history);
+            Map<String, Object> response = new HashMap<>();
+            response.put("errno", 0);
+            response.put("errmsg", "获取历史记录成功");
+            response.put("data", history);
+            return response;
         } catch (Exception e) {
             logger.error("获取历史记录失败", e);
-            return ResponseUtil.fail(503, "获取历史记录失败");
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("errno", 503);
+            errorResponse.put("errmsg", "获取历史记录失败");
+            return errorResponse;
         }
     }
 
@@ -112,14 +160,21 @@ public class AdminLLMQAController {
      * @return 操作结果
      */
     @DeleteMapping("/session/{sessionId}")
-    public Object destroySession(@PathVariable String sessionId) {
+    public Map<String, Object> destroySession(@PathVariable String sessionId) {
         try {
             llmqaService.destroySession(sessionId);
-            return ResponseUtil.ok();
+            Map<String, Object> response = new HashMap<>();
+            response.put("errno", 0);
+            response.put("errmsg", "会话销毁成功");
+            response.put("data", null);
+            return response;
             
         } catch (Exception e) {
             logger.error("销毁会话失败", e);
-            return ResponseUtil.fail(500, "销毁会话失败：" + e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("errno", 502);
+            errorResponse.put("errmsg", "销毁会话失败：" + e.getMessage());
+            return errorResponse;
         }
     }
 
@@ -129,14 +184,21 @@ public class AdminLLMQAController {
      * @return 服务状态
      */
     @GetMapping("/status")
-    public Object getStatus() {
+    public Map<String, Object> getStatus() {
         try {
             Map<String, Object> status = llmqaService.getServiceStatus();
-            return ResponseUtil.ok(status);
+            Map<String, Object> response = new HashMap<>();
+            response.put("errno", 0);
+            response.put("errmsg", "获取服务状态成功");
+            response.put("data", status);
+            return response;
             
         } catch (Exception e) {
             logger.error("获取服务状态失败", e);
-            return ResponseUtil.fail(500, "获取服务状态失败：" + e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("errno", 502);
+            errorResponse.put("errmsg", "获取服务状态失败：" + e.getMessage());
+            return errorResponse;
         }
     }
 
@@ -147,15 +209,22 @@ public class AdminLLMQAController {
      * @return 会话统计
      */
     @GetMapping("/session/{sessionId}/statistics")
-    public Object getSessionStatistics(@PathVariable(required = false) String sessionId,
+    public Map<String, Object> getSessionStatistics(@PathVariable(required = false) String sessionId,
                                       @RequestParam(defaultValue = "7") Integer days) {
         try {
             Map<String, Object> statistics = llmqaService.getSessionStatistics();
-            return ResponseUtil.ok(statistics);
+            Map<String, Object> response = new HashMap<>();
+            response.put("errno", 0);
+            response.put("errmsg", "获取统计信息成功");
+            response.put("data", statistics);
+            return response;
             
         } catch (Exception e) {
             logger.error("获取会话统计失败", e);
-            return ResponseUtil.fail(500, "获取统计信息失败：" + e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("errno", 502);
+            errorResponse.put("errmsg", "获取统计信息失败：" + e.getMessage());
+            return errorResponse;
         }
     }
 
@@ -166,7 +235,7 @@ public class AdminLLMQAController {
      * @return 服务配置信息
      */
     @GetMapping("/debug/config")
-    public Object getConfig() {
+    public Map<String, Object> getConfig() {
         try {
             Map<String, Object> status = llmqaService.getServiceStatus();
             
@@ -180,11 +249,18 @@ public class AdminLLMQAController {
                 "user.timezone", System.getProperty("user.timezone")
             ));
             
-            return ResponseUtil.ok(debugInfo);
+            Map<String, Object> response = new HashMap<>();
+            response.put("errno", 0);
+            response.put("errmsg", "获取调试配置成功");
+            response.put("data", debugInfo);
+            return response;
             
         } catch (Exception e) {
             logger.error("获取调试配置失败", e);
-            return ResponseUtil.fail(500, "获取调试配置失败：" + e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("errno", 502);
+            errorResponse.put("errmsg", "获取调试配置失败：" + e.getMessage());
+            return errorResponse;
         }
     }
 
@@ -196,11 +272,14 @@ public class AdminLLMQAController {
      * @return 详细的调试信息
      */
     @PostMapping("/debug/test-call")
-    public Object testLLMApiCall(@RequestBody Map<String, String> request) {
+    public Map<String, Object> testLLMApiCall(@RequestBody Map<String, String> request) {
         try {
             String testQuestion = request.get("question");
             if (testQuestion == null || testQuestion.trim().isEmpty()) {
-                return ResponseUtil.fail(400, "测试问题不能为空");
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("errno", 400);
+                errorResponse.put("errmsg", "测试问题不能为空");
+                return errorResponse;
             }
             
             // 创建测试请求
@@ -217,14 +296,18 @@ public class AdminLLMQAController {
             logger.info("调用LLM服务成功，回答：" + response.getAnswer());
             
             Map<String, Object> debugInfo = new HashMap<>();
-            debugInfo.put("success", response.getCode() == 200);
+            debugInfo.put("success", response.getErrno() == 0);
             debugInfo.put("answer", response.getAnswer());
             debugInfo.put("goodsCount", response.getGoods() != null ? response.getGoods().size() : 0);
             debugInfo.put("sessionId", response.getSessionId());
             debugInfo.put("queryIntent", response.getQueryIntent());
             debugInfo.put("queryTime", response.getQueryTime());
             
-            return ResponseUtil.ok(debugInfo);
+            Map<String, Object> result = new HashMap<>();
+            result.put("errno", 0);
+            result.put("errmsg", "调试API调用成功");
+            result.put("data", debugInfo);
+            return result;
             
         } catch (Exception e) {
             logger.error("调试API调用失败", e);
@@ -234,47 +317,13 @@ public class AdminLLMQAController {
             errorInfo.put("errorType", e.getClass().getSimpleName());
             errorInfo.put("stackTrace", Arrays.toString(e.getStackTrace()).substring(0, 1000));
             
-            return ResponseUtil.fail(500, "调试API调用失败：" + e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("errno", 502);
+            errorResponse.put("errmsg", "调试API调用失败：" + e.getMessage());
+            errorResponse.put("data", errorInfo);
+            return errorResponse;
         }
     }
 
-    /**
-     * 获取热门问题
-     * 返回预定义的热门商品相关问题列表
-     *
-     * @param limit 返回问题数量限制
-     * @param category 问题分类
-     * @return 热门问题列表
-     */
-    @GetMapping("/hot-questions")
-    public Object getHotQuestions(@RequestParam(defaultValue = "5") Integer limit,
-                                  @RequestParam(required = false) String category) {
-        try {
-            // 预定义的热门问题列表
-            String[] defaultQuestions = {
-                "有什么价格在100到200元之间的商品推荐吗？",
-                "最近有什么新品上市？",
-                "有哪些商品正在促销？",
-                "推荐一些性价比高的商品",
-                "有什么适合送礼的商品吗？"
-            };
-            
-            // 根据限制数量返回问题
-            int actualLimit = Math.min(limit, defaultQuestions.length);
-            String[] questions = Arrays.copyOf(defaultQuestions, actualLimit);
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("questions", questions);
-            result.put("total", questions.length);
-            result.put("category", category != null ? category : "general");
-            
-            logger.info("返回热门问题列表，共" + questions.length + "个问题");
-            
-            return ResponseUtil.ok(result);
-            
-        } catch (Exception e) {
-            logger.error("获取热门问题失败", e);
-            return ResponseUtil.fail(500, "获取热门问题失败：" + e.getMessage());
-        }
-    }
+
 }
